@@ -1,8 +1,8 @@
 (*
 
-This is FeynArts, Version 3.7
+This is FeynArts, Version 3.8
 Copyright by Sepp Kueblbeck, Hagen Eck, and Thomas Hahn 1991-2012
-last modified 4 Dec 12 by Thomas Hahn
+last modified 9 Jul 13 by Thomas Hahn
 
 Release notes:
 
@@ -44,9 +44,9 @@ Have fun!
 
 
 Print[""];
-Print["FeynArts 3.7"];
+Print["FeynArts 3.8"];
 Print["by Hagen Eck, Sepp Kueblbeck, and Thomas Hahn"];
-Print["last revised 4 Dec 12"]
+Print["last revised 9 Jul 13"]
 
 
 BeginPackage["FeynArts`"]
@@ -54,7 +54,7 @@ BeginPackage["FeynArts`"]
 (* definitions for Utilities.m *)
 
 FAPrint::usage =
-"FAPrint[l, s] prints s if l <= $Verbose."
+"FAPrint[v, s] prints s if v <= $FAVerbose."
 
 ActualOptions::usage =
 "ActualOptions[sym, options] returns a list of options of sym with the
@@ -720,13 +720,6 @@ F::usage =
 S::usage =
 "S is a scalar field."
 
-SV::usage =
-"SV is a scalar-vector mixing field."
-
-VS::usage =
-"VS is a vector-scalar mixing field.  This field is for internal
-purposes only.  Do not use it in a model file."
-
 U::usage =
 "U is a ghost field (Grassmann-valued scalar field)."
 
@@ -736,8 +729,22 @@ V::usage =
 T::usage =
 "T is a tensor field."
 
-$SVMixing::usage =
-"$SVMixing determines whether mixing of scalar and vector fields is
+Mix::usage =
+"Mix[g1, g2] is a generic mixing field with left partner g1 and
+right partner g2."
+
+Rev::usage =
+"Rev[g1, g2] is a generic mixing field with left partner g2 and
+right partner g1, i.e. the reverse of Mix[g1, g2].  Rev is needed
+internally by FeynArts but should not appear in a model file."
+
+SV::usage =
+"SV is a scalar-vector mixing field."
+
+SV = Mix[S, V]	(* for compatibility *)
+
+$GenericMixing::usage =
+"$GenericMixing determines whether mixing of generic fields is
 allowed or not."
 
 $CounterTerms::usage =
@@ -910,9 +917,6 @@ conservation of those quantum numbers."
 
 Compatibles::usage =
 "Compatibles[p] is a list of particles that are compatible with p."
-
-SVCompatibles::usage =
-"SVCompatibles[p] is a list of SV particles that are compatible with p."
 
 Index::usage =
 "Index is the head of an index name (i.e. Index[Generation])."
@@ -1310,8 +1314,8 @@ concerned."
 $FeynArts::usage =
 "$FeynArts contains the version of FeynArts."
 
-$Verbose::usage =
-"$Verbose is an integer that determines the extent of run-time messages
+$FAVerbose::usage =
+"$FAVerbose is an integer that determines the extent of run-time messages
 in FeynArts.  It ranges from 0 (no messages) to 2 (normal)."
 
 $FADebug::usage =
@@ -1348,7 +1352,7 @@ will be taken for insertions."
 
 P$Topology = Topology[__] | Topology[_][__]
 
-P$Generic = F | S | V | T | U | SV
+P$Generic = F | S | V | T | U | _Mix | _Rev
 
 P$NonCommuting = F | U
 
@@ -1358,7 +1362,7 @@ P$InsertionObjects = G[_][_][__][__] | _Mass | _GaugeXi |
 P$Options = (_Rule | _RuleDelayed)...
 
 
-$FeynArts = 3.7
+$FeynArts = 3.8
 
 $FeynArtsDir = DirectoryName[ File /.
   FileInformation[System`Private`FindFile[$Input]] ]

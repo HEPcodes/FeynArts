@@ -2,7 +2,7 @@
 	Insert.m
 		Insertion of fields into topologies created by 
 		CreateTopologies.
-		last modified 9 Jan 12 th
+		last modified 5 Jul 13 th
 
 The insertion is done in 3 levels: insertion of generic fields (Generic),
 of classes of a certain model (Classes) or of the members of the classes
@@ -240,20 +240,19 @@ OutField[ s_. fi_[ind__, _ -> to_] ] := s fi[ind, to]
 OutField[ fi_ ] = fi
 
 
+LeftPartner[ fi_ ] := MixingPartners[fi][[1]] /; FreeQ[fi, Field]
+
 RightPartner[ fi_ ] := MixingPartners[fi][[-1]] /; FreeQ[fi, Field]
 
 
-ParticleLookup[ fp_, SV ] :=
-  Flatten[ SVCompatibles/@
-    Lookup[ fp[[0, 1]] ][V, FieldPoint@@ (fp /. _Field -> V)] ]
+ParticleLookup[ fp_, Mix[l_, r_] ] := ParticleLookup[fp, Mix[l, r], r]
 
-ParticleLookup[ fp_, VS ] :=
-  Flatten[ SVCompatibles/@
-    Lookup[ fp[[0, 1]] ][S, FieldPoint@@ (fp /. _Field -> S)] ]
+ParticleLookup[ fp_, Rev[l_, r_] ] := ParticleLookup[fp, Mix[l, r], l]
 
-ParticleLookup[ fp_, p_ ] :=
-  Flatten[ Compatibles/@
-    Lookup[ fp[[0, 1]] ][p, FieldPoint@@ (fp /. _Field -> p)] ]
+ParticleLookup[ fp_, p_ ] := ParticleLookup[fp, p, p]
+
+ParticleLookup[ fp_, mp_, p_ ] := Flatten[ Compatibles[mp, #]&/@
+  Lookup[ fp[[0, 1]] ][p, FieldPoint@@ (fp /. _Field -> p)] ]
 
 
 Lookup[ cto_?NonNegative ] = PossibleFields[cto]
@@ -311,13 +310,14 @@ Block[ {vx, p = ru[[i, 2]], leftallowed, rightallowed, allowed, ckfp, prop},
   prop = ResolveType[ vert12[[0, 1]] ];
 
   If[ TrueQ[$FADebug],
-    Print["Ins11: inserting field ", p];
-    Print["Ins11: L-vertex   = ", vert12[[1]]];
-    Print["Ins11: R-vertex   = ", vert12[[2]]];
+    Print["Ins11: inserting field #", i, " (", p, ") on ", prop];
+    Print["Ins11: fields     = ", List@@ ru];
+    Print["Ins11: L-vertex   = ", LeftPartner/@ (vert12[[1]] /. List@@ ru)];
+    Print["Ins11: R-vertex   = ", RightPartner/@ (vert12[[2]] /. List@@ ru)];
     Print["Ins11: L-allowed  = ", leftallowed];
     Print["Ins11: R-allowed  = ", rightallowed];
     Print["Ins11: allowed    = ", allowed];
-    Print["Ins11: propagator = ", prop];
+    Print[""];
   ];
 
   (ru /. (Field[i] -> _) -> (Field[i] -> #))&/@
@@ -351,13 +351,15 @@ Block[ {freesites, theins, filter},
   freesites = Flatten[ Position[ins[[1]], _ -> 0, 1] ];
 
   filter = Composition[
-    Need@@ (Cases[need, P$Generic | _[P$Generic..]] /. SV :> Seq[SV, VS]),
-    Omit@@ (Cases[omit, P$Generic | _[P$Generic..]] /. SV :> Seq[SV, VS]) ];
+    Need@@ (Cases[need, P$Generic | _[P$Generic..]] /.
+      Mix -> Mix | Rev),
+    Omit@@ (Cases[omit, P$Generic | _[P$Generic..]] /.
+      Mix[fi__] :> Seq[Mix[fi], Rev[fi]]) ];
 
   theins = Insertions[Generic]@@
     InsertionsCompare[ topol,
       filter[ Catch[Fold[Ins1,
-        ToGeneric[ins /. (2 | -2) SV[__] -> VS], freesites]] ] ] /.
+        ToGeneric[ins /. (2 | -2) Mix[fi__] :> Rev[fi]], freesites]] ] ] /.
 		(* restore unstripped rules *)
     Cases[ ins[[1]], ru:(fi_ -> p_ /; p =!= 0) -> ((fi -> _) -> ru) ];
 

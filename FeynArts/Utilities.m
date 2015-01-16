@@ -1,14 +1,14 @@
 (*
 	Utilities.m
 		diverse utility functions for other parts of FA
-		last modified 4 Dec 12 th
+		last modified 13 May 13 th
 *)
 
 Begin["`Utilities`"]
 
 Attributes[ FAPrint ] = {HoldRest}
 
-FAPrint[ l_Integer, s__ ] := Print[s] /; l <= $Verbose
+FAPrint[ v_Integer, s__ ] := Print[s] /; v <= $FAVerbose
 
 
 ActualOptions::noopt =

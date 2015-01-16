@@ -1,7 +1,7 @@
 (*
 	Initialize.m
 		Functions for the initialization of models
-		last modified 22 Nov 12 th
+		last modified 19 Jul 13 th
 *)
 
 Begin["`Initialize`"]
@@ -306,20 +306,23 @@ Block[ {savecp = $ContextPath},
   FieldPointList[Generic] = FieldPoint@@@ ReferenceOrder[Generic];
   Scan[ BuildCombinations, Union[Length/@ ReferenceOrder[Generic]] ];
 
+  MixingPartners[ Mix[p__] ] := {p};
+  MixingPartners[ Rev[p__] ] := Reverse[{p}];
+  MixingPartners[ p_ ] = {p};
+
+  Compatibles[ _, p_ ] = {p};
+
   F$Generic = Union[ ToGeneric[#[[1, 1]]&/@ M$GenericPropagators] ];
-  If[ $SVMixing && !FreeQ[F$Generic, SV],
-    FAPrint[2, "> $SVMixing is ON"];
-    MixingPartners[ SV ] = {S, V};
-    MixingPartners[ VS ] = {V, S};
-    Compatibles[ S ] = {S, VS};
-    Compatibles[ V ] = {V, SV};
-    AppendTo[F$Generic, VS],
+  If[ TrueQ[$GenericMixing],
+    FAPrint[2, "> $GenericMixing is ON"];
+    F$Generic = Flatten[{F$Generic,
+      ( AppendTo[Compatibles[0, #1], Rev[##]];
+        AppendTo[Compatibles[0, #2], Mix[##]];
+        Rev[##] )&@@@ Cases[F$Generic, _Mix]}],
   (* else *)
-    FAPrint[2, "> $SVMixing is OFF"]
+    FAPrint[2, "> $GenericMixing is OFF"]
   ];
   F$AllGeneric = F$Generic;
-  MixingPartners[ p_ ] = {p};
-  Compatibles[ p_ ] = {p};
 
   (CheckFieldPoint[ FieldPoint[_][##] ] = True)&@@@
     FieldPointList[Generic];
@@ -498,9 +501,11 @@ KinIndices[ f_, ki_ ] := (
 On[RuleDelayed::rhs]
 
 
+AllFields[ fi:_Mix[_] ] := 
+  If[ SelfConjugate[fi], #, {#, -#} ]&[ {fi, 2 fi} ]
+
 AllFields[ fi_ ] :=
-  If[ Length[MixingPartners[fi]] === 1, #, {#, 2 #} ]&[
-    If[SelfConjugate[fi], fi, {fi, -fi}] ]
+  If[ SelfConjugate[fi], fi, {fi, -fi} ]
 
 
 Attributes[ ClearDefs ] = {HoldAll}
@@ -510,6 +515,7 @@ ClearDefs[ defs_ ] := defs = Select[defs, FreeQ[#, P$Generic[__]]&]
 
 Attributes[ Assign ] = {Listable}
 
+	(* e.g. Mass[Loop] -> ... *)
 Assign[ fi_, a_[t___] -> b_ ] := Assign[fi, t, a -> b]
 
 Assign[ fi__, Mass -> b_ ] := TheMass[fi] = b
@@ -529,12 +535,12 @@ Block[ {SVTheC, sv, unsortedFP, unsortedCT, savecp = $ContextPath},
   $ContextPath = DeleteCases[$ContextPath, "Global`"];
   $Model = "";
 
-  Clear[SVCompatibles, CouplingDeltas, TheC, RenConst];
+  Clear[CouplingDeltas, TheC, RenConst];
   ClearDefs[SubValues[PossibleFields]];
   ClearDefs[DownValues[#]]&/@ {CheckFieldPoint,
-    SelfConjugate, Indices, MixingPartners, TheMass,
-    QuantumNumbers, MatrixTraceFactor, InsertOnly,
-    Mixture, TheCoeff, IndexBase,
+    SelfConjugate, Indices, Compatibles, MixingPartners,
+    TheMass, QuantumNumbers, MatrixTraceFactor,
+    InsertOnly, Mixture, TheCoeff, IndexBase,
     TheLabel, PropagatorType, PropagatorArrow};
 
   FAPrint[2, ""];
@@ -545,8 +551,6 @@ Block[ {SVTheC, sv, unsortedFP, unsortedCT, savecp = $ContextPath},
 	   set properties of classes from their description list: *)
   Assign@@@ M$ClassesDescription;
   SetCoeff[#][Mixture[#]]&@@@ M$ClassesDescription;
-
-  SVCompatibles[ _ ] = {};
   Cases[ DownValues[MixingPartners],
     (_[_[p:_[__]]] :> m_) :> AssignMixing[p, m] ];
 
@@ -690,25 +694,26 @@ ConjugateCoupling[__][ n:(_Integer | _Rational | _IndexDelta) ] := n
 	~~>~~-->--	2 SV = {V, S}
 	~~<~~--<--	-2 SV = {-V, -S}  *)
 
-AssignMixing[ part_, {left_, right_} ] :=
+AssignMixing[ part:_. (fi:P$Generic)[__], {left_, right_} ] :=
 Block[ {comp, i, ppart, pleft, pright},
   ppart = Append[part, i___];
   pleft = Append[left, i];
   pright = Append[right, i];
-  comp = If[ Head[part] === SV, SVCompatibles, Compatibles ];
-  Unionize[comp, right, part];
-  Unionize[comp, left, 2 part];
   MixingPartners[part] =.;
   MixingPartners[ppart] = {pleft, pright};
   MixingPartners[2 ppart] = {pright, pleft};
+  AddCompatibles[fi, right, part];
+  AddCompatibles[fi, left, 2 part];
   If[ !SelfConjugate[part],
-    Unionize[comp, -right, -part];
-    Unionize[comp, -left, -2 part];
     MixingPartners[-ppart] = {-pleft, -pright};
-    MixingPartners[-2 ppart] = {-pright, -pleft} ]
+    MixingPartners[-2 ppart] = {-pright, -pleft};
+    AddCompatibles[fi, -right, -part];
+    AddCompatibles[fi, -left, -2 part] ]
 ]
 
-Unionize[ n_, arg_, new_ ] := n[arg] = Union[Flatten[{n[arg], new}]]
+
+AddCompatibles[ fi__, new_ ] :=
+  Compatibles[fi] = Union[Flatten[{Compatibles[fi], new}]]
 
 
 (* form linear combinations of couplings *)
@@ -901,7 +906,7 @@ AddHC[ h_, weight_:(1&) ] :=
   weight[j, i] Conjugate[h]/2
 
 
-KinematicIndices[ VS ] := KinematicIndices[SV]
+KinematicIndices[ Rev[fi__] ] := KinematicIndices[Mix[fi]]
 
 _KinematicIndices = {}
 
@@ -968,17 +973,19 @@ IndexMass[ s_, {j___} ] := s[j]
 
 TheLabel::undef = "No label defined for `1`."
 
-TheLabel[ SV, ___ ] = {"S", "V"}
-
-TheLabel[ VS, ___ ] = {"V", "S"}
-
 TheLabel[ i_Integer, ___ ] = i
+
+TheLabel[ Mix[fi__], ___ ] := {fi}
+
+TheLabel[ Rev[fi__], ___ ] := Reverse[{fi}]
 
 TheLabel[ fi:P$Generic, ___ ] = fi
 
 TheLabel[ (2 | -2) fi_, t___ ] := Reverse[Flatten[{TheLabel[fi, t]}]]
 
 TheLabel[ -fi_, t___ ] := TheLabel[fi, t]
+
+TheLabel[ fi:_Mix[_] ] := TheLabel/@ MixingPartners[fi]
 
 TheLabel[ fi___ ] := DefaultLabel[fi]
 
@@ -1006,32 +1013,34 @@ IndexStyle[ other_ ] = other
 
 AntiParticle[ 0 ] = 0
 
-AntiParticle[ SV ] = VS
-
-AntiParticle[ VS ] = SV
-
-AntiParticle[ AntiParticle[fi_] ] = fi
-
-AntiParticle[ (s:2 | -2) part:(fi:P$Generic)[i_, ___] ] :=
-  s/2 If[SelfConjugate[fi[i]], part, -part] /.
-  mom_FourMomentum -> -mom
-
-AntiParticle[ s_. part:(fi:P$Generic)[i_, ___] ] :=
-  s Length[MixingPartners[fi[i]]] If[SelfConjugate[fi[i]], part, -part] /.
-  mom_FourMomentum -> -mom
-
 	(* there are no antiparticles at Generic level.
 	   It is important to have _Symbol here to prevent
 	   AntiParticle[Field[i]] from being evaluated. *)
 AntiParticle[ fi_Symbol ] = fi
 
+AntiParticle[ Mix[fi__] ] := Rev[fi]
 
-	(* VS is present only at generic level and is needed to
-	   distinguish which side of a mixing propagator has the S and
-	   which has the V coupling. Logically, VS should be represented
-	   by 2 SV, but there are no factors in front of fields at
-	   generic level. *)
-VS[ i__ ] := -SV[i]
+AntiParticle[ Rev[fi__] ] := Mix[fi]
+
+AntiParticle[ AntiParticle[fi_] ] = fi
+
+AntiParticle[ s_. part:(fi:P$Generic)[i_, ___] ] :=
+  If[SelfConjugate[fi[i]], 1, -Sign[s]] *
+  (Length[MixingPartners[fi[i]]] - Abs[s] + 1) part /.
+  mom_FourMomentum -> -mom
+
+
+	(* Rev is present only at generic level and is needed to
+	   distinguish which side of a mixing propagator is which.
+	   Rev[fi] should actually be represented by 2 Mix[fi] but
+	   there are no factors in front of fields at generic level.
+
+	   Take care: The reverse of Mix[a, b][i] is usually
+	   2 Mix[a, b][i].  In following definition is needed by
+	   CreateAmpGraph and SignedMixers to distinguish the
+	   direction of the inserted particle relative to the
+	   original one and hence the -1 instead of 2. *)
+Rev[fi__][ i___ ] := -Mix[fi][i]
 
 
 PropagatorType[ V ] = Sine
@@ -1040,15 +1049,17 @@ PropagatorType[ S ] = ScalarDash
 
 PropagatorType[ U ] = GhostDash
 
-PropagatorType[ SV ] = {ScalarDash, Sine}
-
-PropagatorType[ VS ] = {Sine, ScalarDash}
-
 PropagatorType[ (2 | -2) fi_ ] := Reverse[Flatten[{PropagatorType[fi]}]]
 
 PropagatorType[ -fi_ ] := PropagatorType[fi]
 
+PropagatorType[ Mix[fi__] ] := PropagatorType/@ {fi}
+
+PropagatorType[ Rev[fi__] ] := Reverse[PropagatorType/@ {fi}]
+
 PropagatorType[ fi_[i_, __] ] := PropagatorType[fi[i]]
+
+PropagatorType[ fi:_Mix[_] ] := PropagatorType/@ MixingPartners[fi]
 
 _PropagatorType = Straight
 
@@ -1060,10 +1071,20 @@ PropagatorArrow[ 2 fi_ ] := PropagatorArrow[fi]
 
 PropagatorArrow[ fi_[i_, __] ] := PropagatorArrow[fi[i]]
 
+	(* mixing fields with different arrow properties makes not
+	   much sense, so we just take left's one - override with
+	   an explicit PropagatorArrow for the mixing field *)
+PropagatorArrow[ fi:_Mix[_] ] := PropagatorArrow[ MixingPartners[fi][[1]] ]
+
 _PropagatorArrow = None
 
 
 GaugeXi[ _Integer fi_ ] := GaugeXi[fi]
+
+
+Attributes[ MixExtend ] = {Listable}
+
+MixExtend[ Mix[fi__] ] := Sequence[Mix[fi], Rev[fi]]
 
 
 (* RestrictCurrentModel accepts any number of ExcludeFieldPoints or
@@ -1161,6 +1182,10 @@ FieldMatchQ[ _. (fi:P$Generic)[i__], _. fi_[j_, {r__}] ] :=
   MatchQ[{i}, {j, {r, ___}}]
 
 FieldMatchQ[ _. fi:P$Generic, _. fi_ ] = True
+
+FieldMatchQ[ Rev[fi__], Mix[fi__] ] = True
+
+FieldMatchQ[ Mix[fi__], Rev[fi__] ] = True
 
 FieldMatchQ[ fi1_, fi2_ ] := MatchQ[fi1, fi2]
 

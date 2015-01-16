@@ -1,7 +1,7 @@
 (*
 	Setup.m
 		FeynArts startup file
-		last modified 17 Mar 08 th
+		last modified 13 May 13 th
 
 Here you can set up your own changes and enhancements to FeynArts,
 e.g. some particular options you always want set, or $SVMixing = True.
@@ -11,7 +11,7 @@ directly is inherently unportable.
 *)
 
 
-$Verbose = 2
+$FAVerbose = 2
 
 $ModelPath = { Directory[],
   ToFileName[{Directory[], "Models"}],

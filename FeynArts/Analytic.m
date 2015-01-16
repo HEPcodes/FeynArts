@@ -2,7 +2,7 @@
 	Analytic.m
 		Translation of InsertFields output into
 		analytic expressions
-		last modified 8 Oct 12 th
+		last modified 19 Jul 13 th
 *)
 
 Begin["`Analytic`"]
@@ -82,7 +82,7 @@ amps, head, topnr = 1, opt = ActualOptions[CreateFeynAmp, options]},
 
   amps = CreateAmpTop/@ ( amps //.
     (_ -> Insertions[_][]) :> Seq[] /.
-    (Field[i_] -> fi_?AtomQ) -> (Field[i] -> fi[Index[Generic, i]]) );
+    (Field[i_] -> fi:P$Generic) -> (Field[i] -> fi[Index[Generic, i]]) );
   FAPrint[1, "in total: ",
     Statistics[{Insertions[Generic]@@ amps}, alevel, " amplitude"]];
 

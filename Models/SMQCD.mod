@@ -3,7 +3,7 @@
 		Addendum classes model file for SM.mod
 		to include the strong interactions
 		by Christian Schappacher
-		last modified 15 Jun 12 by Thomas Hahn
+		last modified 12 Mar 14 by cs
 
 This file introduces the following symbols in addition to the ones in
 SM.mod:
@@ -38,6 +38,7 @@ M$ClassesDescription = Join[ M$ClassesDescription, {
 	SelfConjugate -> True,
 	Indices -> {Index[Gluon]},
 	Mass -> 0,
+	QuantumNumbers -> {Sqrt[3] ColorCharge},
 	PropagatorLabel -> "g",
 	PropagatorType -> Cycles,
 	PropagatorArrow -> None },
@@ -46,7 +47,7 @@ M$ClassesDescription = Join[ M$ClassesDescription, {
 	SelfConjugate -> False,
 	Indices -> {Index[Gluon]},
 	Mass -> 0,
-	QuantumNumbers -> GhostNumber,
+	QuantumNumbers -> {Sqrt[3] ColorCharge, GhostNumber},
 	PropagatorLabel -> ComposedChar["u", "g"],
 	PropagatorType -> GhostDash,
 	PropagatorArrow -> Forward }

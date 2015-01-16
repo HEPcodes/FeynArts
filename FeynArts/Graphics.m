@@ -1,7 +1,7 @@
 (*
 	Graphics.m
 		Graphics routines for FeynArts
-		last modified 2 Jun 12 th
+		last modified 11 Jul 14 th
 *)
 
 Begin["`Graphics`"]
@@ -190,7 +190,7 @@ Block[ {shapedata, gtop, vertexplot},
     shapedata[[3]] }];
   vertexplot = VGraphics/@ Vertices[top] /. shapedata[[1]];
   ++topnr;
-  FAPrint[2, "> Top. ", topnr, ": ", Pluralize[{Length[gr]}, " diagram"]];
+  FAPrint[2, "> Top. ", topnr, ": ", NumberOf[{Length[gr]}, " diagram"]];
   dhead[#]@@ Flatten[{
     PGraphics@@@ (gtop /. List@@ # /. Field[_] -> 0),
     vertexplot }]&/@ List@@ gr
@@ -514,7 +514,7 @@ Block[ {dir, ommc, cs, ctr, rad, mid, dphi, line, phi, damping, t, h, v},
   t = Flatten[{type}];
   h = Position[t, Straight | ScalarDash | GhostDash | Sine | Cycles, 1];
   dphi *= 2./Length[h];
-  line = scope[MapAt[HalfLine[#, phi += dphi, dphi]&, t, h]];
+  line = scope[MapAt[PropSegment[#, phi += dphi, dphi]&, t, h]];
 
   If[ arrow =!= 0,
     h = .5 arrow ArrowLength {Cos[dir], Sin[dir]};
@@ -569,7 +569,7 @@ Block[ {lab, h},
 ]
 
 
-HalfLine[ Sine, phi_, dphi_ ] :=
+PropSegment[ Sine, phi_, dphi_ ] :=
 Block[ {arc, w, n},
   arc = rad Abs[dphi];
   w = 2. NPi (.5 + Max[1, Round[NCrestsSine arc]]);
@@ -585,7 +585,7 @@ phadj = ArcCos[rshift/CyclesAmp]
 
 sphadj = Sin[phadj]
 
-HalfLine[ Cycles, phi_, dphi_ ] :=
+PropSegment[ Cycles, phi_, dphi_ ] :=
 Block[ {arc, w, n, phamp},
   arc = rad Abs[dphi];
   w = 2. (phadj + NPi Max[1, Round[NCrestsCycles arc]]);
@@ -598,17 +598,17 @@ Block[ {arc, w, n, phamp},
       {n, 0, 1, 1./Floor[2 NPoints arc]} ] ]
 ]
 
-HalfLine[ Straight, phi_, dphi_ ] :=
+PropSegment[ Straight, phi_, dphi_ ] :=
   If[ rad < 20000,
     Circle[ctr, rad, Sort[{phi - dphi, phi}]],
     Line[{ ctr + rad {Cos[phi - dphi], Sin[phi - dphi]},
            ctr + rad {Cos[phi], Sin[phi]} }] ]
 
-HalfLine[ ScalarDash, phi_, dphi_ ] :=
-  scope[ ScalarDashing, HalfLine[Straight, phi, dphi] ]
+PropSegment[ ScalarDash, phi_, dphi_ ] :=
+  scope[ ScalarDashing, PropSegment[Straight, phi, dphi] ]
 
-HalfLine[ GhostDash, phi_, dphi_ ] :=
-  scope[ GhostDashing, HalfLine[Straight, phi, dphi] ]
+PropSegment[ GhostDash, phi_, dphi_ ] :=
+  scope[ GhostDashing, PropSegment[Straight, phi, dphi] ]
 
 
 PropLabel[ label_, labelpos_, arrow_, type_ ] :=
@@ -675,28 +675,26 @@ Block[ {tex = t},
   tex
 ]
 
-If[ $Notebooks,
+If[ $VersionNumber >= 6 || $Notebooks,
 
-MmaRender[ LabelText[t_, r__] ] :=
-  NotebookChar[Flatten[{ToUnicode[t]}], r];
+MmaRender[ LabelText[t_, pos_, align_, size_, ___] ] := Text[
+  StyleForm[DisplayForm[MmaChar@@ Flatten[{ToUnicode[t]}]],
+    FontFamily -> LabelFont,
+    FontSize -> size fsize],
+  pos, align ];
 
-NotebookChar[ {t_, sub_:" ", super_:" ", over_:" "},
-  pos_, align_, size_, ___ ] :=
-Block[ {label = t},
-  If[ over =!= " ", label = OverscriptBox[label, over] ];
-  Which[
-    sub =!= " " && super =!= " ",
-      label = SubsuperscriptBox[label, sub, super],
-    sub =!= " ",
-      label = SubscriptBox[label, sub],
-    super =!= " ",
-      label = SuperscriptBox[label, super]
-  ];
-  Text[
-    StyleForm[DisplayForm[label], FontFamily -> LabelFont,
-      FontSize -> size fsize],
-    pos, align ]
-],
+MmaChar[t__, Null] := MmaChar[t];
+
+MmaChar[t_, sub_, super_, over_] :=
+  MmaChar[OverscriptBox[t, over], sub, super];
+
+MmaChar[t_, Null, super_] := SuperscriptBox[t, super];
+
+MmaChar[t_, sub_, super_] := SubsuperscriptBox[t, sub, super];
+
+MmaChar[t_, sub_] := SubscriptBox[t, sub];
+
+MmaChar[t_] := RowBox[{t}],
 
 (* else $Notebooks *)
 
@@ -1338,9 +1336,9 @@ ToUnicode[ "\\Leftarrow" ] = "\[DoubleLeftArrow]";
 ToUnicode[ "\\Rightarrow" ] = "\[DoubleRightArrow]";
 ToUnicode[ "\\Uparrow" ] = "\[DoubleUpArrow]";
 ToUnicode[ "\\Downarrow" ] = "\[DoubleDownArrow]";
-ToUnicode[ "\\bar" ] = "-";
+ToUnicode[ "\\bar" ] = "_";
 ToUnicode[ "\\hat" ] = "^";
-ToUnicode[ "\\tilde" ] = "\[Tilde]";
+ToUnicode[ "\\tilde" ] = "~";
 ToUnicode[ "\\dot" ] = "\[CenterDot]";
 ToUnicode[ "\\ddot" ] = "\[CenterDot]\[CenterDot]";
 ToUnicode[ "\\vec" ] = "\[RightVector]";
@@ -1350,7 +1348,7 @@ ToUnicode[ "\\&" ] = "&";
 ToUnicode[ "\\$" ] = "$";
 ToUnicode[ "\\%" ] = "%";
 ToUnicode[ "\\_" ] = "_";
-ToUnicode[ Null ] = " ";
+ToUnicode[ Null ] = Null;
 ToUnicode[ ComposedChar[t__] ] := ToUnicode/@ {t};
 ToUnicode[ c_ ] := ToString[c]
 

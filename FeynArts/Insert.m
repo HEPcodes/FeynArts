@@ -2,7 +2,7 @@
 	Insert.m
 		Insertion of fields into topologies created by 
 		CreateTopologies.
-		last modified 5 Jul 13 th
+		last modified 23 Oct 14 th
 
 The insertion is done in 3 levels: insertion of generic fields (Generic),
 of classes of a certain model (Classes) or of the members of the classes
@@ -10,8 +10,8 @@ of classes of a certain model (Classes) or of the members of the classes
 
 Models are described in model files which are supposed to exist somewhere
 on the $ModelPath.  At the beginning of an insertion InsertFields calls
-Initialize`InitializeModel that checks whether the model is initialized or
-not and performs the initialization if needed.
+InitializeModel that checks whether the model is initialized or not and
+performs the initialization if needed.
 
 *)
 
@@ -245,21 +245,27 @@ LeftPartner[ fi_ ] := MixingPartners[fi][[1]] /; FreeQ[fi, Field]
 RightPartner[ fi_ ] := MixingPartners[fi][[-1]] /; FreeQ[fi, Field]
 
 
-ParticleLookup[ fp_, Mix[l_, r_] ] := ParticleLookup[fp, Mix[l, r], r]
+ParticleLookup[ fp_, Mix[l_, r_] ] := PLookup[fp, Mix[l, r], l, r]
 
-ParticleLookup[ fp_, Rev[l_, r_] ] := ParticleLookup[fp, Mix[l, r], l]
+ParticleLookup[ fp_, Rev[l_, r_] ] := PLookup[fp, Mix[l, r], r, l]
 
-ParticleLookup[ fp_, p_ ] := ParticleLookup[fp, p, p]
+ParticleLookup[ {fp_, fp_}, p_ ] := lallowed = PLookup[fp, p, p]
 
-ParticleLookup[ fp_, mp_, p_ ] := Flatten[ Compatibles[mp, #]&/@
-  Lookup[ fp[[0, 1]] ][p, FieldPoint@@ (fp /. _Field -> p)] ]
+ParticleLookup[ fp_, p_ ] := PLookup[fp, p, AntiParticle[p], p]
+
+PLookup[ {fpl_, fpr_}, mp_, ap_, p_ ] := Intersection[
+  lallowed = AntiParticle/@ PLookup[fpl, mp, ap],
+  rallowed = PLookup[fpr, mp, p] ]
+
+PLookup[ fp_, mp_, p_ ] := Flatten[ Compatibles[mp, #]&/@
+  FieldLookup[ fp[[0, 1]] ][p, FieldPoint@@ (fp /. _Field -> p)] ]
 
 
-Lookup[ cto_?NonNegative ] = PossibleFields[cto]
+FieldLookup[ cto_?NonNegative ] = PossibleFields[cto]
 
-Lookup[ cto_ ][ 0, fp_ ] := PossibleFields[-cto][0, fp]
+FieldLookup[ cto_ ][ 0, fp_ ] := PossibleFields[-cto][0, fp]
 
-Lookup[ _ ][ p_, fp_ ] :=
+FieldLookup[ _ ][ p_, fp_ ] :=
 Block[ {n = Position[fp, p, {1}, 1]},
   Select[
     Select[F$Classes, !FreeQ[#, p]&],
@@ -285,42 +291,27 @@ VFAllowed[ fp_ ] :=
 (* Insert compatible particles in 1 propagator for 1 set of rules: *)
 
 Ins11[ vert12_, ru_, i_ ] := 
-Block[ {vx, p = ru[[i, 2]], leftallowed, rightallowed, allowed, ckfp, prop},
-
-  vx = Map[ RightPartner,
-    If[ SameQ@@ vert12,		(* tadpole *)
-      Take[vert12, 1],
-      vert12 ] /. Delete[List@@ ru, i],
-    {2} ];
-
-  leftallowed = ParticleLookup[vx[[1]], AntiParticle[p]];
-
-  ckfp[ n_, fi_ ] := CheckFP[ vx[[n]] /. Field[i] -> fi ];
-
-  allowed = If[ Length[vx] === 1,	(* tadpole *)
-    Select[ Intersection[leftallowed, F$AllowedFields], ckfp[1, #]& ],
-  (* else *)
-    leftallowed = AntiParticle/@ leftallowed;
-    rightallowed = ParticleLookup[vx[[2]], p];
-    Select[
-      Intersection[leftallowed, rightallowed, F$AllowedFields],
-      ckfp[1, #] && ckfp[2, #] & ]
-  ];
+Block[ {vx, p = ru[[i, 2]], lallowed, rallowed, allowed, prop},
+  vx = Map[RightPartner, List@@ vert12 /. Delete[List@@ ru, i], {2}];
+  allowed = Select[
+    Intersection[ParticleLookup[vx, p], F$AllowedFields],
+    VectorQ[vx /. Field[i] -> #, CheckFP]& ];
 
   prop = ResolveType[ vert12[[0, 1]] ];
 
   If[ TrueQ[$FADebug],
+    vx = vert12 /. List@@ ru;
     Print["Ins11: inserting field #", i, " (", p, ") on ", prop];
     Print["Ins11: fields     = ", List@@ ru];
-    Print["Ins11: L-vertex   = ", LeftPartner/@ (vert12[[1]] /. List@@ ru)];
-    Print["Ins11: R-vertex   = ", RightPartner/@ (vert12[[2]] /. List@@ ru)];
-    Print["Ins11: L-allowed  = ", leftallowed];
-    Print["Ins11: R-allowed  = ", rightallowed];
+    Print["Ins11: L-vertex   = ", LeftPartner/@ vx[[1]] ];
+    Print["Ins11: R-vertex   = ", RightPartner/@ vx[[2]] ];
+    Print["Ins11: L-allowed  = ", lallowed];
+    Print["Ins11: R-allowed  = ", rallowed];
     Print["Ins11: allowed    = ", allowed];
     Print[""];
   ];
 
-  (ru /. (Field[i] -> _) -> (Field[i] -> #))&/@
+  ReplacePart[ru, #, {i, 2}]&/@
     Select[allowed, !FreeQ[InsertOnly[#], prop]&]
 ]
 

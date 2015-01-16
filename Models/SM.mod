@@ -2,7 +2,8 @@
 	SM.mod
 		Classes model file for the Standard Model
 		by Hagen Eck and Sepp Kueblbeck 1995
-		last modified 4 May 10 by Thomas Hahn
+		last modified 8 May 14 by Thomas Hahn
+
 
 This file contains the definition of a Classes model for FeynArts.
 It needs the Generic model file Lorentz.gen.
@@ -21,7 +22,7 @@ When you change things, remember:
 Reference:
 	Ansgar Denner, "Techniques for the calculation of electroweak
 	radiative corrections at one-loop level and results for
-	W-physics at LEP200", Fortschr. d. Physik, 41 (1993) 4
+	W-physics at LEP200", Fortschr. d. Physik, 41 (1993) 4.
 
 Oct 95: one-loop counter terms added by Stefan Bauberger:
 	Some corrections and addition of all one-loop counter terms
@@ -31,7 +32,7 @@ Oct 95: one-loop counter terms added by Stefan Bauberger:
 	The counter terms associated with quark mixing are not well
 	tested yet.
 
-Apr 99: Christian Schappacher added colour indices for the quarks
+Apr 99: Christian Schappacher added colour indices for the quarks.
 
 Apr 99:	Terms for ghost sector updated by Ayres Freitas.
 	The gauge-fixing terms are still assumed not to be renormalized
@@ -43,6 +44,11 @@ Apr 99:	Terms for ghost sector updated by Ayres Freitas.
 
 Apr 01:	Thomas Hahn added the definitions of the renormalization
 	constants a la A. Denner.
+
+May 13: Christian Schappacher added ColorCharge.
+
+Mar 14: Cyril Pietsch corrected some ghost couplings and RCs.
+
 
 This file introduces the following symbols:
 
@@ -102,6 +108,13 @@ This file introduces the following symbols:
 	dZfL2:		fermion field RCs
 *)
 
+$CKM = $CKM === True;
+
+FAPrint[1, ""];
+FAPrint[1, Definition[$CKM]];
+FAPrint[1, ""];
+
+If[ !$CKM, CKM = IndexDelta; _dCKM1 = 0 ]
 
 IndexRange[ Index[Generation] ] = Range[3]
 
@@ -158,7 +171,7 @@ M$ClassesDescription = {
 	SelfConjugate -> False,
 	Indices -> {Index[Generation]},
 	Mass -> 0,
-	QuantumNumbers -> LeptonNumber,
+	QuantumNumbers -> {0 Charge, LeptonNumber},
 	PropagatorLabel -> ComposedChar["\\nu", Index[Generation]],
 	PropagatorType -> Straight,
 	PropagatorArrow -> Forward },
@@ -168,7 +181,7 @@ M$ClassesDescription = {
 	SelfConjugate -> False,
 	Indices -> {Index[Generation]},
 	Mass -> MLE,
-	QuantumNumbers -> {-Charge, LeptonNumber},
+	QuantumNumbers -> {-1 Charge, LeptonNumber},
 	PropagatorLabel -> ComposedChar["e", Index[Generation]],
 	PropagatorType -> Straight,
 	PropagatorArrow -> Forward },
@@ -178,7 +191,7 @@ M$ClassesDescription = {
 	SelfConjugate -> False,
 	Indices -> {Index[Generation], Index[Colour]},
 	Mass -> MQU,
-	QuantumNumbers -> 2/3 Charge,
+	QuantumNumbers -> {2/3 Charge, Sqrt[4/3] ColorCharge},
 	PropagatorLabel -> ComposedChar["u", Index[Generation]],
 	PropagatorType -> Straight,
 	PropagatorArrow -> Forward },
@@ -188,7 +201,7 @@ M$ClassesDescription = {
 	SelfConjugate -> False,
 	Indices -> {Index[Generation], Index[Colour]},
 	Mass -> MQD,
-	QuantumNumbers -> -1/3 Charge,
+	QuantumNumbers -> {-1/3 Charge, Sqrt[4/3] ColorCharge},
 	PropagatorLabel -> ComposedChar["d", Index[Generation]],
 	PropagatorType -> Straight, 
 	PropagatorArrow -> Forward },
@@ -304,7 +317,7 @@ M$ClassesDescription = {
 	SelfConjugate -> False,
 	Indices -> {},
 	Mass -> MW,
-	QuantumNumbers -> {-Charge, GhostNumber},
+	QuantumNumbers -> {-1 Charge, GhostNumber},
 	PropagatorLabel -> ComposedChar["u", "-"],
 	PropagatorType -> GhostDash,
 	PropagatorArrow -> Forward },
@@ -313,7 +326,7 @@ M$ClassesDescription = {
 	SelfConjugate -> False,
 	Indices -> {},
 	Mass -> MW,
-	QuantumNumbers -> {Charge, GhostNumber},
+	QuantumNumbers -> {1 Charge, GhostNumber},
 	PropagatorLabel -> ComposedChar["u", "+"],
 	PropagatorType -> GhostDash,
 	PropagatorArrow -> Forward }
@@ -968,6 +981,9 @@ M$CouplingMatrices = {
 
 	(* S-U-U:  G(+) . 1 *)
 
+  C[ S[1], -U[2], U[1] ] == -I EL MZ GaugeXi[Z]/(2 SW CW) *
+    { {0, dUZA1} },
+
   C[ S[1], -U[2], U[2] ] == -I EL MZ GaugeXi[Z]/(2 SW CW) *
     { {1, dZe1 + (SW^2 - CW^2)/(CW^2 SW) dSW1 + dZH1/2 - dZG01/2 + dUZZ1} },
 
@@ -987,7 +1003,7 @@ M$CouplingMatrices = {
     { {1, dZe1 - dSW1/SW + dZGp1/2 - dZG01/2 + dUW1} },
 
   C[ S[3], -U[2], U[4] ] == I EL MZ GaugeXi[Z]/(2 SW) *
-    { {1, dZe1 + dSW1/SW + dZGp1/2 - dZG01/2 + dUW1} },
+    { {1, dZe1 - dSW1/SW + dZGp1/2 - dZG01/2 + dUW1} },
 
   C[ -S[3], -U[4], U[2] ] == I EL (SW^2 - CW^2) MW GaugeXi[W]/(2 CW SW) *
     { {1, dZe1 + dSW1/((SW^2 - CW^2) CW^2 SW) + dUZZ1 +
@@ -1067,10 +1083,11 @@ RenConst[ dZfL1[type_, j1_, j2_] ] :=
 RenConst[ dZfR1[type_, j1_, j2_] ] :=
   FieldRC[F[type, {j1}], F[type, {j2}]][[2]]
 
-RenConst[ dCKM1[j1_, j2_] ] := 1/4 IndexSum[
+If[ dCKM1[] =!= 0,
+RenConst[dCKM1[j1_, j2_]] := 1/4 Sum[
   (dZfL1[3, j1, gn] - Conjugate[dZfL1[3, gn, j1]]) CKM[gn, j2] -
-  CKM[j1, gn] (dZfL1[4, gn, j2] - Conjugate[dZfL1[4, j2, gn]]),
-  {gn, MaxGenerationIndex} ]
+  CKM[j1, gn] (dZfL1[4, gn, j2] - Conjugate[dZfL1[4, j2, gn]]), {gn, 3} ]
+]
 
 RenConst[ dMZsq1 ] := MassRC[V[2]]
 
@@ -1100,3 +1117,12 @@ RenConst[ dSW1 ] := CW^2/SW/2 (dMZsq1/MZ^2 - dMWsq1/MW^2)
 
 RenConst[ dZe1 ] := -1/2 (dZAA1 + SW/CW dZZA1)
 
+RenConst[ dUW1 ] := FieldRC[U[3]] + dZW1/2
+
+RenConst[ dUAA1 ] := FieldRC[U[1]] + dZAA1/2
+
+RenConst[ dUAZ1 ] := FieldRC[U[1], U[2]]/2 + dZAZ1/2
+
+RenConst[ dUZA1 ] := FieldRC[U[2], U[1]]/2
+
+RenConst[ dUZZ1 ] := FieldRC[U[2]] + dZZZ1/2

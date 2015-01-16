@@ -1,7 +1,7 @@
 (*
 	Utilities.m
 		diverse utility functions for other parts of FA
-		last modified 13 May 13 th
+		last modified 11 Jul 14 th
 *)
 
 Begin["`Utilities`"]
@@ -193,11 +193,11 @@ ProcessName[ proc_ ] := StringJoin[ToString/@ (
     s_Symbol /; Context[s] === "System`" ] /. -1 -> "-" )]
 
 
-Pluralize[ n_, what_ ] :=
+NumberOf[ n_, what_ ] :=
   ToString/@ n <> what <> If[Plus@@ Cases[n, _Integer] === 1, "", "s"]
 
 Statistics[ expr_, levels_, what_ ] :=
-  Pluralize[
+  NumberOf[
     Rest[Flatten[ {
       ", ",
       Plus@@

@@ -3,7 +3,7 @@
 		Addendum classes model file for MSSM.mod
 		to include the strong interactions
 		by Christian Schappacher
-		last modified 13 Aug 09 by Thomas Hahn
+		last modified 12 Mar 14 by cs
 
 Note: The four-squark couplings are part of MSSM.mod even though
 a part of their coupling is proportional to Alfas.
@@ -45,6 +45,7 @@ M$ClassesDescription = Join[ M$ClassesDescription, {
 	SelfConjugate -> True,
 	Indices -> {Index[Gluon]},
 	Mass -> 0,
+	QuantumNumbers -> {Sqrt[3] ColorCharge},
 	PropagatorLabel -> "g",
 	PropagatorType -> Cycles,
 	PropagatorArrow -> None },
@@ -56,7 +57,7 @@ M$ClassesDescription = Join[ M$ClassesDescription, {
 	SelfConjugate -> False,
 	Indices -> {Index[Gluon]},
 	Mass -> 0,
-	QuantumNumbers -> GhostNumber,
+	QuantumNumbers -> {Sqrt[3] ColorCharge, GhostNumber},
 	PropagatorLabel -> ComposedChar["u", "g"],
 	PropagatorType -> GhostDash,
 	PropagatorArrow -> Forward },
@@ -68,6 +69,7 @@ M$ClassesDescription = Join[ M$ClassesDescription, {
 	SelfConjugate -> True,
 	Indices -> {Index[Gluon]},
 	Mass -> MGl,
+	QuantumNumbers -> {Sqrt[3] ColorCharge},
 	PropagatorLabel -> ComposedChar["g", Null, Null, "\\tilde"],
 	PropagatorType -> Straight, 
 	PropagatorArrow -> None }

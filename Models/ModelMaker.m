@@ -2,7 +2,7 @@
 	ModelMaker.m
 		derives the Feynman rules from the Lagrangian
 		and splices them into a template model file
-		last modified 28 Sep 07 th
+		last modified 2 Dec 14 th
 *)
 
 
@@ -87,7 +87,7 @@ FuncD[expr_, f_List] := 0 /; Count[expr, _Field, Infinity] =!= Length[f]
 FuncD[expr_, f_List] := ReduceDeltas[Fold[FuncD, expr, f]]
 
 FuncD[expr_, f_Field] :=
-Block[ {NCSign, s, times, texpr},
+Block[ {NCSign, s, times, texpr},
   If[ !FreeQ[f, P$NonCommuting],
     s = -1;
     NCSign[P$NonCommuting] := s = -s ];

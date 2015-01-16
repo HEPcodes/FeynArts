@@ -3,7 +3,7 @@
 		Classes model file for the MSSM
 		by Thomas Hahn
 		based on the Feynman rules of the MSSM by Arnd Kraft
-		last modified 13 Aug 09 by Thomas Hahn
+		last modified 12 Mar 14 by Christian Schappacher
 
 This file contains the definition of the minimal supersymmetric standard
 model for FeynArts.  It needs the Generic model file Lorentz.gen.
@@ -85,6 +85,7 @@ M$ClassesDescription = {
 	SelfConjugate -> False,
 	Indices -> {Index[Generation]},
 	Mass -> 0,
+	QuantumNumbers -> {0 Charge, LeptonNumber},
 	PropagatorLabel -> ComposedChar["\\nu", Index[Generation]],
 	PropagatorType -> Straight,
 	PropagatorArrow -> Forward },
@@ -94,6 +95,7 @@ M$ClassesDescription = {
 	SelfConjugate -> False,
 	Indices -> {Index[Generation]},
 	Mass -> MLE,
+	QuantumNumbers -> {-1 Charge, LeptonNumber},
 	PropagatorLabel -> ComposedChar["e", Index[Generation]],
 	PropagatorType -> Straight,
 	PropagatorArrow -> Forward },
@@ -103,6 +105,7 @@ M$ClassesDescription = {
 	SelfConjugate -> False,
 	Indices -> {Index[Generation], Index[Colour]},
 	Mass -> MQU,
+	QuantumNumbers -> {2/3 Charge, Sqrt[4/3] ColorCharge},
 	PropagatorLabel -> ComposedChar["u", Index[Generation]],
 	PropagatorType -> Straight,
 	PropagatorArrow -> Forward },
@@ -112,6 +115,7 @@ M$ClassesDescription = {
 	SelfConjugate -> False,
 	Indices -> {Index[Generation], Index[Colour]},
 	Mass -> MQD,
+	QuantumNumbers -> {-1/3 Charge, Sqrt[4/3] ColorCharge},
 	PropagatorLabel -> ComposedChar["d", Index[Generation]],
 	PropagatorType -> Straight, 
 	PropagatorArrow -> Forward },
@@ -131,6 +135,7 @@ M$ClassesDescription = {
 	SelfConjugate -> False,
 	Indices -> {Index[Chargino]},
 	Mass -> MCha,
+	QuantumNumbers -> {-1 Charge},
 	PropagatorLabel ->
 	  ComposedChar["\\chi", Index[Chargino], Null, "\\tilde"],
 	PropagatorType -> Straight,
@@ -158,6 +163,7 @@ M$ClassesDescription = {
 	SelfConjugate -> False,
 	Indices -> {},
 	Mass -> MW,
+	QuantumNumbers -> {-1 Charge},
 	PropagatorLabel -> "W",
 	PropagatorType -> Sine,
 	PropagatorArrow -> Forward },
@@ -209,6 +215,7 @@ M$ClassesDescription = {
 	SelfConjugate -> False,
 	Indices -> {},
 	Mass -> MW,
+	QuantumNumbers -> {-1 Charge},
 	PropagatorLabel -> "G",
 	PropagatorType -> ScalarDash,
 	PropagatorArrow -> Forward },
@@ -217,6 +224,7 @@ M$ClassesDescription = {
   S[11] == {
 	SelfConjugate -> False,
 	Indices -> {Index[Generation]},
+	QuantumNumbers -> {0 Charge, LeptonNumber},
 	PropagatorLabel ->
 	  ComposedChar["\\nu", Index[Generation], Null, "\\tilde"],
 	PropagatorType -> ScalarDash,
@@ -226,6 +234,7 @@ M$ClassesDescription = {
   S[12] == {
 	SelfConjugate -> False,
 	Indices -> {Index[Sfermion], Index[Generation]},
+	QuantumNumbers -> {-1 Charge, LeptonNumber},
 	PropagatorLabel ->
 	  ComposedChar["e", Index[Generation], Index[Sfermion], "\\tilde"],
 	PropagatorType -> ScalarDash,
@@ -235,6 +244,7 @@ M$ClassesDescription = {
   S[13] == {
 	SelfConjugate -> False,
 	Indices -> {Index[Sfermion], Index[Generation], Index[Colour]},
+	QuantumNumbers -> {2/3 Charge, Sqrt[4/3] ColorCharge},
 	PropagatorLabel ->
 	  ComposedChar["u", Index[Generation], Index[Sfermion], "\\tilde"],
 	PropagatorType -> ScalarDash,
@@ -244,6 +254,7 @@ M$ClassesDescription = {
   S[14] == {
 	SelfConjugate -> False,
 	Indices -> {Index[Sfermion], Index[Generation], Index[Colour]},
+	QuantumNumbers -> {-1/3 Charge, Sqrt[4/3] ColorCharge},
 	PropagatorLabel ->
 	  ComposedChar["d", Index[Generation], Index[Sfermion], "\\tilde"],
 	PropagatorType -> ScalarDash,
@@ -254,6 +265,7 @@ M$ClassesDescription = {
 	SelfConjugate -> False,
 	Indices -> {},
 	Mass -> 0,
+	QuantumNumbers -> GhostNumber,
 	PropagatorLabel -> ComposedChar["u", "\\gamma"],
 	PropagatorType -> GhostDash,
 	PropagatorArrow -> Forward },
@@ -262,6 +274,7 @@ M$ClassesDescription = {
 	SelfConjugate -> False,
 	Indices -> {},
 	Mass -> MZ,
+	QuantumNumbers -> GhostNumber,
 	PropagatorLabel -> ComposedChar["u", "Z"],
 	PropagatorType -> GhostDash,
 	PropagatorArrow -> Forward },
@@ -271,6 +284,7 @@ M$ClassesDescription = {
 	SelfConjugate -> False,
 	Indices -> {},
 	Mass -> MW,
+	QuantumNumbers -> {-1 Charge, GhostNumber},
 	PropagatorLabel -> ComposedChar["u", "-"],
 	PropagatorType -> GhostDash,
 	PropagatorArrow -> Forward },
@@ -279,6 +293,7 @@ M$ClassesDescription = {
 	SelfConjugate -> False,
 	Indices -> {},
 	Mass -> MW,
+	QuantumNumbers -> {1 Charge, GhostNumber},
 	PropagatorLabel -> ComposedChar["u", "+"],
 	PropagatorType -> GhostDash,
 	PropagatorArrow -> Forward }

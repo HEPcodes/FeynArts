@@ -2,7 +2,7 @@
 	Analytic.m
 		Translation of InsertFields output into
 		analytic expressions
-		last modified 28 Mar 11 th
+		last modified 21 Dec 10 th
 *)
 
 Begin["`Analytic`"]
@@ -708,42 +708,24 @@ Block[ {partru},
 ]
 
 
-ExpandRanges[n__] := List/@ Union[Flatten[ {n} /.
-  a_Integer (Repeated | RepeatedNull)[b_] :>
-    Range@@ Sort[Floor[{b, a}]] ]]
-
-
-AndLower[this:{r__, _, _}, o___] := AndLower[{r, 1}, this, o]
-
-DiagramExtract[ tops:TopologyList[info__][__], n__ ] :=
-Block[ {lev, p, Rule},
+Discard[ tops:TopologyList[info__][__], diags__ ] :=
+Block[ {p, lev, Rule},
   lev = Alternatives@@ ResolveLevel[InsertionLevel /. {info}];
   p = Position[tops, FeynmanGraph[_, lev == _][__]];
-  Check[ 
-    p = Complement[p,
-      Level[AndLower/@ Extract[p, ExpandRanges[n]], {2}]],
-    Return[$Failed] ];
+  p = p[[ Union[ Flatten[
+    {diags} /. a_Integer (Repeated | RepeatedNull)[b_] :>
+                 Range@@ Sort[Floor[{b, a}]] ] ] ]];
+  If[ Head[p] === Part, Return[$Failed] ];
   Rule[_] := Sequence[];
   Delete[tops, p] /.
     (FeynmanGraph[__][__] -> _[]) :> Seq[] /.
     (Topology[__][__] -> _[]) :> Seq[]
 ]
 
-DiagramExtract[ other_, n__ ] := Extract[other, ExpandRanges[n]]
-
-
-DiagramDelete[ tops:TopologyList[info__][__], n__ ] :=
-Block[ {lev, p, Rule},
-  lev = Alternatives@@ ResolveLevel[InsertionLevel /. {info}];
-  p = Position[tops, FeynmanGraph[_, lev == _][__]];
-  Check[ p = Extract[p, ExpandRanges[n]], Return[$Failed] ];
-  Rule[_] := Sequence[];
-  Delete[tops, p] /.
-    (FeynmanGraph[__][__] -> _[]) :> Seq[] /.
-    (Topology[__][__] -> _[]) :> Seq[]
-]
-
-DiagramDelete[ other_, n__ ] := Delete[other, ExpandRanges[n]]
+Discard[ amp_, diags__ ] :=
+  Delete[ amp, List/@ Union[Flatten[ {diags} /.
+    a_Integer (Repeated | RepeatedNull)[b_] :>
+      Range@@ Sort[Floor[{b, a}]] ]] ]
 
 
 DiagramMap[ foo_, tops:(h_TopologyList)[__] ] :=

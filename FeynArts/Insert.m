@@ -2,7 +2,7 @@
 	Insert.m
 		Insertion of fields into topologies created by 
 		CreateTopologies.
-		last modified 12 Aug 09 th
+		last modified 21 Dec 10 th
 
 The insertion is done in 3 levels: insertion of generic fields (Generic),
 of classes of a certain model (Classes) or of the members of the classes
@@ -145,13 +145,14 @@ FieldToString[ -fi_[n_, ___] ] := ToLowerCase[ToString[fi]] <> ToString[n]
 FieldToString[ _ ] = "_"
 
 
-(* add numbers to the Heads of each Graph, i.e.
-   Graph[sym] -> Graph[sym, lev == num] *)
+(* add numbers to the Heads of each FeynmanGraph, i.e.
+   FeynmanGraph[sym] -> FeynmanGraph[sym, lev == num] *)
 
-AddNumbering[ Graph[s_, ___][args__] -> ins_, n_ ] :=
-  Graph[s, n][args] -> ins
+AddNumbering[ FeynmanGraph[s_, ___][args__] -> ins_, n_ ] :=
+  FeynmanGraph[s, n][args] -> ins
 
-AddNumbering[ Graph[s_, ___][args__], n_ ] := Graph[s, n][args]
+AddNumbering[ FeynmanGraph[s_, ___][args__], n_ ] :=
+  FeynmanGraph[s, n][args]
 
 NumberInsertions[ lev_ ][ gr___ ] :=
   Insertions[lev]@@
@@ -183,7 +184,7 @@ ReplaceFieldNo[ p_[from_, to_, ___], {n_} ] := p[from, to, Field[n]]
 
 TopologyInsert[ top:Topology[_][__] ] :=
   TopologyInsert[ MapIndexed[ReplaceFieldNo, top] ->
-    { Graph@@ Join[fields,
+    { FeynmanGraph@@ Join[fields,
       Array[Field[#] -> 0 &, Length[top] - ninc, ninc + 1]] } ]
 
 TopologyInsert[ top:Topology[_][__] -> ins_ ] :=
@@ -387,7 +388,7 @@ Block[ {theins, rul, freesites, filter, pfilter},
   theins =
     (# -> Insertions[Classes]@@ InsertionsCompare[
             Topology[ #[[0, 1]] ]@@ topol,
-            filter[ Catch[Fold[Ins1, {Graph@@ #}, freesites]] ] ]
+            filter[ Catch[Fold[Ins1, {FeynmanGraph@@ #}, freesites]] ] ]
     )&/@ theins /.
 		(* restore unstripped rules *)
     Cases[ rul[[1]], ru:(fi_ -> _?(!AtomQ[#]&)) -> ((fi -> _) -> ru) ] /.
@@ -489,7 +490,7 @@ Block[ {theins, filter},
 ]
 
 
-IndexVariations[ gr:Graph[s_, ___][ru__] ] :=
+IndexVariations[ gr:FeynmanGraph[s_, ___][ru__] ] :=
 Block[ {ins, li, NoUnfold},
   NoUnfold[__] = {};
   ins = DeleteCases[
@@ -518,7 +519,7 @@ Block[ {intp, loo, all, disj, fno},
     Union[all];
   all = TopologyList@@ (Compare[TopologyList@@ (top /. #)]&)/@ disj;
   fno = List@@ Last/@ top;
-  (Graph[ #[[0, 1]] ]@@ Thread[fno -> Last/@ List@@ #]&)/@ all
+  (FeynmanGraph[ #[[0, 1]] ]@@ Thread[fno -> Last/@ List@@ #]&)/@ all
 ]
 
 End[]

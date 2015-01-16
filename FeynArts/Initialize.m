@@ -1,7 +1,7 @@
 (*
 	Initialize.m
 		Functions for the initialization of models
-		last modified 14 Apr 10 th
+		last modified 22 Nov 10 th
 *)
 
 Begin["`Initialize`"]
@@ -286,7 +286,7 @@ Block[ {savecp = $ContextPath},
 
   Clear[AnalyticalPropagator, AnalyticalCoupling, KinematicVector,
     PermutationSymmetry, PossibleFields, CheckFieldPoint, Combinations,
-    Compatibles, MixingPartners];
+    Compatibles, MixingPartners, $FermionLines];
   $ExcludedFPs = $ExcludedParticleFPs = {};
 
   FAPrint[2, ""];

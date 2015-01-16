@@ -1,7 +1,7 @@
 (*
 	Graphics.m
 		Graphics routines for FeynArts
-		last modified 14 Apr 10 th
+		last modified 21 Dec 10 th
 *)
 
 Begin["`Graphics`"]
@@ -140,8 +140,8 @@ fnum = False, opt = ActualOptions[Paint, options]},
       FeynArtsGraphics[ghead]
   ];
 
-  PaintSheet[
-    ins //. (x:Graph[___][__] -> Insertions[_][gr___]) :> Seq[x, gr] ]
+  PaintSheet[ ins //.
+    (x:FeynmanGraph[___][__] -> Insertions[_][gr___]) :> Seq[x, gr] ]
 ]
 
 

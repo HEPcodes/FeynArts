@@ -1,8 +1,8 @@
 (*
 
-This is FeynArts, Version 3.5
-Copyright by Sepp Kueblbeck, Hagen Eck, and Thomas Hahn 1991-2010
-last modified 16 Apr 10 by Thomas Hahn
+This is FeynArts, Version 3.6
+Copyright by Sepp Kueblbeck, Hagen Eck, and Thomas Hahn 1991-2011
+last modified 28 Mar 11 by Thomas Hahn
 
 Release notes:
 
@@ -44,9 +44,9 @@ Have fun!
 
 
 Print[""];
-Print["FeynArts 3.5"];
+Print["FeynArts 3.6"];
 Print["by Hagen Eck, Sepp Kueblbeck, and Thomas Hahn"];
-Print["last revised 16 Apr 10"]
+Print["last revised 28 Mar 11"]
 
 
 BeginPackage["FeynArts`"]
@@ -440,9 +440,9 @@ Insertions::usage =
 insertions at level lev.  Insertion lists are returned by InsertFields
 as a rule of the form \"topology -> insertionlist\"."
 
-Graph::usage =
-"Graph is the head of a list of field replacement rules.  The elements
-of an insertion list are Graphs."
+FeynmanGraph::usage =
+"FeynmanGraph is the head of a list of field replacement rules.  The
+elements of an insertion list are FeynmanGraphs."
 
 Field::usage =
 "Field[n] denotes the nth field in a topology."
@@ -1027,6 +1027,10 @@ MomentumConservation::usage =
 whether momentum conservation at each vertex is enforced.  If set to
 False, every propagator will carry its own momentum."
 
+VertexDebug::usage =
+"VertexDebug[debuginfo] is a function invoked whenever a vertex cannot
+be resolved.  It is used for debugging FeynArts."
+
 VertexFunction::usage =
 "VertexFunction[o][f1, f2, ...] represents the 1PI vertex function of
 loop-order o with external fields f1, f2, ..."
@@ -1043,10 +1047,19 @@ from the CreateFeynAmp result amp.  PickLevel[lev][tops] picks out the
 diagrams at level lev from TopologyList tops.  Note that in topology
 lists you can never delete the Generic level."
 
-Discard::usage =
-"Discard[expr, d] discards the diagrams d from the topology or amplitude
-list expr.  d may be of the form {3, 42, 17...28} which selects diagrams
-3, 42, and 17 through 28."
+DiagramExtract::usage =
+"DiagramExtract[expr, n] extracts diagrams by number from the topology
+or amplitude list expr.  n may be of the form 3, 42, 17...28 which
+selects diagrams 3, 42, and 17 through 28."
+
+DiagramDelete::usage =
+"DiagramDelete[expr, n] discards diagrams by number from the topology
+or amplitude list expr.  n may be of the form 3, 42, 17...28 which
+selects diagrams 3, 42, and 17 through 28."
+
+Discard[args__] := (
+  Message[Discard::obsalt, Discard, DiagramDelete];
+  DiagramDelete[args] )
 
 DiagramMap::usage =
 "DiagramMap[foo, diags] maps foo over all Feynman diagrams in diags."
@@ -1313,7 +1326,7 @@ P$InsertionObjects = G[_][_][__][__] | _Mass | _GaugeXi |
 P$Options = (_Rule | _RuleDelayed)...
 
 
-$FeynArts = 3.5
+$FeynArts = 3.6
 
 $FeynArtsDir = DirectoryName[ File /.
   FileInformation[System`Private`FindFile[$Input]] ]

@@ -1,0 +1,29 @@
+#!/bin/sh
+
+MCC=`which mcc22`
+#	2.2 version is preferred if installed
+#	(compatible to 3.0, makes MUCH smaller binary)
+if [ ! -x "$MCC" ]
+then
+  MCC=`which mcc`
+  if [ ! -x "$MCC" ]
+  then
+    echo "You need mcc (the MathLink C compiler) to compile TopEdit"
+    exit
+  fi
+fi
+
+cat << _Imakefile > Imakefile
+.SUFFIXES:
+.PHONY: TopEdit
+
+TopEdit: TopEdit.tm
+	CC=gcc ; export CC ; \
+	sed "s/ cc / gcc /g" $MCC | \
+	sh -s TopEdit.tm \$(TOP_INCLUDES) -O6 -o TopEdit -L\$(USRLIBDIR) \$(XLIB)
+_Imakefile
+
+xmkmf
+make TopEdit
+rm -f Makefile Makefile.bak Imakefile
+

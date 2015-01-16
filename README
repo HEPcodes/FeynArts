@@ -1,0 +1,35 @@
+This release of FeynArts includes an X11 (`point-and-click')
+topology editor.
+
+The X11 interface is written in C (TopEdit.tm) and must be compiled 
+before using. To this end, you need mcc (the MathLink C compiler) 
+which should come with your Mathematica distribution.
+
+To compile the topology editor, change to the FeynArts directory and
+type
+	compile
+
+That's all. IF THIS DOESN'T WORK, PLEASE TELL ME!
+
+The editor is called internally by FeynEdit, so the syntax for editing 
+topologies stays the same.
+
+The editor itself is not properly documented yet but fairly easy to use: 
+- Click and drag a red square to displace a vertex.
+- Click and drag a blue square to move the center of the line 
+  (i.e. change its curvature).
+- Click on a blue square with the middle or right button to make the
+  line straight again.
+- Click `Finished' when finished.
+- Click `Abort' to exit and discard all changes.
+- Click `shift Up' and `shift Down' to shift the whole diagram 
+  vertically by +-1/2 a unit.
+- Click `Revert' to revert to the initial layout of the topology.
+- Click `(un)Snap grid' to switch between moving points freely and
+  moving them only to grid points.
+
+
+Enjoy!
+
+Thomas Hahn
+hahn@particle.physik.uni-karlsruhe.de

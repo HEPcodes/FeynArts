@@ -1,0 +1,21 @@
+Modifications and new features:
+
+Revision of 26 Nov 97:
+- Complete overhaul, corrected some minor errors, e.g. Conjugate for 
+  outgoing PolarizationVectors is now given correctly.
+
+Revision of 17 Nov 97:
+- Added X11 topology editor
+
+Revision of 24 Jul 97:
+- Support for the background field method with model file model.SMbgf.
+- New TeXLabels.m extension module. Load after FeynArts, i.e.
+	<< FeynArts.m
+	<< TeXLabels.m
+  Alters output routines so that they produce labels in TeX style for
+  use e.g. with mma2ltx.
+
+Revision of 23 Jun 97:
+- Adaptation for Mma 3.0 (required different GraphPoints handling)
+
+Please send bug reports etc. to hahn@particle.physik.uni-karlsruhe.de.

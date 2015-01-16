@@ -23,7 +23,7 @@ SM.mod:
 *)
 
 
-ReadModelFile[ StringReplace[$Input, "QCD" -> ""] ]
+LoadModel[ StringReplace[$Input, "QCD" -> ""], "" ]
 
 If[ $NoElectroweak === True, M$CouplingMatrices = {} ]
 

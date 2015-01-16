@@ -2,7 +2,7 @@
 	Analytic.m
 		Translation of InsertFields output into
 		analytic expressions
-		last modified 22 Mar 06 th
+		last modified 10 Jan 08 th
 *)
 
 Begin["`Analytic`"]
@@ -507,7 +507,7 @@ Block[ {ext, int, ins, deltas},
   ins = ReplacePart[gm, sgen/s, -1] /. {ru} /.
     anti -> AntiParticle /.
     app[ x_. (fi:P$Generic)[n__], k__ ] :> x fi[n, k];
-  deltas = DeleteCases[ Union@@ Diagonal/@
+  deltas = DeleteCases[ Union@@ CouplingDeltas/@
     Union[ Cases[ins, G[_][cto_][fi__][__] :> FieldPoint[cto][fi]] ],
     _Integer ];
   ins = ins /. G -> GtoC /. Mass -> TheMass /. gaugeru /.
@@ -708,6 +708,7 @@ Discard[ amp_, diags__ ] :=
       Range@@ Sort[Floor[{b, a}]] ]] ]
 
 
+(*
 DiagramSelect[ tops:TopologyList[info__][__], crit_ ] :=
 Block[ {lev, Rule},
   lev = ResolveLevel[InsertionLevel /. {info}][[-1]];
@@ -717,8 +718,31 @@ Block[ {lev, Rule},
     (Graph[__][__] -> _[]) :> Seq[] /.
     (Topology[__][__] -> _[]) :> Seq[]
 ]
+*)
+
+DiagramSelect[ tops:TopologyList[info__][__], crit_ ] :=
+Block[ {lev, Rule},
+  lev = ResolveLevel[InsertionLevel /. {info}][[-1]];
+  Rule[_] := Sequence[];
+  Apply[ #1 -> (#2 /. Graph[__, lev == _][fi__] :> Seq[] /;
+      crit[{fi}, #1] =!= True)&, tops, 1 ] /.
+    (Graph[__][__] -> _[]) :> Seq[] /.
+    (Topology[__][__] -> _[]) :> Seq[]
+]
 
 DiagramSelect[ amp_, crit_ ] := Select[amp, crit]
+
+
+Attributes[prop] = {Orderless}
+
+Attributes[merge] = {Flat, Orderless}
+
+merge[ prop[i_, j_], prop[j_, k_] ] := prop[i, k]
+
+FermionRouting[ fields_:{}, top:P$Topology ] := Level[
+  merge@@ Apply[ prop[ #1[[1]], #2[[1]] ]&,
+    Select[AddFieldNo[top] /. fields, !FreeQ[#, P$NonCommuting]&], 1 ],
+  {-1} ]
 
 
 DiagramComplement[ tops:TopologyList[info__][___],
@@ -769,7 +793,7 @@ NonCommutative = Dot, MatrixTrace = Global`DiracTrace},
   Global`PolarizationVector[ _, mom_, li_ ] =
     Global`PolarizationVector[mom, li];
 
-  Global`DiracSpinor[ mom_, mass_, ___ ] := FeynArts`Spinor[mom, mass];
+  (* Global`DiracSpinor[ mom_, mass_, ___ ] := FeynArts`Spinor[mom, mass]; *)
 
   Index[ Global`Lorentz, n_ ] := Index[Global`Lorentz, n] =
     ToExpression["li" <> ToString[n]];

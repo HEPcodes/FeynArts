@@ -3,7 +3,7 @@
 		Addendum classes model file for MSSM.mod
 		to include the strong interactions
 		by Christian Schappacher
-		last modified 17 Jan 07 by Thomas Hahn
+		last modified 7 Nov 07 by Thomas Hahn
 
 Note: The 4-squark-couplings are part of MSSM.mod.
 
@@ -24,7 +24,7 @@ MSSM.mod:
 *)
 
 
-ReadModelFile["MSSM.mod"]
+LoadModel["MSSM"]
 
 If[ $NoElectroweak === True, M$CouplingMatrices = {} ]
 
@@ -130,23 +130,23 @@ M$CouplingMatrices = Join[ M$CouplingMatrices, {
 
   C[ F[15, {g1}], -F[3, {j1, o1}], S[13, {s2, j2, o2}] ] == I GS *
     Sqrt[2] SUNT[g1, o1, o2] IndexDelta[j1, j2] *
-    { { Conjugate[USf[3, j1][s2, 2]]},
-      {-Conjugate[USf[3, j1][s2, 1]]} },
+    { { Conjugate[USf[3, j1][s2, 2]] Conjugate[SqrtEGl]},
+      {-Conjugate[USf[3, j1][s2, 1]] SqrtEGl} },
 
   C[ F[15, {g1}], -F[4, {j1, o1}], S[14, {s2, j2, o2}] ] == I GS *
     Sqrt[2] SUNT[g1, o1, o2] IndexDelta[j1, j2] *
-    { { Conjugate[USf[4, j1][s2, 2]]},
-      {-Conjugate[USf[4, j1][s2, 1]]} },
+    { { Conjugate[USf[4, j1][s2, 2]] Conjugate[SqrtEGl]},
+      {-Conjugate[USf[4, j1][s2, 1]] SqrtEGl} },
 
   C[ F[15, {g1}], F[3, {j1, o1}], -S[13, {s2, j2, o2}] ] == I GS *
     Sqrt[2] SUNT[g1, o2, o1] IndexDelta[j1, j2] *
-    { {-USf[3, j1][s2, 1]},
-      { USf[3, j1][s2, 2]} },
+    { {-USf[3, j1][s2, 1] Conjugate[SqrtEGl]},
+      { USf[3, j1][s2, 2] SqrtEGl} },
 
   C[ F[15, {g1}], F[4, {j1, o1}], -S[14, {s2, j2, o2}] ] == I GS *
     Sqrt[2] SUNT[g1, o2, o1] IndexDelta[j1, j2] *
-    { {-USf[4, j1][s2, 1]},
-      { USf[4, j1][s2, 2]} },
+    { {-USf[4, j1][s2, 1] Conjugate[SqrtEGl]},
+      { USf[4, j1][s2, 2] SqrtEGl} },
 
 
 (*--- squark-squark-gluon-gluon ----------------------------------------*)

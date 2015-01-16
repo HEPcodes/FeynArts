@@ -1,11 +1,11 @@
 (*
 	SMew.mod
 		The Standard Model without colour indices
-		last modified 15 Jan 07 by Thomas Hahn
+		last modified 3 Oct 07 th
 *)
 
 
-ReadModelFile["SM.mod"]
+LoadModel["SM"]
 
 M$ClassesDescription = M$ClassesDescription /.
   (Indices -> {g_, Index[Colour]}) ->

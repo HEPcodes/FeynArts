@@ -1,3 +1,11 @@
+(*
+	Toy.mod
+		a toy model with a fermion, a vector boson, and
+		a scalar, with fictitious f-f-v and f-f-s couplings
+		last modified 26 Oct 07 th
+*)
+
+
 M$ClassesDescription = {
   F[1] == {
 	SelfConjugate -> False,
@@ -25,3 +33,4 @@ M$CouplingMatrices = {
 }
 
 M$LastModelRules = {}
+

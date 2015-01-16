@@ -1,7 +1,7 @@
 (*
 	Initialize.m
 		Functions for the initialization of models
-		last modified 6 Mar 07 th
+		last modified 21 Jan 08 th
 *)
 
 Begin["`Initialize`"]
@@ -39,75 +39,163 @@ Begin["`Initialize`"]
 Attributes[ FieldPoint ] = {Orderless}
 
 
-ReadModelFile[ mod_, explain_:"including model file " ] :=
+ToModelName[mod_] := ToString/@ Flatten[{mod}]
+
+
+indent = ""
+
+ReadModelFile[ type_, ext_ ][ name_ ] :=
 Block[ {$Path = $ModelPath, file},
-  file = System`Private`FindFile[mod];
-  FAPrint[2, explain, file];
+  file = System`Private`FindFile[name <> ext];
+  FAPrint[2, indent, "loading ", type, " model file ", file];
+
   (*Off[Syntax::newl, Syntax::com];*)
-  Check[ Get[file], Abort[] ];
+  Check[ Block[{indent = indent <> "  "}, Get[file]], Abort[] ];
   (*On[Syntax::newl, Syntax::com];*)
+
+  name
 ]
+
+
+General::genmiss =
+"Definition missing in generic model file."
+
+LoadGenericModel[ genmod_, ext_String:".gen" ] := (
+  M$GenericPropagators := (
+    Message[M$GenericPropagators::genmiss];
+    Abort[]; );
+  M$GenericCouplings := (
+    Message[M$GenericCouplings::genmiss];
+    Abort[]; );
+  M$FlippingRules = M$TruncationRules = M$LastGenericRules = {};
+
+  ReadModelFile["generic", ext]/@ ToModelName[genmod]
+)
+
+
+General::modmiss =
+"Definition missing in classes model file."
+
+LoadModel[ mod_, ext_String:".mod" ] := (
+  M$ClassesDescription := (
+    Message[M$ClassesDescription::modmiss];
+    Abort[]; );
+  M$CouplingMatrices := (
+    Message[M$CouplingMatrices::modmiss];
+    Abort[]; );
+  M$LastModelRules = {};
+
+  ReadModelFile["classes", ext]/@ ToModelName[mod]
+)
+
+
+(* this is a workaround for a Mathematica bug in Put, known
+   to Wolfram Support since Version 4 but still not fixed *)
+
+Attributes[ WriteDef ] = {Listable, HoldRest}
+
+WriteDef[ hh_, sym_, foo_ ] :=
+Block[ {list = foo[sym], sym},
+  Scan[
+    ( foo[sym] = #;
+      Put[Definition[sym], hh];
+      WriteString[hh, "\n"] )&,
+    Partition[list, 16, 16, 1, {}] ]
+]
+
+Attributes[ WriteDefinitions ] = {HoldRest}
+
+WriteDefinitions[ file_, syms__ ] :=
+Block[ {hh},
+  hh = OpenWrite[file];
+  WriteDef[hh, {syms}, DownValues];
+  WriteDef[hh, {syms}, OwnValues];
+  Close[hh]
+]
+
+
+Attributes[ DumpGenericModel ] = {HoldRest}
+
+DumpGenericModel[ genfile_String, other___ ] :=
+  WriteDefinitions[ genfile,
+    M$GenericPropagators, M$GenericCouplings,
+    M$FlippingRules, M$TruncationRules, M$LastGenericRules,
+    KinematicIndices, other ]
+
+
+Attributes[ DumpModel ] = {HoldRest}
+
+DumpModel[ modfile_String, other___ ] :=
+  WriteDefinitions[ modfile,
+    M$ClassesDescription, M$CouplingMatrices, 
+    M$LastModelRules, IndexRange, ViolatesQ, RenConst, other ]
 
 
 Options[ InitializeModel ] = {
   GenericModel -> "Lorentz",
-  Reinitialize -> True
+  Reinitialize -> True,
+  GenericModelEdit :> Null,
+  ModelEdit :> Null
 }
 
-InsertFields::modspec =
-"Invalid model specification `1`."
-
 InitializeModel::norange =
-"Index `1` has no IndexRange specification."
+"Index `` has no IndexRange specification."
 
 InitializeModel::incomp1 =
-"Coupling definition in model file for `1` is incompatible to generic
-coupling structure.  Coupling is not a vector of length `2`."
+"Coupling definition in model file for `` is incompatible to generic
+coupling structure.  Coupling is not a vector of length ``."
 
 InitializeModel::incomp2 =
-"Incompatible index structure in classes coupling `1`.  Field `2`
-needs `3` indices, not `4`."
+"Incompatible index structure in classes coupling ``.  Field ``
+needs `` indices, not ``."
 
 InitializeModel::nogeneric =
-"Warning: Classes coupling `1` matches no generic coupling."
+"Warning: Classes coupling `` matches no generic coupling."
 
 InitializeModel::rhs1 =
-"R.h.s. of generic coupling `1` has G-expressions inside the
+"R.h.s. of generic coupling `` has G-expressions inside the
 kinematic vector."
 
 InitializeModel::rhs2 =
-"Generic coupling `1` is not of the form
+"Generic coupling `` is not of the form
 AnalyticalCoupling[__] == G[_][__] . {__}."
 
 InitializeModel::badrestr =
-"Warning: `1` is not a valid model restriction."
+"Warning: `` is not a valid model restriction."
 
 InitializeModel::nosymb =
-"Cannot properly analyze the field specification `1`.  Either the
+"Cannot properly analyze the field specification ``.  Either the
 overall format is wrong, or it contains symbols that were already
 assigned values somewhere in your model file (most often \"i\" or \"j\").
 Please check your generic model file and try again."
 
-InitializeModel[ options___Rule ] :=
-Block[ {reini, genmod, opt = ActualOptions[InitializeModel, options]},
-  reini = TrueQ[Reinitialize /. opt];
-  genmod = ToString[GenericModel /. opt];
-  If[ reini || genmod =!= $GenericModel, InitGenericModel[genmod] ];
-  True
-]
-
-InitializeModel[ model_?AtomQ, options___Rule ] :=
-Block[ {reini, genmod, mod = ToString[model],
+InitializeModel[ options___?OptionQ ] :=
+Block[ {reini, genmod,
 opt = ActualOptions[InitializeModel, options]},
   reini = TrueQ[Reinitialize /. opt];
-  genmod = ToString[GenericModel /. opt];
-  If[ reini || genmod =!= $GenericModel, InitGenericModel[genmod] ];
-  If[ reini || mod =!= $Model, InitClassesModel[mod] ];
+
+  genmod = ToModelName[GenericModel /. opt];
+  If[ reini || genmod =!= $GenericModel,
+    (InitGenericModel[GenericModelEdit] /. opt)[genmod] ];
+
   True
 ]
 
-InitializeModel[ mod_, ___Rule ] :=
-  (Message[InsertFields::modspec, mod]; Abort[])
+InitializeModel[ model_, options___?OptionQ ] :=
+Block[ {reini, genmod, mod,
+opt = ActualOptions[InitializeModel, options]},
+  reini = TrueQ[Reinitialize /. opt];
+
+  genmod = ToModelName[GenericModel /. opt];
+  If[ reini || genmod =!= $GenericModel,
+    (InitGenericModel[GenericModelEdit] /. opt)[genmod] ];
+
+  mod = ToModelName[model];
+  If[ reini || mod =!= $Model,
+    (InitModel[ModelEdit] /. opt)[mod] ];
+
+  True
+]
 
 
 $GenericModel = $Model = ""
@@ -115,7 +203,9 @@ $GenericModel = $Model = ""
 
 (* initializing a generic model: *)
 
-InitGenericModel[ genmod_ ] :=
+Attributes[ InitGenericModel ] = {HoldAll}
+
+InitGenericModel[ edit_ ][ genmod_ ] :=
 Block[ {savecp = $ContextPath},
 	(* no Global symbols allowed for these operations *)
   $ContextPath = DeleteCases[$ContextPath, "Global`"];
@@ -125,10 +215,10 @@ Block[ {savecp = $ContextPath},
     PossibleFields, CheckFieldPoint, Combinations,
     Compatibles, MixingPartners];
   $ExcludedFPs = $ExcludedParticleFPs = {};
-  M$FlippingRules = M$TruncationRules = M$LastGenericRules = {};
 
   FAPrint[2, ""];
-  ReadModelFile[genmod <> ".gen", "initializing generic model file "];
+  LoadGenericModel[genmod];
+  edit;
 
   ReferenceOrder[Generic] =
     Union[ ToGeneric[(List@@ #[[1]])&/@ M$GenericCouplings] ];
@@ -307,28 +397,31 @@ AllFields[ fi_ ] :=
     If[SelfConjugate[fi], fi, {fi, -fi}] ]
 
 
-Attributes[ClearClassesDefs] = {HoldAll}
+Attributes[ ClearDefs ] = {HoldAll}
 
-ClearClassesDefs[ defs_ ] :=
+ClearDefs[ defs_ ] :=
   defs = Select[defs, FreeQ[#, P$Generic[__]]&]
 
 
 (* Initialization of a classes model: *)
 
-InitClassesModel[ mod_ ] :=
+Attributes[ InitModel ] = {HoldAll}
+
+InitModel[ edit_ ][ mod_ ] :=
 Block[ {unsortedFP, unsortedCT, savecp = $ContextPath},
 	(* no Global symbols allowed for these operations *)
   $ContextPath = DeleteCases[$ContextPath, "Global`"];
   $Model = "";
 
-  Clear[SVCompatibles, InsertOnly, Diagonal, TheC, QuantumNumbers];
-  ClearClassesDefs[DownValues[CheckFieldPoint]];
-  ClearClassesDefs[DownValues[MixingPartners]];
-  ClearClassesDefs[SubValues[PossibleFields]];
-  M$LastModelRules = {};
+  Clear[SVCompatibles, InsertOnly, CouplingDeltas, TheC,
+    QuantumNumbers, RenConst];
+  ClearDefs[ DownValues[CheckFieldPoint] ];
+  ClearDefs[ DownValues[MixingPartners] ];
+  ClearDefs[ SubValues[PossibleFields] ];
 
   FAPrint[2, ""];
-  ReadModelFile[mod <> ".mod", "initializing classes model file "];
+  LoadModel[mod];
+  edit;
 
 	(* initialize particles:
 	   set properties of classes from their description list: *)
@@ -358,11 +451,11 @@ Block[ {unsortedFP, unsortedCT, savecp = $ContextPath},
   F$Classes = F$AllClasses = Flatten[AllFields/@ F$Classes];
   F$AllowedFields = Union[F$AllGeneric, F$AllClasses, F$AllParticles];
 
-  Diagonal[ _ ] = Sequence[];
+  _CouplingDeltas = Sequence[];
 
 	(* forming the explicit and half-generic vertex lists: *)
   Off[Rule::rhs];
-  unsortedFP = Flatten[InitClassesCoupling/@ M$CouplingMatrices, 1];
+  unsortedFP = Flatten[InitCoupling/@ M$CouplingMatrices, 1];
   On[Rule::rhs];
   ReferenceOrder[Classes] = Union[Apply[List, unsortedFP, 1]];
   FieldPoints[Classes] = Apply[FieldPoint, ReferenceOrder[Classes], 1];
@@ -430,17 +523,17 @@ Block[ {comp, i, ppart, pleft, pright},
 Unionize[ n_, arg_, new_ ] := n[arg] = Union[Flatten[{n[arg], new}]]
 
 
-(* InitClassesCoupling converts a single classes coupling definition
+(* InitCoupling converts a single classes coupling definition
    (Equal) to a function definition (SetDelayed).  It checks for
    compatibility of the generic and the classes coupling structure and
-   sets the Diagonal function for the field point.
+   sets the CouplingDeltas function for the field point.
    The structure of the classes coupling is
 	{ {a[0], a[1], ...}, {b[0], b[1], ...}, ... }
    where a, b, etc. refer to the kinematic vector G = {Ga, Gb, ..} and
    the inner lists stand for increasing order of the vertices.  For a
    one-dimensional generic coupling we need only {c[0], c[1], ...}. *)
 
-InitClassesCoupling[ vert_ == coup_ ] :=
+InitCoupling[ vert_ == coup_ ] :=
 Block[ {lhs, rhs, l, cv, x, res, genref = ToGeneric[List@@ vert]},
 
 	(* find corresponding generic coupling.
@@ -477,7 +570,7 @@ Block[ {lhs, rhs, l, cv, x, res, genref = ToGeneric[List@@ vert]},
     If[ !VectorQ[#1, # === 0 &],	(* complete ct order is zero *)
       res = {res, (l = FieldPoint[#2[[1]] - 1])@@ cv};
       If[ Length[x = DeltaSelect[#1]] =!= 0,
-        Diagonal[ Evaluate[l@@ lhs] ] := Evaluate[x] ] ]&,
+        CouplingDeltas[ Evaluate[l@@ lhs] ] := Evaluate[x] ] ]&,
     Transpose[rhs] ];
 	(* transposing rhs yields a list of coupling vectors for each ct 
 	   order: { {a[0], b[0], ...}, {a[1], b[1], ...}, ...} *)

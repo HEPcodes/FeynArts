@@ -3,8 +3,8 @@ FeynArts 3 README file
 FeynArts is a Mathematica package for the generation and
 visualization of Feynman diagrams and amplitudes.
 
-To install FeynArts, unpack the archive FeynArts3.tar.gz in a
-directory.  FeynArts requires Mathematica 3 or higher.
+To install FeynArts, unpack the archive FeynArts-3.3.tar.gz in
+a directory.  FeynArts requires Mathematica 3 or higher.
 
 For Mathematica versions less than 4.2, the J/Link package and
 a Java Runtime Environment need to be installed to be able to

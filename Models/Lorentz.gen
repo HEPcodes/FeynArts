@@ -2,7 +2,7 @@
 	Lorentz.gen
 		Generic model file for the Lorentz formalism
 		by A. Denner, H. Eck, O. Hahn, S. Kueblbeck 1995
-		last modified 4 Dec 02 by Thomas Hahn
+		last modified 19 Jun 07 by Thomas Hahn
 
 This file defines the generic analytical propagators and couplings.
 The model described herein is the standard generic model of renormalizable
@@ -146,7 +146,7 @@ M$GenericCouplings = {
 	(* U-U: *)
 
   AnalyticalCoupling[ s1 U[j1, mom1], s2 U[j2, mom2] ] ==
-    G[1][s1 U[j1], s2 U[j2]] .
+    G[-1][s1 U[j1], s2 U[j2]] .
       { ScalarProduct[mom1, mom2],
         1 },
 

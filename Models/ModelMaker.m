@@ -2,11 +2,19 @@
 	ModelMaker.m
 		derives the Feynman rules from the Lagrangian
 		and splices them into a template model file
-		last modified 22 Jan 04 th
+		last modified 28 Sep 07 th
 *)
 
 
-BeginPackage["ModelMaker`", "FeynArts`"]
+(* symbols from the model files live in Global` *)
+
+{ MetricTensor, FourVector, ScalarProduct,
+  ChiralityProjector, DiracMatrix, DiracSlash }
+
+Attributes[MetricTensor] = {Orderless}
+
+
+BeginPackage["ModelMaker`", {"FeynArts`", "Global`"}]
 
 FunctionalD::usage = "FunctionalD[expr, fields] takes the functional
 derivative of expr with respect to fields."
@@ -79,31 +87,35 @@ FuncD[expr_, f_List] := 0 /; Count[expr, _Field, Infinity] =!= Length[f]
 FuncD[expr_, f_List] := ReduceDeltas[Fold[FuncD, expr, f]]
 
 FuncD[expr_, f_Field] :=
-Block[ {NCSign, s},
+Block[ {NCSign, s, times, texpr},
   If[ !FreeQ[f, P$NonCommuting],
     s = -1;
     NCSign[P$NonCommuting] := s = -s ];
   _NCSign = 1;
-  Plus@@ (ReduceDeltas[IndexD[Extract[expr, #], f] Delete[expr, #]]&)/@
-    Position[expr, _Field]
+  texpr = times[expr];
+  Plus@@ (ReduceDeltas[IndexD[Extract[texpr, #], f] Delete[texpr, #]]&)/@
+    Position[texpr, _Field] /. times -> Times
 ]
+
 
 IndexD[ _[s_. (f:P$Generic)[t_, i1___], mom1___, ki1___List],
         _[s_. (f:P$Generic)[t_, i2___], mom2___, ki2___List] ] :=
-  NCSign[f] ClassDelta[i1][i2] KinRename[mom1, mom2] KinDelta[ki1][ki2]
+  NCSign[f] ClassDelta[i1][i2] MomRename[mom1, mom2] KinDelta[ki1][ki2]
 
 IndexD[__] = 0
+
 
 ClassDelta[][] = KinDelta[][] = 1
 
 ClassDelta[i1_][i2_] := Inner[ClassRename, i1, i2, Times] 
 
-KinDelta[ki1_][ki2_] := Inner[KinRename, ki1, ki2, Times]
+KinDelta[ki1_][ki2_] := Inner[MetricTensor, ki1, ki2, Times]
 
-KinRename[] = KinRename[_] = ClassRename[] = ClassRename[_] = 1
+MomRename[] = MomRename[_] =
+ClassRename[] = ClassRename[_] = 1
 
 
-ReduceDeltas[KinRename[i_, j_] r_.] :=
+ReduceDeltas[MomRename[i_, j_] r_.] :=
   ReduceDeltas[r /. i -> j]
 
 ReduceDeltas[ClassRename[i_, j_] IndexDelta[i_] r_.] :=
@@ -113,6 +125,13 @@ ReduceDeltas[ClassRename[i_, j_] r_.] :=
   IndexDelta[j] ReduceDeltas[r /. i -> j]
 
 ReduceDeltas[other_] = other
+
+
+MetricTensor/: MetricTensor[mu_, nu_] p_Plus :=
+  (MetricTensor[mu, nu] #)&/@ p /; !FreeQ[p, nu]
+
+MetricTensor/: MetricTensor[mu_, nu_] h_[a___, nu_, b___] :=
+  h[a, mu, b]
 
 
 NFields[p_Plus] := Block[{n = NFields/@ List@@ p}, n[[1]] /; SameQ@@ n]
@@ -152,23 +171,27 @@ Attributes[CouplingVector] = {Listable}
 CouplingVector[rul:_ == _List] = rul
 
 CouplingVector[fi_ == cpl_] :=
-Block[ {cv},
-  cv = UnDot[
-    Kinalyze[Expand[cpl]] /. Kin -> KinExpand,
-    KinematicVector@@ ToGeneric[fi] ]//Flatten;
+Block[ {kc, kv, cv},
+  kc = Kinalyze[Expand[cpl]] /. Kin -> KinExpand;
+  kv = KinematicVector@@ ToGeneric[fi];
+  cv = UnDot[kc, kv] //Flatten;
   If[ cv[[-1, 1]] =!= 0,
-    Message[CouplingVector::nomatch, cv[[-1, 1]], fi] ];
+	(* try momentum conservation *)
+    kc = kc /. Kin[Mom[n_][mu_]] :> -Plus@@ (Kin[Mom[#][mu]]&)/@ 
+      Drop[Range[Length[fi]], {n}];
+    cv = UnDot[kc, kv] //Flatten;
+    If[ cv[[-1, 1]] =!= 0,
+      Message[CouplingVector::nomatch, cv[[-1, 1]], fi] ]
+  ];
   fi == List/@ Drop[cv, -1]
 ]
 
 CouplingVector[other_] := CouplingVector[FeynmanRules[other]]
 
 
-fermobjs = NonCommutative | Global`ChiralityProjector |
-  Global`DiracMatrix | Global`DiracSlash
+fermobjs = NonCommutative | ChiralityProjector | DiracMatrix | DiracSlash
 
-bosobjs = _Mom | Global`MetricTensor | Global`FourVector |
-  Global`ScalarProduct
+bosobjs = _Mom | MetricTensor | FourVector | ScalarProduct
 
 kinobjs = Join[bosobjs, fermobjs]
 
@@ -194,14 +217,14 @@ Block[ {nc, kin, coeff},
 ]
 
 
-Kin[_[ga_Global`DiracMatrix]] :=
-  Kin[NonCommutative[ga, Global`ChiralityProjector[+1]]] +
-  Kin[NonCommutative[ga, Global`ChiralityProjector[-1]]]
+Kin[_[ga_DiracMatrix]] :=
+  Kin[NonCommutative[ga, ChiralityProjector[+1]]] +
+  Kin[NonCommutative[ga, ChiralityProjector[-1]]]
 
 
 KinExpand[expr_] :=
   Distribute[Kin[
-    Expand[expr /. Global`FourVector[k_, mu_] :> (k /. m_Mom -> m[mu])]
+    Expand[expr /. FourVector[k_, mu_] :> (k /. m_Mom -> m[mu])]
   ]] /. Kin[n_?NumberQ x_] -> n Kin[x]
 
 KinCoeff[c_, n_. k_Kin + r_.] :=

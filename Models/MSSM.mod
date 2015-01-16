@@ -3,7 +3,7 @@
 		Classes model file for the MSSM
 		by Thomas Hahn
 		based on the Feynman rules of the MSSM by Arnd Kraft
-		last modified 6 Mar 07 by Thomas Hahn
+		last modified 6 Sep 07 by Thomas Hahn
 
 This file contains the definition of the minimal supersymmetric standard
 model for FeynArts.  It needs the Generic model file Lorentz.gen.
@@ -337,9 +337,12 @@ TheLabel[ S[14, {sf_, 3, ___}] ] :=
 GaugeXi[ V[1] ] = GaugeXi[A];
 GaugeXi[ V[2] ] = GaugeXi[Z];
 GaugeXi[ V[3] ] = GaugeXi[W];
+GaugeXi[ S[1] ] = 1;
+GaugeXi[ S[2] ] = 1;
+GaugeXi[ S[3] ] = 1;
 GaugeXi[ S[4] ] = GaugeXi[Z];
+GaugeXi[ S[5] ] = 1;
 GaugeXi[ S[6] ] = GaugeXi[W];
-GaugeXi[ S[_] ] = 1;
 GaugeXi[ U[1] ] = GaugeXi[A];
 GaugeXi[ U[2] ] = GaugeXi[Z];
 GaugeXi[ U[3] ] = GaugeXi[W];

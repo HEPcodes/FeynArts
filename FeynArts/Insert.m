@@ -2,7 +2,7 @@
 	Insert.m
 		Insertion of fields into topologies created by 
 		CreateTopologies.
-		last modified 18 Jan 07 th
+		last modified 10 Jan 08 th
 
 The insertion is done in 3 levels: insertion of generic fields (Generic),
 of classes of a certain model (Classes) or of the members of the classes
@@ -109,6 +109,13 @@ opt = ActualOptions[InsertFields, options]},
   res /. Insertions -> NumberInsertions
 ]
 
+InsertFields[ tops:TopologyList[] | TopologyList[__][],
+  initial_ -> final_, options___Rule ] :=
+  Level[ { ActualOptions[InsertFields, options],
+      {Process -> (Flatten[{initial}] -> Flatten[{final}] /.
+                    _Integer p_Symbol -> p)} },
+    {2}, TopologyList ][]
+
 InsertFields[ ___ ] := (Message[InsertFields::syntax]; $Failed)
 
 
@@ -173,12 +180,12 @@ TopologyInsert[ top_ -> Insertions[_][__] ] :=
 TopologyInsert[ top_ -> Insertions[_][ins_, ___] ] :=
   TopologyInsert[top] /; fields =!= List@@ Take[ins, ninc]
 
-(* add Field[n] to propagator and append Insertions template: *)
+(* append Insertions template: *)
 
-AddFieldNo[ p_[from_, to_, ___], fn_ ] := p[from, to, Field@@ fn]
+ReplaceFieldNo[ p_[from_, to_, ___], {n_} ] := p[from, to, Field[n]]
 
 TopologyInsert[ top:Topology[_][__] ] :=
-  TopologyInsert[ MapIndexed[AddFieldNo, top] ->
+  TopologyInsert[ MapIndexed[ReplaceFieldNo, top] ->
     { Graph@@ Join[fields,
       Array[Field[#] -> 0 &, Length[top] - ninc, ninc + 1]] } ]
 
@@ -417,7 +424,7 @@ Block[ {indexru, extind, deltas},
     Union@@ Cases[Take[indexru, ninc], _List, Infinity],
     _Integer ];
   deltas = Union[ Flatten[
-    Diagonal[VSort[#]]&/@ Flatten[vertli /.
+    CouplingDeltas[VSort[#]]&/@ Flatten[vertli /.
       Distribute[
         Thread[MapAt[MixingPartners, #, 2]]&/@ List@@ indexru,
         List ]] ] ];

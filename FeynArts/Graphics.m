@@ -1,7 +1,7 @@
 (*
 	Graphics.m
 		Graphics routines for FeynArts
-		last modified 10 Jan 05 th
+		last modified 4 Sep 07 th
 *)
 
 Begin["`Graphics`"]
@@ -73,7 +73,9 @@ Options[ Paint ] = {
   SheetHeader -> Automatic,
   Numbering -> Full,
   FieldNumbers -> False,
-  DisplayFunction :> $DisplayFunction
+  If[ $VersionNumber < 6,
+    DisplayFunction :> $DisplayFunction,
+    DisplayFunction :> (Print/@ Render[#]&) ]
 }
 
 Paint::nolevel =
@@ -227,7 +229,8 @@ Display[ chan_, g:FeynArtsGraphics[___][___], format___String,
   opt___?OptionQ ] :=
 Block[ {rg},
   rg = Render[g, InferFormat[chan, format],
-    ImageSize -> (ImageSize /. {opt} /. Options[Display])];
+    ImageSize -> (ImageSize /. {opt} /. Options[Display] /.
+                   ImageSize -> Automatic)];
   MapThread[Display[##, format, opt]&,
     {FilePerSheet[chan, Length[rg]], rg}]
 ]
@@ -238,7 +241,8 @@ Export[ chan_, g:FeynArtsGraphics[___][___], format___String,
   opt___?OptionQ ] :=
 Block[ {rg},
   rg = Render[g, InferFormat[chan, format],
-    ImageSize -> (ImageSize /. {opt} /. Options[Export])];
+    ImageSize -> (ImageSize /. {opt} /. Options[Export] /.
+                   ImageSize -> Automatic)];
   MapThread[Export[##, format, opt]&,
     {FilePerSheet[chan, Length[rg]], rg}]
 ]
@@ -388,11 +392,16 @@ LabelFontSize = 1.26 LabelFontSize},
     AspectRatio -> rows/cols]
 ]
 
+
 DiagramBox[ Null, _ ] = {}
 
-DiagramBox[ g_, {yoff_, xoff_} ] :=
-  Rectangle[ {xoff - 1, rows - yoff} DiagramSize,
-             {xoff, rows - yoff + 1} DiagramSize, MmaRender[g] ]
+DiagramBox[ g_, {yoff_, xoff_} ] := Inset[ MmaRender[g],
+  {xoff - 1, rows - yoff} DiagramSize, {0, 0}, {1, 1} DiagramSize ]
+
+If[ $VersionNumber < 6,
+  Inset[obj_, pos_, _, size_] := Rectangle[pos, pos + size, obj]
+]
+
 
 Title[ ] = {}
 

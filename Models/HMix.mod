@@ -1,14 +1,12 @@
 (*
 	HMix.mod
-		model file which adds two new particles:
+		Add-on model file which adds two new particles:
 		S[0,  {h}] = Sum[UHiggs[h,i] S[i], {i, 3}]
 		S[10, {h}] = Sum[ZHiggs[h,i] S[i], {i, 3}]
 		this file is part of FeynArts
-		last modified 15 Jan 07 th
+		last modified 26 Oct 07 th
 *)
 
-
-ReadModelFile["MSSMQCD.mod"]
 
 IndexRange[ Index[Higgs] ] = Range[3]
 
@@ -35,13 +33,14 @@ M$ClassesDescription = Flatten[{
 Block[ {NewCoup, UZPerm, coup, oldcoup, newcoup},
 
 NewCoup[c_ == rhs_] :=
-Block[ {p = Position[c, S[1|2|3]]},
-  Block[ {newi, u},
-    newi = Take[{h1, h2, h3, h4}, Length[p]];
-    u = Plus@@ (Times@@ MapThread[UHiggs, {newi, #}]&)/@
-      Permutations[Apply[c[[#, 1]]&, p, 1]];
-    (coup[#] += u rhs)& @
-      ReplacePart[c, S[0, {#}]&/@ newi, p, Array[List, Length[p]]];
+Block[ {p = Position[c, S[1|2|3]], sign},
+  sign = If[ ToGeneric[c] === C[S, S, V], Signature, 1 & ];
+  Block[ {newi = Take[{h1, h2, h3, h4}, Length[p]]},
+    (coup[#1] += #2 rhs)&[
+      ReplacePart[c, S[0, {#}]&/@ newi, p, Array[List, Length[p]]],
+      Plus@@ (sign[#] Times@@ MapThread[UHiggs, {newi, #}]&)/@
+        Permutations[Apply[c[[#, 1]]&, p, 1]]
+    ];
     {}
   ] /; Length[p] > 0
 ];
@@ -49,20 +48,16 @@ Block[ {p = Position[c, S[1|2|3]]},
 NewCoup[other_] = other;
 
 
-UZPerm[_[_[_[c_]], rhs_]] :=
-Block[ {hi = Cases[c, S[0, {h_}] -> h]},
-  (c == (Simplify[rhs] /. CB TB -> SB)) /.
-    Array[
-      Flatten[{UHiggs[#, i_] -> ZHiggs[#, i],
-               S[0, {#}] -> S[10, {#}]}&/@ Take[hi, #]]&,
-      Length[hi] + 1, 0 ]
-];
-
+UZPerm[_[_[c_]], rhs_] := FoldList[
+  ReplaceAll,
+  c == (*rhs*) (Simplify[rhs] /. CB TB -> SB),
+  Cases[c, S[0, {h_}] -> {UHiggs[h, i_] -> ZHiggs[h, i],
+                          S[0, {h}] -> S[10, {h}]}] ];
 
 _coup = 0;
 oldcoup = NewCoup/@ M$CouplingMatrices;
 _coup =.;
-newcoup = UZPerm/@ DownValues[coup];
+newcoup = Apply[UZPerm, DownValues[coup], 1];
 
 
 If[ TrueQ[$JustNewCouplings], oldcoup = {} ];
@@ -70,4 +65,11 @@ If[ TrueQ[$JustNewCouplings], oldcoup = {} ];
 M$CouplingMatrices = Flatten[{oldcoup, newcoup}];
 
 ]
+
+
+DownValues[RenConst] = DownValues[RenConst] /. {
+  S[1] -> S[10, {1}],
+  S[2] -> S[10, {2}],
+  S[3] -> S[10, {3}]
+}
 

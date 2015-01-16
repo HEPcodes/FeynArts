@@ -1,7 +1,7 @@
 (*
 	Utilities.m
 		diverse utility functions for other parts of FA
-		last modified 23 Jan 03 th
+		last modified 9 Jan 08 th
 *)
 
 Begin["`Utilities`"]
@@ -21,7 +21,7 @@ Block[ {p},
   If[ Warnings /. Options[ActualOptions],
     Message[ActualOptions::noopt, sym, #]&/@
       Complement[First/@ {opts}, First/@ Options[sym]] ];
-  If[ Length[ p = Position[{opts}, First[#] -> _, 1, 1] ] === 0, #,
+  If[ Length[ p = Position[{opts}, _[First[#], _], 1, 1] ] === 0, #,
     {opts}[[ Sequence@@ p[[1]] ]] ]&/@ Options[sym]
 ]
 
@@ -124,6 +124,15 @@ SortCrit[ a:s_. (f:P$Generic)[t_, i___] ] := {s f[t], {i}, a}
 SortCrit[ a:s_. f:P$Generic ] := {s f[0], {}, a}
 
 VSort[ vert_ ] := Last/@ Sort[SortCrit/@ vert]
+
+
+(* add Field[n] to propagator *)
+
+AddFieldNo[ top:P$Topology ] := MapIndexed[ AddFieldNo, top ]
+
+AddFieldNo[ p_[from_, to_], {n_} ] := p[from, to, Field[n]]
+
+AddFieldNo[ p_, _ ] = p
 
 
 (* Compare: First build a table of all possible permutations of

@@ -1,7 +1,7 @@
 (*
 	Topology.m
 		Creation of topologies for Feynman graphs
-		last modified 26 Jun 03 th
+		last modified 11 Jan 08 th
 *)
 
 Begin["`Topology`"]
@@ -435,8 +435,8 @@ opt = ActualOptions[CreateTopologies, options]},
   If[ Length[excl] =!= 0,
     excl = Level[excl, {2}, AndFunction];
 	(* use ToTree only once: *)
-    If[ Length[ forb = Position[excl, ToTree] ] > 1,
-      excl = ReplacePart[excl, tree, Drop[#, -1]&/@ Rest[forb]] ];
+    If[ Length[ forb = Position[excl, HoldPattern[ToTree[#]]] ] > 1,
+      excl = ReplacePart[excl, tree, Rest[forb]] ];
     tops = Select[tops, excl] ];
 
   Sort[TopologySort/@ tops]
@@ -445,9 +445,9 @@ opt = ActualOptions[CreateTopologies, options]},
 
 Attributes[AndFunction] = {HoldAll}
 
-AndFunction[f_] := f&
+AndFunction[f_] := f &
 
-AndFunction[f__] := And[f]&
+AndFunction[f__] := And[f] &
 
 
 CreateCTTopologies::cterr =
@@ -663,33 +663,41 @@ ChooseProp[ pr_, {n_} ] :=
    with the loops shrunk to a point named Centre[adj][n] where adj is
    the adjacency of loop n. *)
 
-$ExcludeTopologies[ Tadpoles ] = FreeQ[ToTree[#], Centre[1]]&
+$ExcludeTopologies[ Tadpoles ] = FreeQ[ToTree[#], Centre[1]] &
 
-$ExcludeTopologies[ TadpoleCTs ] = FreeQ[#, Vertex[1, _]]&
+$ExcludeTopologies[ TadpoleCTs ] = FreeQ[#, Vertex[1, _]] &
 
-$ExcludeTopologies[ SelfEnergies ] = FreeQ[ToTree[#], Centre[2]]&
+$ExcludeTopologies[ SelfEnergies ] = FreeQ[ToTree[#], Centre[2]] &
 
-$ExcludeTopologies[ SelfEnergyCTs ] = FreeQ[#, Vertex[2, _]]&
+$ExcludeTopologies[ SelfEnergyCTs ] = FreeQ[#, Vertex[2, _]] &
 
-$ExcludeTopologies[ Triangles ] = FreeQ[ToTree[#], Centre[3]]&
+$ExcludeTopologies[ Triangles ] = FreeQ[ToTree[#], Centre[3]] &
 
-$ExcludeTopologies[ TriangleCTs ] = FreeQ[#, Vertex[3, _]]&
+$ExcludeTopologies[ TriangleCTs ] = FreeQ[#, Vertex[3, _]] &
 
-$ExcludeTopologies[ Boxes[m_] ]= FreeQ[ToTree[#], Centre[m]]&
+$ExcludeTopologies[ Boxes[m_] ]= FreeQ[ToTree[#], Centre[m]] &
 
-$ExcludeTopologies[ BoxCTs[m_] ] = FreeQ[#, Vertex[m, _]]&
+$ExcludeTopologies[ BoxCTs[m_] ] = FreeQ[#, Vertex[m, _]] &
 
-$ExcludeTopologies[ AllBoxes ] = FreeQ[ToTree[#], Centre[n_] /; n >= 4]&
+$ExcludeTopologies[ AllBoxes ] = FreeQ[ToTree[#], Centre[n_] /; n >= 4] &
 
-$ExcludeTopologies[ AllBoxCTs ] = FreeQ[#, Vertex[n_, _] /; n >= 4]&
+$ExcludeTopologies[ AllBoxCTs ] = FreeQ[#, Vertex[n_, _] /; n >= 4] &
 
 $ExcludeTopologies[ WFCorrections ] =
-  FreeWFQ[ToTree[#], Centre[1], Centre[2]]&
+  FreeWFQ[ToTree[#], Centre[1], Centre[2]] &
+
+$ExcludeTopologies[ WFCorrections[patt_] ] =
+  $ExcludeTopologies[ WFCorrections ] /.
+    t_ToTree :> Select[t, FreeQ[#, Vertex[1][_?(!MatchQ[#, patt]&)]] &]
 
 $ExcludeTopologies[ WFCorrectionCTs ] =
-  FreeWFQ[#, Vertex[1, _], Vertex[2, _]]&
+  FreeWFQ[#, Vertex[1, _], Vertex[2, _]] &
 
-$ExcludeTopologies[ Internal ] = FreeQ[#, Internal]&
+$ExcludeTopologies[ WFCorrectionCTs[patt_] ] =
+  $ExcludeTopologies[ WFCorrectionCTs ] /.
+    # :> Select[#, FreeQ[#, Vertex[1][_?(!MatchQ[#, patt]&)]] &]
+
+$ExcludeTopologies[ Internal ] = FreeQ[#, Internal] &
 
 $ExcludeTopologies[ undef_ ] :=
   (Message[CreateTopologies::delundef, undef]; Seq[])
@@ -698,8 +706,8 @@ $ExcludeTopologies[ undef_ ] :=
 ToTree[ top_ ] :=
 Block[ {l, v, props, loops = {}},
   props[_] = {};
-  tree = top /. Propagator[Loop[l_]][x__] :>
-    (loops = {loops, l}; props[l] = {props[l], x}; Seq[]);
+  tree = top /. Propagator[Loop[l_]][from_, to_, ___] :>
+    (loops = {loops, l}; props[l] = {props[l], from, to}; Seq[]);
   v = Apply[Sequence, tree, 1];
   tree = Fold[
     ( l = Cases[ v, Alternatives@@ Flatten[props[#2]] ];
@@ -708,26 +716,42 @@ Block[ {l, v, props, loops = {}},
 ]
 
 
-FreeWFQ[ top_, patt1_, patt2_ ] :=
-Block[ {br, p},
-  Catch[
-    WFCheck[top, #]&/@ Union[Cases[top, patt2[_], {2}]];
-    If[ Length[ p = Position[top, patt1[_], {2}] ] === 0, Throw[True] ];
-    br = List@@ Curtail@@
-      MapAt[branch@@ # &, Delete[top, p], Take[#, 1]&/@ p];
-    WFCheck[br, #]&/@ Cases[br, branch[v_] -> v];
-    True
-  ]
+FreeWFQ[ top:P$Topology, patt1_, patt2_ ] :=
+  Catch[ MapWF[Throw[False]&, top, patt1, patt2]; True ]
+
+
+WFCorrectionFields[ fields_:{}, top:P$Topology ] :=
+  WFFields[ ToTree[AddFieldNo[top] /. fields], Centre[1], Centre[2] ]
+
+WFCorrectionCTFields[ fields_:{}, top:P$Topology ] :=
+  WFFields[ AddFieldNo[top] /. fields, Vertex[1, _], Vertex[2, _] ]
+
+WFFields[ args__ ] := Flatten[ MapWF[Apply[#3 &, #, 1]&, args] ]
+
+
+MapWF[ foo_, top_, patt1_, patt2_ ] :=
+Block[ {etop, res, pos, br},
+  etop = top /. Incoming | Outgoing -> External;
+  res = DoWF[foo, etop]/@ Union[Cases[etop, patt2[_], {2}]];
+  pos = Position[etop, patt1[_], {2}];
+  If[ Length[pos] =!= 0,
+    br = List@@ Curtail@@ MapAt[ branch[ #[[1]] ]&,
+      Delete[etop, pos], Apply[{#1}&, pos, 1] ];
+    res = {res, DoWF[foo, br]/@ Cases[br, branch[v_] -> v]} ];
+  res
 ]
 
-WFCheck[ top_, v_ ] :=
-  If[ Sort[ Cases[top, _[type_][p__] :> type /; MemberQ[{p}, v]] ] ===
-        {External, Internal}, Throw[False] ]
+DoWF[ foo_, top_ ][ v_ ] :=
+Block[ {prop = Cases[top, _[_][___, v, ___]]},
+  If[ Sort[#[[0, 1]]&/@ prop] === {External, Internal}, foo[prop], {} ]
+]
+
 
 Attributes[ Curtail ] = {Orderless, Flat}
 
 Curtail[ br:branch[a_].., _[_][c___, a_, d___] ] :=
   Curtail[branch[c, d]] /; a[[0, 1]] - Length[{br}] < 2
+
 
 End[]
 

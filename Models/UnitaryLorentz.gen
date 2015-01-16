@@ -1,11 +1,9 @@
 (*
 	UnitaryLorentz.gen
-		Lorentz.gen in unitary gauge
-		last modified 15 Jan 07 by Thomas Hahn
+		Add-on for Lorentz.gen in unitary gauge
+		last modified 26 Oct 07 th
 *)
 
-
-ReadModelFile["Lorentz.gen"]
 
 M$GenericPropagators = M$GenericPropagators /.
   AnalyticalPropagator[Internal][_. _V] == _ ->

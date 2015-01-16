@@ -1,14 +1,12 @@
 (*
 	UnitarySM.mod
-		SM.mod in unitary gauge
-		last modified 15 Jan 07 by Thomas Hahn
+		Add-on model file for the SM in unitary gauge
+		last modified 26 Oct 07 th
 *)
 
 
-ReadModelFile["SM.mod"]
-
-M$CouplingMatrices = Select[M$CouplingMatrices,
-  FreeQ[#[[1]], U | S[-3 | 2 | 3]]&]
+M$CouplingMatrices = Select[ M$CouplingMatrices,
+  FreeQ[#[[1]], U | S[-3 | 2 | 3]]& ]
 
 AppendTo[M$LastModelRules, GaugePart -> gaugePart]
 

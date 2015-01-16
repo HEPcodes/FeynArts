@@ -3,7 +3,7 @@ all: TopologyEditor.jar FeynArts.pro FeynArts.texpro
 CC = gcc
 CPP = $(CC) -E -P -C -x c-header
 
-JLINK = /opt/Wolfram/Mathematica/5.0/AddOns/JLink/JLink.jar
+JLINK = /opt/Wolfram/Mathematica/5.2/AddOns/JLink/JLink.jar
 
 TopologyEditor.jar: TopologyEditor.java
 	rm -fr de TopologyEditor.jar

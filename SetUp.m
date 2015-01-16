@@ -1,7 +1,7 @@
 (*
-	SetUp.m
+	Setup.m
 		FeynArts startup file
-		last modified 4 Jun 98 th
+		last modified 2 Feb 00 th
 
 Here you can set up your own changes and enhancements to FeynArts,
 e.g. some particular options you always want set, or $SVMixing = True.
@@ -13,9 +13,11 @@ directly is inherently unportable.
 
 $Verbose = 2
 
-$ModelDir = $FeynArtsDir <> "Models/"
+$ModelPath = { Directory[],
+  ToFileName[{Directory[], "Models"}],
+  ToFileName[{$FeynArtsDir, "Models"}] }
 
-$TopologyDataDir = $FeynArtsDir <> "GraphInfo/"
+$TopologyDataDir = ToFileName[{$FeynArtsDir, "GraphInfo"}]
 
 $SVMixing = False
 

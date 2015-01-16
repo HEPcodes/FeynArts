@@ -29,8 +29,8 @@ dZbgfRules = {
   dZZZ1 -> -2 dZe1 - (CW^2 - SW^2) dCWsq1/(SW^2 CW^2),
   dZW1 -> -2 dZe1 - dCWsq1/SW^2,
   dZH1 -> -2 dZe1 - dCWsq1/SW^2 + dMWsq1/MW^2,
-  dZchi1 -> -2 dZe1 - dCWsq1/SW^2 + dMWsq1/MW^2,
-  dZphi1 -> -2 dZe1 - dCWsq1/SW^2 + dMWsq1/MW^2,
+  dZG01 -> -2 dZe1 - dCWsq1/SW^2 + dMWsq1/MW^2,
+  dZGp1 -> -2 dZe1 - dCWsq1/SW^2 + dMWsq1/MW^2,
   dSW1 -> -1/2 dCWsq1/SW
 }
 *)
@@ -41,8 +41,8 @@ dZbgfRules = {
   dZZA1 -> 0,
   dZZZ1 -> -2 dZe1 + (CW^2 - SW^2)/CW^2 (2 dZe1 + dZH1 - dMWsq1/MW^2),
   dZW1 -> dZH1 - dMWsq1/MW^2,
-  dZchi1 -> dZH1,
-  dZphi1 -> dZH1,
+  dZG01 -> dZH1,
+  dZGp1 -> dZH1,
   dSW1 -> (2 dZe1 + dZH1 - dMWsq1/MW^2) SW/2,
   dCW1 -> -(2 dZe1 + dZH1 - dMWsq1/MW^2) SW^2/(2 CW)
 }

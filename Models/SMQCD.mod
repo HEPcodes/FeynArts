@@ -1,11 +1,9 @@
 (*
 	SMQCD.mod
 		Addendum classes model file for SMc.mod
-		to include the strong interactions.
-		last modified 3 May 00 by Christian Schappacher
-
-ATTENTION: The quark-quark-gluon counter term is in ON-SHELL 
-~~~~~~~~~~ renormalization!
+		to include the strong interactions
+                by Christian Schappacher
+		last modified 25 May 01 by Thomas Hahn
 
 Note: this file uses colour indices for the quarks, as does SMc.mod.
 
@@ -21,13 +19,19 @@ SMc.mod:
 
 	SUNF[a, b, c, d], a short-hand for the sum
 		\sum_i SUNF[a, b, i] SUNF[i, c, d]
+
+	dZGG1, gluon field RC
+        dZg1, strong coupling-constant RC
 *)
 
 
-Get[$ModelDir <> "SMc.mod"]
+If[ $NoElectroweak === True,
+  M$ClassesDescription = M$CouplingMatrices = {},
+(* else *)
+  Block[ {$Path = $ModelPath}, << SMc.mod ]
+]
 
 IndexRange[ Index[Gluon] ] = NoUnfold[Range[8]]
-
 
 M$ClassesDescription = Join[ M$ClassesDescription, {
 
@@ -53,37 +57,47 @@ M$ClassesDescription = Join[ M$ClassesDescription, {
 M$CouplingMatrices = Join[ M$CouplingMatrices, {
 
 
+(*--- gluon-gluon counter term -----------------------------------------*)
+
+  C[ V[5, {g1}], V[5, {g2}] ] == I IndexDelta[g1, g2] *
+    { {0, dZGG1},
+      {0, 0},
+      {0, -dZGG1} },
+
 (*--- gluon-gluon-gluon-gluon ------------------------------------------*)
 
   C[ V[5, {g1}], V[5, {g2}], V[5, {g3}], V[5, {g4}] ] == -I GS^2 *
-    { { SUNF[g1, g3, g2, g4] - SUNF[g1, g4, g3, g2]},
-      { SUNF[g1, g2, g3, g4] + SUNF[g1, g4, g3, g2]},
-      {-SUNF[g1, g2, g3, g4] - SUNF[g1, g3, g2, g4]} },
+    { ( SUNF[g1, g3, g2, g4] - SUNF[g1, g4, g3, g2] ) * 
+      {1, 2 dZg1 + 2 dZGG1},
+      ( SUNF[g1, g2, g3, g4] + SUNF[g1, g4, g3, g2] ) * 
+      {1, 2 dZg1 + 2 dZGG1},
+      (-SUNF[g1, g2, g3, g4] - SUNF[g1, g3, g2, g4] ) * 
+      {1, 2 dZg1 + 2 dZGG1} },
 
 
 (*--- gluon-gluon-gluon ------------------------------------------------*)
 
-  C[ V[5, {g1}], V[5, {g2}], V[5, {g3}] ] == GS *
-    { {SUNF[g1, g2, g3]} },
+  C[ V[5, {g1}], V[5, {g2}], V[5, {g3}] ] == GS SUNF[g1, g2, g3] *
+    { {1, dZg1 + dZGG1 + dZGG1/2} },
 
 
 (*--- ghost-ghost-gluon ------------------------------------------------*)
 
-  C[ -U[5, {g1}], U[5, {g2}], V[5, {g3}] ] == GS *
-    { {SUNF[g1, g2, g3]}, {0} },
+  C[ -U[5, {g1}], U[5, {g2}], V[5, {g3}] ] == GS SUNF[g1, g2, g3] *
+    { {1, dZg1 + dZGG1/2}, {0, 0} },
 
 
 (*--- quark-quark-gluon ------------------------------------------------*)
 
   C[ -F[3, {j1, o1}], F[3, {j2, o2}], V[5, {g1}] ] == -I GS *
     IndexDelta[j1, j2] SUNT[g1, o1, o2] *
-    { {1, dZfL1cc[3, j1, j2]}, 
-      {1, dZfR1cc[3, j1, j2]} },
+    { {1, dZg1 + dZGG1/2 + dZfL1cc[3, j1, j2]}, 
+      {1, dZg1 + dZGG1/2 + dZfR1cc[3, j1, j2]} },
 
   C[ -F[4, {j1, o1}], F[4, {j2, o2}], V[5, {g1}] ] == -I GS *
     IndexDelta[j1, j2] SUNT[g1, o1, o2] *
-    { {1, dZfL1cc[4, j1, j2]}, 
-      {1, dZfR1cc[4, j1, j2]} }
+    { {1, dZg1 + dZGG1/2 + dZfL1cc[4, j1, j2]}, 
+      {1, dZg1 + dZGG1/2 + dZfR1cc[4, j1, j2]} }
 
 } ]
 

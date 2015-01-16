@@ -1,24 +1,49 @@
 (*
 	Graphics.m
 		Graphics routines for FeynArts
-		last modified 30 May 00 th
+		last modified 19 Aug 01 th
 *)
 
 Begin["`Graphics`"]
 
 NPi = N[Pi]
 
-	(* The font size used for the propagator labels in a 3x3 sheet.
-	   For other ColumnsXRows settings the font will be scaled
-	   accordingly; the graph numbering is displayed in .9 of this
-	   size. The font size for the header is 1.2 LabelFontSize
-	   independent of the number of diagrams on the sheet. *)
-LabelFontSize = 10.
+	(* for "PS" format: paper size in bp for finding margins *)
+PaperSize = {595, 842}	(* A4, use 72 {8.5, 11} for Letter *)
 
-TextFont = "Helvetica"
+DefaultImageSize = 72 {6, 7}
 
-	(* PlotRange for a single diagram *)
-GraphArea = {{-1, 21}, {-1, 21}}
+	(* Dimensions of a single diagram *)
+DiagramBorder = 1
+
+DiagramCanvas = 20
+
+DiagramSize = DiagramCanvas + 2 DiagramBorder
+
+LabelFontSize = 2 (* units of the diagram coordinate system *)
+
+LabelFont = "Helvetica"
+
+	(* for ordinary vertices and counter terms: *)
+PropagatorThickness = Thickness[.11 / DiagramSize]
+
+VertexThickness = PointSize[8 .11 / DiagramSize]
+
+CounterThickness = Thickness[3 .11 / DiagramSize]
+
+	(* for counter terms: *)
+CrossWidth = 1
+
+ArrowLength = 1.2
+
+	(* height of an arrow's thick end over the baseline *)
+ArrowHeight = .4
+
+DampingConst = (.65 ArrowLength)^4
+
+ScalarDashing = Dashing[{.66, .66} / DiagramSize]
+
+GhostDashing = Dashing[{.11, .66} / DiagramSize]
 
 	(* # of points per unit arc length used in drawing Sine and
 	   Cycles lines *)
@@ -36,46 +61,19 @@ CyclesAmp = .6
 	(* the breadth of the "spikes" of the cycloid *)
 CyclesBreadth = .16
 
-ArrowLength = 1.2
-
-ArrowAngle = .1 NPi
-
-	(* height of an arrow's thick end over the baseline, should
-	   really be ArrowLength Sin[ArrowAngle], but this looks ugly
-	   because arrows seem to be overly bent then *)
-ArrowHeight = .5 ArrowLength Sin[ArrowAngle]
-
-	(* for counter terms: *)
-CrossDiameter = 1.
-
-	(* for ordinary vertices and counter terms: *)
-VertexThickness = {PointSize[.04], Thickness[.015]}
-
-PropThickness = Thickness[.005]
-
-ScalarDash = Dashing[{.03, .03}]
-
-GhostDash = Dashing[{.005, .03}]
-
-	(* default delta_r for label positioning,
-	   must be the same as DEFAULT_DR in TopEdit.tm *)
-DefaultDR = 1.3
-
-$TeXPictureSize = {4}
-
-Centimeters = 1 / 2.54
+	(* default radius for label positioning, must be the
+	   same as DEFAULT_RADIUS in TopologyEditor.java *)
+DefaultRadius = 1.3
 
 
 Options[ Paint ] = {
   PaintLevel -> InsertionLevel,
-  FileBaseName -> ProcessName,
   ColumnsXRows -> 3,
   AutoEdit -> True,
-  TeXLabels -> False,
   SheetHeader -> Automatic,
-  Numbering -> True,
+  Numbering -> Full,
   FieldNumbers -> False,
-  Destination -> Screen
+  DisplayFunction :> $DisplayFunction
 }
 
 Paint::nolevel =
@@ -91,191 +89,106 @@ Paint[ top:(P$Topology -> _), opt___Rule ] :=
   Paint[ TopologyList[][top], opt ]
 
 Paint[ tops_TopologyList, options___Rule ] :=
-Block[ {screen, file, ghead, glabel, fnum, vfuncs = False,
-opt = ActualOptions[Paint, options]},
-  screen = Destination /. opt /. All -> {File, Screen};
-  file = If[ FreeQ[screen, File], False,
-    ToString[FileBaseName /. opt /. ProcessName -> "Topology"] ];
-
+Block[ {fnum, ghead, opt = ActualOptions[Paint, options]},
+  fnum = FieldNumbers /. opt;
   ghead = Switch[ ghead = SheetHeader /. opt,
-    False,
-      {},
+    None | False,
+      FeynArtsGraphics[],
     Automatic | True, 
       ghead = #[[0, 1]]&/@ tops[[1]];
-      { Count[ghead, Incoming | External],
-        Null, Null, "\\to", Null, Null,
-        Count[ghead, Outgoing] },
+      FeynArtsGraphics[
+        Count[ghead, Incoming | External] -> Count[ghead, Outgoing] ],
     _,
-      ToString[ghead]
+      FeynArtsGraphics[ghead]
   ];
-  glabel[ _ ] = "";
-  fnum = FieldNumbers /. opt;
 
-  PaintSheet[ tops, ColumnsXRows /. opt ]
+  PaintSheet[tops]
 ]
 
 Paint[ tops:TopologyList[info___][__], options___Rule ] :=
-Block[ {plevel, ins, screen, file, ghead, glabel, vfuncs,
+Block[ {plevel, ins, ghead,
 fnum = False, opt = ActualOptions[Paint, options]},
-
   If[ (plevel = ResolveLevel[PaintLevel /. opt /. {info} /.
-        Options[InsertFields]]) === $Aborted,
-    Return[$Aborted] ]; 
-
+        Options[InsertFields]]) === $Failed,
+    Return[$Failed] ];
   ins = PickLevel[plevel][tops];
   If[ FreeQ[plevel, Generic],
     ins = Select[
       ins /. Insertions[Generic][ gr__ ] :> Join@@ TakeIns/@ {gr},
       Length[#] =!= 0 & ] ];
-  Scan[ If[FreeQ[ins, #], Message[Paint::nolevel, #]]&, plevel ];
+  Scan[
+    If[FreeQ[ins, Insertions[#]], Message[Paint::nolevel, #]]&,
+    plevel ];
 
   If[ InitializeModel[ Model /. {info} /. Options[InsertFields],
     GenericModel -> (GenericModel /. {info} /. Options[InsertFields]),
-    Reinitialize -> False ] === $Aborted, Return[$Aborted] ];
-
-  screen = Destination /. opt /. All -> {File, Screen};
-  file = If[ FreeQ[screen, File], False,
-    ToString[FileBaseName /. opt /. {info}] ];
-  vfuncs = VertexFunctions /. {info};
+    Reinitialize -> False ] === $Failed, Return[$Failed] ];
 
   ghead = Switch[ ghead = SheetHeader /. opt,
-    False,
-      {},
+    None | False,
+      FeynArtsGraphics[],
     Automatic | True, 
-      If[ (ghead = Process /. {info}) === Process, {},
-        ghead = Join[ TheLabel/@ ghead[[1]], {"\\to"},
-          TheLabel/@ ghead[[2]] ];
-        Flatten[
-          Insert[ghead, Null, Array[List, Length[ghead] - 1, 2]] ] ],
+      If[ (ghead = Process /. {info}) === Process, FeynArtsGraphics[],
+        FeynArtsGraphics[Map[TheLabel, ghead, {2}] /. _Index -> Null]
+      ],
     _,
-      ToString[ghead]
+      FeynArtsGraphics[ghead]
   ];
-  glabel[ gr_ ] := StringJoin[
-    Cases[ Head[gr], lev_ == n_ :>
-      "  " <> StringTake[ToString[lev], 1] <> ToString[n] ],
-    "  N", ToString[++runnr] ];
 
   PaintSheet[
-    ins //. (x:Graph[___][__] -> Insertions[_][gr___]) :> Seq[x, gr],
-    ColumnsXRows /. opt ]
+    ins //. (x:Graph[___][__] -> Insertions[_][gr___]) :> Seq[x, gr] ]
 ]
 
 
-PaintSheet[ tops_, cr_ ] :=
-Block[ {auto, texlabels, cols, rows, psfile, xoff, yoff,
-gscale, margin, aspect, fsize, thelabel,
-dir = 0, page = 0, sheet = MDictAdd, res = {}, topnr = 0, runnr = 0},
-
+PaintSheet[ tops_ ] :=
+Block[ {auto, disp, cols, rows, dhead, g, topnr = 0, runnr = 0},
   auto = AutoEdit /. opt /. {False -> 2, _ -> 1};
-  texlabels = TrueQ[TeXLabels /. opt];
-
-  Which[
-    IntegerQ[cr], cols = rows = cr,
-    MatchQ[cr, {_Integer, _Integer}], {cols, rows} = cr,
-    True, Message[Paint::colrows]; cols = rows = 3 ];
-
-  screen = !FreeQ[screen, Screen];
-  If[ file =!= False && !texlabels,
-    file = file <> ".mps";
-    psfile = OpenWrite[file] ];
-
-  margin = 0;
-  gscale = cols;
-  If[ ghead =!= {},
-    ghead = {FontText[ghead, 1.2 LabelFontSize, {.5 cols, rows + .15}]} ];
-  If[ (Numbering /. opt) === True,
-    If[ texlabels,
-      thelabel[ _ ] :=
-        FontText["\\#" <> ToString[++runnr], .9 fsize, {10., .5}],
-      thelabel[ gr_ ] :=
-        FontText[tn <> glabel[gr], .9 fsize, {10., .5}] ],
-    thelabel[ _ ] = Sequence[] ];
-
-  margin = -GraphArea[[1, 1]];
-  gscale = GraphArea[[1, 2]] + margin;
-  aspect = (rows + .3) / cols;
-  fsize = Max[ 4, 3 / If[aspect > 11. / 8.5, rows, cols] LabelFontSize ];
-  xoff = 0;
-  yoff = rows;
-  Scan[TopologyGraphics, tops];
-  If[ Length[sheet] =!= 0, FinishPage ];
-  If[ file =!= False && !texlabels,
-    WriteString[psfile, "%%Trailer\n"];
-    Close[psfile];
-    FAPrint[1, " (", file, ")"],
-  (* else *)
-    FAPrint[1, ""];
+  Switch[ cols = ColumnsXRows /. opt,
+    _Integer,
+      rows = cols,
+    {_Integer, _Integer},
+      {cols, rows} = cols,
+    _,
+      Message[Paint::colrows]; cols = rows = 3
   ];
-  res
-]
-
-Off[FrontEndObject::notavail]
-
-	(* the Notebook cannot render direct PostScript primitives,
-	   that's why we have to have NBRender; it's also used
-	   by Arrow *)
-NBRender[ ___ ] = Sequence[]
-
-
-FinishPage :=
-Block[ {nb = $Notebooks, $Notebooks = False},
-  sheet = Graphics[ Join[sheet, ghead],
-    PlotRange -> {{0, cols}, {0, rows + .3}},
-    AspectRatio -> aspect ];
-  AppendTo[res, sheet];
-  If[ screen, Show[sheet /. p_PostScript :> NBRender[p] /; nb] ];
-  If[ file =!= False,
-    ++page;
-    If[ texlabels,
-      psfile = file <> "_" <> ToString[page] <> ".tex";
-      If[ $Verbose >= 1, WriteString["stdout", " (", psfile, ") "] ];
-      $TeXPictureSize = Flatten[{$TeXPictureSize}];
-      Display[
-        ToString[ StringForm["!`1`mpslatex_`2` `3` `4` > `5`",
-          $FeynArtsDir, $Platform,
-          $TeXPictureSize[[1]]//N, $TeXPictureSize[[-1]]//N, psfile] ],
-        sheet],
-    (* else *)
-      WriteString[psfile, "%%Page: ", page, " ", page, "\n"];
-      Display[psfile, sheet];
-      WriteString[psfile, "showpage\n",
-        "/Mwidth 8.5 72 mul def\n",
-        "/Mheight 11 72 mul def\n"] ]
+  Switch[ Numbering /. opt,
+    Full,
+      dhead[gr_] := 
+      Block[ {specs},
+        ++runnr;
+        specs = Cases[Head[gr], lev_ == n_ :>
+          {" ", StringTake[ToString[lev], 1], ToString[n]}];
+        If[ Length[specs] =!= 0,
+          specs = {specs, " N", ToString[runnr]} ];
+        DiagramGraphics["T" <> ToString[topnr] <> specs]
+      ],
+    Simple,
+      dhead[_] := DiagramGraphics[ ToString[++runnr] ],
+    _,
+      dhead[_] = DiagramGraphics[]
   ];
-  xoff = 0;
-  yoff = rows;
-  sheet = {}
+
+  g = Flatten[TopologyGraphics/@ List@@ tops] /. _Index -> Null;
+  g = Flatten[{g, Table[Null, {Mod[rows cols - Length[g], rows cols]}]}];
+  g = ghead@@ Partition[Partition[g, cols], rows];
+  (DisplayFunction /. opt)[g];
+  g
 ]
 
 
 TopologyGraphics[ top_ -> gr_ ] :=
-Block[ {ginfo, gtop, vertexplot, h, tn = "T" <> ToString[++topnr]},
-  ginfo = Shape[top, auto];
+Block[ {ginfo, gtop, vertexplot},
+  ginfo = Shape[gtop = top /. Vertex[e_, _] -> Vertex[e], auto];
   gtop = Transpose[{
-    List@@ top /. ginfo[[1]],
+    List@@ gtop /. ginfo[[1]],
     ginfo[[2]],
-    ginfo[[3]] }] /. Propagator[_] -> Sequence;
-  vertexplot = Flatten[ {VertexThickness,
-    Vertices[top] /. Vertex -> VertexGraphics /. ginfo[[1]]} ] /.
-    h -> List;
-  If[ $Verbose >= 2, WriteString["stdout", "\n> Top. ", topnr, " "] ];
-  Scan[
-    ( If[ $Verbose >= 2, WriteString["stdout", "+"] ];
-      AppendTo[ sheet,
-        Rectangle[ {xoff, yoff - 1}, {xoff + 1, yoff},
-          Graphics[ 
-            { Prepend[
-                Apply[ PropagatorGraphics,
-                  gtop /. List@@ # /. Field[_] -> 0, {1} ],
-                PropThickness ],
-              vertexplot,
-              thelabel[#] },
-            PlotRange -> GraphArea,
-            AspectRatio -> 1 ] ] ];
-      If[ ++xoff >= cols,
-        xoff = 0;
-        If[ --yoff === 0, FinishPage ] ] )&,
-    gr ];
+    ginfo[[3]] }];
+  vertexplot = VGraphics/@ Vertices[top] /. ginfo[[1]];
+  ++topnr;
+  FAPrint[2, "> Top. ", topnr, ": ", Pluralize[{Length[gr]}, " diagram"]];
+  dhead[#]@@ Flatten[{
+    Apply[PGraphics, gtop /. List@@ # /. Field[_] -> 0, 1],
+    vertexplot }]&/@ List@@ gr
 ]
 
 TopologyGraphics[ top_ ] :=
@@ -286,75 +199,344 @@ TopologyGraphics[ top_ ] :=
   TopologyGraphics[ Append[Take[#, 2], 0]&/@ top -> {{}} ]
 
 
-VertexGraphics[ e_ ][ n_ ] := Point[Vertex[e][n]]
+VGraphics[ _[e_, c_:0][n_] ] := VertexGraphics[c][ Vertex[e][n] ]
 
-VertexGraphics[ e_, c_ ][ n_ ] := {
-  h[ GrayLevel[Max[0, 1.1 - .3 c]], Disk[Vertex[e, c][n], CrossDiameter] ],
-  h[ PropThickness, Circle[Vertex[e, c][n], CrossDiameter] ] } /; vfuncs
+PGraphics[ _[from_, to_, 0, ___], height_, labelpos_ ] :=
+  PropagatorGraphics[Straight][from, to, height, labelpos]
 
-VertexGraphics[ e_, c_ ][ n_ ] := {
-  CrossMark[ Vertex[e, c][n] ],
-  Array[ Circle[Vertex[e, c][n], .5 # - .3 + CrossDiameter]&, c - 1 ] }
-
-
-crad = .5 CrossDiameter
-
-CrossMark[ xy_ ] := Disk[xy, crad] /; vfuncs
-
-CrossMark[ {x_, y_} ] := {
-  Line[ {{x - crad, y - crad}, {x + crad, y + crad}} ],
-  Line[ {{x - crad, y + crad}, {x + crad, y - crad}} ] }
+PGraphics[ _[from_, to_, particle_, ___], height_, labelpos_ ] :=
+  PropagatorGraphics[
+    PropagatorType[particle],
+    TheLabel[particle],
+    PropagatorArrow[particle] ][from, to, height, labelpos]
 
 
-PropagatorGraphics[ from_, to_, particle_, ___, height_, label_ ] :=
-Block[ {ctr, mid, lab, h, rad, dir, ommc, alpha, cs, dr, line,
-damping, circ, tad, Forward = 0, Backward = NPi},
-  cs := cs = {Cos[ommc], Sin[ommc]};
-  If[ tad = to === from,
-    circ = True;
-    ctr = If[Head[height] === List, height, from + {0., 2.}];
-    mid = .5 (from + ctr);
-    rad = Distance[from, mid];
-    ommc = Orientation[from, mid];
-    dir = ommc + .5 NPi;
-    alpha = NPi,
+Format[ DiagramGraphics[h___][__] ] := SequenceForm["[", h, "]"]
+
+Format[ FeynArtsGraphics[h___][l__List] ] :=
+  FeynArtsGraphics[h]@@ MatrixForm/@ {l}
+
+
+Unprotect[Show, Display, Export]
+
+Show[ g:FeynArtsGraphics[___][___] ] := Show/@ Render[g]
+
+Display[ chan_, g:FeynArtsGraphics[___][___], format___String,
+  opt___?OptionQ ] :=
+Block[ {rg},
+  rg = Render[g, InferFormat[chan, format],
+    ImageSize -> (ImageSize /. {opt} /. Options[Display])];
+  MapThread[Display[##, format, opt]&,
+    {FilePerSheet[chan, Length[rg]], rg}]
+]
+
+Display[ chan_, s_String, ___ ] := (WriteString[chan, s]; Close[chan])
+
+Export[ chan_, g:FeynArtsGraphics[___][___], format___String,
+  opt___?OptionQ ] :=
+Block[ {rg},
+  rg = Render[g, InferFormat[chan, format],
+    ImageSize -> (ImageSize /. {opt} /. Options[Export])];
+  MapThread[Export[##, format, opt]&,
+    {FilePerSheet[chan, Length[rg]], rg}]
+]
+
+Export[ chan_, s_String, ___ ] := (WriteString[chan, s]; Close[chan])
+
+	(* we have to play some tricks to get our definitions
+	   for Export before Mma's ones *)
+DownValues[Export] =
+  Sort[DownValues[Export], !FreeQ[#1, chan] && FreeQ[#2, chan] &]
+
+Protect[Show, Display, Export]
+
+
+InferFormat[ _, format_ ] = format
+
+InferFormat[ file_String ] := "PS" /; StringMatchQ[file, "*.ps"]
+
+InferFormat[ file_String ] := "EPS" /; StringMatchQ[file, "*.eps"]
+
+InferFormat[ file_String ] := "TeX" /; StringMatchQ[file, "*.tex"]
+
+InferFormat[ _ ] = Sequence[]
+
+
+Options[Render] = {ImageSize -> Automatic}
+
+getsize[ opt___, def_ ] :=
+  If[NumberQ[#], {#, #}, #]& @
+    Round[ImageSize /. ActualOptions[Render, opt] /. Automatic -> def]
+
+prologue := prologue =
+  ReadList[ToFileName[{$FeynArtsDir, "FeynArts"}, "FeynArts.pro"],
+    Record, RecordSeparators -> ""][[1]]
+
+epsf = ""
+
+Render[ g:FeynArtsGraphics[___][___], "EPS", opt___Rule ] :=
+Block[ {PaperSize = imgsize, epsf = " EPSF-3.0"},
+  Flatten[ Render[Head[g][#], "PS", opt]&/@ List@@ g ]
+]
+
+Render[ g:FeynArtsGraphics[___][___], "PS", opt___Rule ] :=
+Block[ {imgsize = getsize[opt, DefaultImageSize], bbox,
+None = 0, Forward = 1, Backward = -1},
+  bbox = Round[.5 (PaperSize - imgsize)];
+  bbox = {bbox, bbox + imgsize};
+  { PSString[ "\
+%!PS-Adobe-3.0", epsf, "\n\
+%%BoundingBox: 0 0 ", PaperSize, "\n\
+%%Pages: ", Length[g], "\n",
+    prologue,
+    MapIndexed[
+      { "\n%%Page: ", #2, #2, "\ngsave\n",
+        bbox, #1, "\ngrestore\nshowpage\n" }&,
+      PSRender[Head[g]/@ List@@ g] ], "\n\
+%%Trailer\n\
+end\n\
+%%EOF\n" ] }
+]
+
+Render[ g:FeynArtsGraphics[___][___], "TeX", opt___Rule ] :=
+Block[ {imgsize = getsize[opt, DefaultImageSize],
+None = 0, Forward = 1, Backward = -1},
+  { "\\unitlength=1bp%\n\n" <> TeXRender[Head[g]/@ List@@ g] }
+]
+
+Render[ g:FeynArtsGraphics[___][___], opt___ ] :=
+Block[ {imgsize = getsize[opt, {288, 288}],
+None = 0, Forward = 1, Backward = -1},
+  MmaRender[Head[g]/@ List@@ g]
+]
+
+
+FilePerSheet[ file_, 1 ] := {file}
+
+FilePerSheet[ file:{__}, n_ ] := Thread[FilePerSheet[#, n]&/@ file]
+
+FilePerSheet[ file_String, n_ ] :=
+Block[ {p, pre, post},
+  p = StringPosition[file, "."];
+  If[ Length[p] === 0, pre = file <> "_"; post = "",
+    p = p[[-1, 1]] - 1;
+    pre = StringTake[file, p] <> "_";
+    post = StringDrop[file, p] ];
+  Array[pre <> ToString[#] <> post &, n]
+] /; file =!= "stdout"
+
+FilePerSheet[ file_, n_ ] := Table[file, {n}]
+
+
+PSString[ s_String ] = s
+
+PSString[ s_Symbol ] := "/" <> ToString[s] <> " "
+
+PSString[ n_ ] := ToString[n] <> " "
+
+PSString[ s__ ] := StringJoin[PSString/@ Flatten[{s}]]
+
+
+TeXString[ {x_, y_} ] := "(" <> ToString[x] <> "," <> ToString[y] <> ")"
+
+TeXString[ s_ ] := ToString[s]
+
+TeXString[ s__ ] := StringJoin[TeXString/@ {s}]
+
+
+Attributes[PSRender] = Attributes[TeXRender] =
+  Attributes[MmaRender] = {Listable}
+
+
+PSRender[ FeynArtsGraphics[h___][sheet_] ] :=
+Block[ {rows, cols, g},
+  {rows, cols} = Dimensions[sheet];
+  g = PSRender[{Title[h], sheet}];
+  PSString[cols, rows, "Layout\n" <> g]
+]
+
+Attributes[ TeXJoin ] = {Flat, OneIdentity}
+
+TeXJoin[ n_Integer ] := ToString[n]
+
+TeXJoin[ s1_String, s2_String ] := s1 <> "\\quad " <> s2
+
+TeXRender[ FeynArtsGraphics[in_ -> out_][sheet_] ] :=
+  TeXRender[
+    FeynArtsGraphics[TeXJoin@@ Flatten[{in, "\\to", out}]][sheet] ]
+
+TeXRender[ FeynArtsGraphics[h___][sheet_] ] :=
+Block[ {rows, cols, g},
+  {rows, cols} = Dimensions[sheet];
+  g = TeXRender[{Title[h], sheet}];
+  TeXString["\\begin{feynartspicture}", imgsize, {cols, rows}, "\n" <>
+    g <> "\\end{feynartspicture}\n\n"]
+]
+
+MmaRender[ FeynArtsGraphics[h___][sheet_] ] :=
+Block[ {rows, cols, fsize, g, title,
+(* magnify the labels a bit for screen viewing: *)
+LabelFontSize = 1.26 LabelFontSize},
+  {rows, cols} = Dimensions[sheet];
+  g = MapIndexed[DiagramBox, sheet, {2}];
+  title = MmaRender[Title[h]];
+  fsize = LabelFontSize Min[imgsize / {cols, rows}] / DiagramSize;
+  Graphics[ Flatten[{g, title}],
+    PlotRange -> {{0, cols}, {0, rows}} DiagramSize,
+    AspectRatio -> rows/cols]
+]
+
+DiagramBox[ Null, _ ] = {}
+
+DiagramBox[ g_, {yoff_, xoff_} ] :=
+  Rectangle[ {xoff - 1, rows - yoff} DiagramSize,
+             {xoff, rows - yoff + 1} DiagramSize, MmaRender[g] ]
+
+Title[ ] = {}
+
+Title[ t_ ] := (
+  rows += .3;
+  LabelText[t, {.5 cols, rows - .12} DiagramSize, {0, 0}, 1.2, 0] )
+
+
+PSRender[ DiagramGraphics[h___][pv__] ] :=
+  "\n(" <> h <> ") Diagram\n" <> Transpose[PSRender[{pv}]]
+
+PSRender[ Null ] = "\n() Diagram\n"
+
+TeXRender[ DiagramGraphics[h___][pv__] ] :=
+  "\n\\FADiagram{" <> h <> "}\n" <> Transpose[TeXRender[{pv}]]
+
+TeXRender[ Null ] = "\n\\FADiagram{}\n"
+
+MmaRender[ DiagramGraphics[h___][pv__] ] :=
+Block[ {g = Transpose[MmaRender[{pv}]]},
+  Graphics[
+    Flatten[{
+      PropagatorThickness, g[[1]],
+      scope[ VertexThickness, g[[2]] ],
+      DiagLabel[h]
+    }] /. scope[a__] :> scope@@ Flatten[{a}] /. scope -> List,
+    PlotRange -> {{0, DiagramSize}, {0, DiagramSize}} - DiagramBorder,
+    AspectRatio -> 1 ]
+]
+
+DiagLabel[ ] = {}
+
+DiagLabel[ t_ ] :=
+  MmaRender[ LabelText[t, {.5 DiagramCanvas, -.5}, {0, -1}, .8] ]
+
+
+PSRender[ VertexGraphics[cto_][xy_] ] :=
+  {{}, PSString[xy, cto, "Vert\n"]}
+
+TeXRender[ VertexGraphics[cto_][xy_] ] :=
+  {{}, TeXString["\\FAVert", xy, "{", cto, "}\n"]}
+
+MmaRender[ VertexGraphics[0][xy_] ] := {{}, Point[xy]}
+
+MmaRender[ VertexGraphics[c_?Negative][xy_] ] := {{},
+  { scope[ GrayLevel[Max[0, 1.1 + .3 c]], Disk[xy, CrossWidth] ],
+    Circle[xy, CrossWidth] }}
+
+MmaRender[ VertexGraphics[c_][xy_] ] := {{},
+  { scope[ CounterThickness,
+      Line[{xy - .5 CrossWidth, xy + .5 CrossWidth}],
+      Line[{xy - {.5, -.5} CrossWidth, xy + {.5, -.5} CrossWidth}] ],
+    Array[Circle[xy, (.25 # + .8) CrossWidth]&, c - 1] }}
+
+
+PSRender[ PropagatorGraphics[type_, label_:0, arrow_:0][
+  from_, to_, height_, labelpos_:0 ] ] :=
+Block[ {dir, ommc, cs, ctr, rad, mid, dphi, line},
+  line = PSString["[ ", type, "] ", arrow, height, from, to, "Prop\n"];
+
+  If[ label =!= 0,
+    CalcPropData[from, to, height];
+    line = line <> PSRender[PropLabel[label, labelpos, arrow, type]] ];
+
+  {line, {}}
+]
+
+TeXRender[ PropagatorGraphics[type_, label_:0, arrow_:0][
+  from_, to_, height_, labelpos_:0 ] ] :=
+Block[ {dir, ommc, cs, ctr, rad, mid, dphi, line},
+  line = TeXString["\\FAProp", from, to,
+    If[ NumberQ[height], {height, ""}, height], "{" <>
+    StringDrop[StringJoin[(" /" <> ToString[#])&/@ Flatten[{type}]], 1] <>
+    "}{", arrow, "}\n"];
+
+  If[ label =!= 0,
+    CalcPropData[from, to, height];
+    line = line <> TeXRender[PropLabel[label, labelpos, arrow, type]] ];
+
+  {line, {}}
+]
+
+MmaRender[ PropagatorGraphics[type_, label_:0, arrow_:0][
+  from_, to_, height_, labelpos_:0 ] ] :=
+Block[ {dir, ommc, cs, ctr, rad, mid, dphi, line, phi, damping, h, v},
+  CalcPropData[from, to, height];
+  If[ arrow =!= 0,
+    damping[phi_] :=
+      Block[ {x = (rad Abs[phi - ommc])^4}, x / (x + DampingConst) ],
   (* else *)
-    lab = .5 Distance[from, to];
-    dir = Orientation[from, to];
-    ommc = dir - .5 NPi;
-    mid = ctr = .5 (from + to);
-    If[ circ = TrueQ[height != 0],
-      If[ height < 0, ommc += NPi ];
-      alpha = 2. ArcTan[h = Abs[height]];
-      rad = lab / Sin[alpha];
-      ctr += h lab cs;
-      h = If[h > 1., -1, 1],
-    (* else *)
-      rad = 2000.;
-      alpha = ArcSin[lab / rad];
-      h = 1
-    ];
-    mid -= h Sqrt[rad^2 - lab^2] cs;
-  ];
+    damping[phi_] = 1 ];
+  phi = Mod[ommc - dphi, 2 NPi];
+  h = Flatten[{type}];
+  dphi *= 2. / Length[h];
+  line = HalfLine[#, phi += dphi, dphi]&/@ h;
 
-  h = Flatten[{PropagatorType[particle]}];
-  damping[ phi_ ] =
-    If[ NumberQ[PropagatorArrow[particle]],
-      Min[Max[rad Abs[phi - ommc] - .5 ArrowLength, 0], 1],
-      1 ];
-  dr = ommc - alpha;
-  alpha *= 2. / Length[h];
-  line = { Sequence@@ ((HalfLine[#, dr += alpha, alpha])&)/@ h,
-    Arrow[PropagatorArrow[particle]] };
-  If[ particle === 0, line,
-    If[ label === 0, dr = DefaultDR,
-      dr = label[[1]]; ommc += label[[2]] ];
-    If[ !FreeQ[h, Sine | Cycles] || NumberQ[PropagatorArrow[particle]],
-      mid += Sign[dr] SineAmp cs ];
-    Seq[line, FontText[ TheLabel[particle],
-      fsize,
-      mid + (rad + dr) {Cos[ommc], Sin[ommc]} ]]
-  ]
+  If[ arrow =!= 0,
+    h = .5 arrow ArrowLength {Cos[dir], Sin[dir]};
+    v = ArrowHeight cs;
+    line = {line, Polygon[{mid + h, mid - h + v, mid - h - v}]} ];
+
+  If[ label =!= 0,
+    line = {line, MmaRender[PropLabel[label, labelpos, arrow, type]]} ];
+
+  {line, {}}
+]
+
+
+(* CalcPropData computes the data necessary for actual drawing:
+   dir  -- the direction along the propagator
+   ommc -- the direction of the perpendicular bisector
+   ctr  -- the center of the circle on which the prop lies,
+   rad  -- the radius of the circle
+   mid  -- the position on the middle of the prop
+           (the blue square in the topology editor)
+   dphi -- half the opening angle *)
+
+CalcPropData[ from_, _, xy_List ] := (
+  mid = xy;
+  ctr = .5 (from + mid);
+  rad = Distance[from, ctr];
+  ommc = Orientation[from, ctr];
+  dir = ommc + .5 NPi;
+  cs = {Cos[ommc], Sin[ommc]};
+  dphi = NPi
+)
+
+CalcPropData[ from_, to_, height_ ] :=
+Block[ {lab, h},
+  lab = .5 Distance[from, to];
+  dir = Orientation[from, to];
+  ommc = dir + If[height < 0, .5, -.5] NPi;
+  cs = {Cos[ommc], Sin[ommc]};
+  ctr = mid = .5 (from + to);
+  If[ height != 0,
+    dphi = 2. ArcTan[h = Abs[height]];
+    rad = lab / Sin[dphi];
+    dphi *= Sign[height];
+    mid += h lab cs;
+    h = If[h > 1., -1, 1],
+  (* else *)
+    rad = 20000.;
+    dphi = ArcSin[lab / rad];
+    h = 1
+  ];
+  ctr -= h Sqrt[rad^2 - lab^2] cs
 ]
 
 
@@ -364,7 +546,7 @@ Block[ {arc, w, n},
   w = 2. NPi (.5 + Max[1, Round[NCrestsSine arc]]);
   Line[
     Table[ arc = phi - n dphi;
-      mid + (rad - damping[arc] SineAmp Sin[n w]) Through[{Cos, Sin}[arc]],
+      ctr + (rad - damping[arc] SineAmp Sin[n w]) {Cos[arc], Sin[arc]},
       {n, 0, 1, 1. / Floor[NPoints arc]} ] ]
 ]
 
@@ -381,147 +563,137 @@ Block[ {arc, w, n, phamp},
   phamp = CyclesBreadth NPi Sign[dphi] / rad;
   Line[
     Table[ arc = n w - phadj;
-      mid + (rad + CyclesAmp Cos[arc] - rshift) *
+      ctr + (rad + CyclesAmp Cos[arc] - rshift) *
         Through[{Cos, Sin}[
           phi - n dphi - phamp (Sin[arc] - (2 n - 1) sphadj)]],
       {n, 0, 1, 1. / Floor[2 NPoints arc]} ] ]
 ]
 
-HalfLine[ prim_, phi_, dphi_ ] :=
-Block[ {l},
-  l = If[ circ,
-    Circle[mid, rad, Sort[{phi - dphi, phi}]],
-    Line[{ mid + rad {Cos[phi - dphi], Sin[phi - dphi]},
-           mid + rad {Cos[phi], Sin[phi]} }] ];
-  If[ prim === Straight, l, {prim, l} ]
+HalfLine[ Straight, phi_, dphi_ ] :=
+  If[ rad < 20000,
+    Circle[ctr, rad, Sort[{phi - dphi, phi}]],
+    Line[{ ctr + rad {Cos[phi - dphi], Sin[phi - dphi]},
+           ctr + rad {Cos[phi], Sin[phi]} }] ]
+
+HalfLine[ ScalarDash, phi_, dphi_ ] :=
+  scope[ ScalarDashing, HalfLine[Straight, phi, dphi] ]
+
+HalfLine[ GhostDash, phi_, dphi_ ] :=
+  scope[ GhostDashing, HalfLine[Straight, phi, dphi] ]
+
+
+PropLabel[ label_, labelpos_, arrow_, type_ ] :=
+Block[ {rad, phi, s},
+  {rad, phi} =
+    If[ NumberQ[labelpos], {labelpos DefaultRadius, 0.}, labelpos ];
+  s = Sign[rad Cos[phi]];
+  cs *= s;
+  Which[
+    arrow =!= 0 || !FreeQ[type, Sine],
+      mid += SineAmp cs,
+    !FreeQ[type, Cycles],
+      mid += If[s < 0, CyclesAmp + rshift, SineAmp] cs ];
+  phi += ommc;
+  cs = -Round[1.3 cs];
+  LabelText[ label,
+    mid + rad {Cos[phi], Sin[phi]} + .24 LabelFontSize cs,
+    cs, 1, dir ]
 ]
 
 
-degperrad = N[1 / Degree]
-
-Arrow[ o_?NumberQ ] :=
-Block[ {a = dir + o, l, tip, p, straight, curved},
-  tip = ctr + .5 ArrowLength {Cos[a], Sin[a]};
-  straight = Polygon[ {
-    tip - ArrowLength Through[{Cos, Sin}[a - ArrowAngle]],
-    tip,
-    tip - ArrowLength Through[{Cos, Sin}[a + ArrowAngle]] } ];
-  If[ circ,
-    a = Sign[Sin[ommc - a]];
-    l = a .5 ArrowLength / rad;
-    a *= ArrowAngle;
-    tip = ommc - l;
-    p = mid + rad {Cos[tip], Sin[tip]};
-    curved = PostScript[
-      ToString[StringForm[
-        "newpath `1` `2` `3` `4` `5` `6`",
-        PSScale[ p - rad Through[{Cos, Sin}[tip + a]] ],
-        rad / gscale,
-        degperrad (tip + a),
-        degperrad (ommc + l (rad - ArrowHeight) / rad + a),
-        If[a < 0, "arcn", "arc"] ]],
-      ToString[StringForm[
-        "`1` `2` `3` `4` `5` `6` closepath fill",
-        PSScale[ p - rad Through[{Cos, Sin}[tip - a]] ],
-        rad / gscale,
-        degperrad (ommc + l (rad + ArrowHeight) / rad - a),
-        degperrad (tip - a),
-        If[a < 0, "arc", "arcn"] ]] ];
-    NBRender[curved] = straight;
-    curved,
-  (* else *)
-    straight
-  ]
+LabelText[ in_ -> out_, pos_, align_, size_, dir_ ] :=
+Block[ {t, l, cs = {Cos[dir], Sin[dir]}},
+  t = Flatten[{in, "\\to", out}];
+  l = .5 (Length[t] + 1);
+  MapIndexed[LabelText[#1, pos + 4.5 (#2[[1]] - l) cs, align, size]&, t]
 ]
 
-Arrow[ ___ ] = Sequence[]
-
-
-PSScale[ {x_, y_} ] :=
-  Sequence[(x + margin) / gscale, (y + margin) / gscale]
-
-
-Unprotect[Offset]
-
-Offset[ ofs1_, Offset[ ofs2_, pos_ ] ] := Offset[ofs1 + ofs2, pos]
-
-Protect[Offset]
-
-If[ $VersionNumber < 3,
-
-  Unprotect[Text];
-
-  Text[ FontForm[t_, {font_, size_}], Offset[{ox_, oy_}, p_] ] :=
-    PostScript[
-      ToString[StringForm[
-        "/`1` findfont `2` scalefont setfont", font, size ]],
-      ToString[StringForm[
-        "[(`1`)] `2` `3` `4` `5` Mabsadd 0 0 Mshowa",
-        t, PSScale[p], ox, oy ]] ];
-
-  Protect[Text];
-
-  MDictAdd = {
-    PostScript[
-      "/Mabsadd { Mgmatrix idtransform Mtmatrix dtransform",
-      "3 -1 roll add 3 1 roll add exch } bind def" ] },
-
-(* else *)
-
-  MDictAdd = {}
-
+LabelText[ t_List, pos_, align_, size_, dir_ ] :=
+Block[ {l = .5 (Length[t] + 1), cs = {Cos[dir], Sin[dir]}},
+  MapIndexed[LabelText[#1, pos + 2 (#2[[1]] - l) cs, align, size]&, t]
 ]
 
+PSRender[ LabelText[t_, pos_, align_, size_, ___] ] :=
+  PSString["{ ", MapIndexed[PSChar, Flatten[{ToPS[t]}]], "} ",
+    pos, align, size, "Label\n"]
 
-FontText[ t_List, size_, pos_ ] :=
+PSChar[ _[], _ ] = {}
+
+PSChar[ _[c_], {n_} ] := {"$(", c, psops[[n]]}
+
+PSChar[ c_, {n_} ] := {"(", c, psops[[n]]}
+
+psops = {")# ", ")_ ", ")^ ", ")~ "}
+
+
+TeXRender[ LabelText[t_, pos_, align_, size_, ___] ] :=
+Block[ {ComposedChar = TeXComposedChar},
+  TeXString[
+    "\\FALabel", pos, "[" <> Extract[texalign, align + {2, 2}] <> "]{" <>
+    Which[size > 1, "\\large ", size < 1, "\\small ", True, ""] <>
+    "$", t, "$}\n" ]
+]
+
+texalign = {{"bl", "l", "tl"},
+            {"b",  "",  "t"},
+            {"br", "r", "tr"}}
+
+TeXComposedChar[ t_, sub_:Null, super_:Null, over_:Null ] :=
+Block[ {tex = t},
+  If[ sub =!= Null, tex = tex <> "_" <> ToString[sub] ];
+  If[ super =!= Null, tex = tex <> "^" <> ToString[super] ];
+  If[ over =!= Null, tex = ToString[over] <> " " <> tex ];
+  tex
+]
+
+If[ $Notebooks,
+
+MmaRender[ LabelText[t_, r__] ] :=
+  NotebookChar[Flatten[{ToUnicode[t]}], r];
+
+NotebookChar[ {t_, sub_:" ", super_:" ", over_:" "},
+  pos_, align_, size_, ___ ] :=
+Block[ {label = t},
+  If[ over =!= " ", label = OverscriptBox[label, over] ];
+  Which[
+    sub =!= " " && super =!= " ",
+      label = SubsuperscriptBox[label, sub, super],
+    sub =!= " ",
+      label = SubscriptBox[label, sub],
+    super =!= " ",
+      label = SuperscriptBox[label, super]
+  ];
   Text[
-    StringDrop[
-      StringJoin[{#[[1]], " "}&/@ (FontText[#, size, pos]&)/@ t], -1 ],
-    pos ] /; texlabels
+    StyleForm[DisplayForm[label], FontFamily -> LabelFont,
+      FontSize -> size fsize],
+    pos, align ]
+],
 
-FontText[ t_List, size_, pos_ ] :=
-Block[ {l = .5 (Length[t] + 1)},
-  Sequence@@ MapIndexed[
-    FontText[#1, size,
-      Offset[size (#2[[1]] - l) {Cos[dir], Sin[dir]}, pos]]&,
-    t ]
-]
+(* else $Notebooks *)
 
-FontText[ ComposedChar[t_, indices___], size_, pos_ ] :=
-Block[ {i, ind, l, tex = t},
-  ind = {indices} /. _Index -> Null;
-  l = Length[ind];
-  If[ l > 0 && (i = ind[[1]]) =!= Null,
-    tex = tex <> "_{" <> FontText[i, size, pos][[1]] <> "}" ];
-  If[ l > 1 && (i = ind[[2]]) =!= Null,
-    tex = tex <> "^{" <> FontText[i, size, pos][[1]] <> "}" ];
-  If[ l > 2 && (i = ind[[3]]) =!= Null,
-    tex = FontText[i, size, pos][[1]] <> " " <> tex ];
-  Text[tex, pos]
-] /; texlabels
+MmaRender[ LabelText[t_, r__] ] :=
+  MapIndexed[ KernelChar[##, r]&, Flatten[{ToPS[t]}] ];
 
-FontText[ ComposedChar[t_, indices___], size_, pos_ ] :=
-  Sequence@@ Prepend[
-    MapIndexed[
-      If[ #1 === Null, Seq[],
-        FontText[#1, .7 size, Offset[size IndexOffset@@ #2, pos]] ]&,
-      {indices} /. _Index -> Null ],
-    FontText[t, size, pos] ]
+KernelChar[ _[], __ ] = {};
 
-FontText[ Null, _, _ ] = Sequence[]
+KernelChar[ t_, {n_}, pos_, align_, size_, ___ ] :=
+Block[ {newpos, newalign, fscale = sizes[[n]] size},
+  {newpos, newalign} = If[ size < 1, {pos, align},
+    {pos + .24 size LabelFontSize (palign[[n]] - align), talign[[n]]} ];
+  Text[ MmaChar[t], newpos, newalign ]
+];
 
-FontText[ t_, size_, pos_ ] := Text[ToString[t], pos] /; texlabels
+MmaChar[ _[c_] ] := FontForm[c, {"Symbol", fscale fsize}];
 
-FontText[ t_, size_, pos_ ] := Text[TeXToPS[t][size], pos]
+MmaChar[ c_ ] := FontForm[c, {LabelFont, fscale fsize}];
 
+sizes = {1, .667, .667, 1};
 
-IndexOffset[ 1 ] := {.6, -.3}			(* subscript *)
+palign = {{0, 0}, {1.2, -.9}, {1.2, .7}, {0, 1.2}};
 
-IndexOffset[ 2 ] := {.6, .3}			(* superscript *)
+talign = {{0, 0}, {-1, 0}, {-1, 0}, {0, -1}};
 
-IndexOffset[ 3 ] := {0, .57}			(* bar *)
-
-IndexOffset[ _ ] = 0
+] (* endif $Notebooks *)
 
 
 pr[ Loop[l_] ][ from_, to_, ___ ] := (
@@ -647,7 +819,7 @@ tad, min, ok, c, ct, pt, shrink = {}, rev = {}, loops = {}},
 
   { Select[ginfo, FreeQ[#, center]&],
     pt[#, ct[#]--]&/@ List@@ top,
-    Table[0, {Length[top]}] }
+    Table[1, {Length[top]}] }
 ]
 
 
@@ -772,20 +944,40 @@ Block[ {adj, max, new, a1, a2},
 ]
 
 
+ToJava[ p__, n_?NumberQ ] := ToJava[p, {n DefaultRadius, 0.}]
+
+ToJava[ _[from_, from_], {xc_, yc_}, {xl_, yl_} ] :=
+  {-from, xc, yc, xl, yl}
+
+ToJava[ _[from_, to_], height_, {xl_, yl_} ] :=
+  {from, to, height, xl, yl}
+
+
 (* call the topology editor *)
 
+Shape::wait =
+"Starting Java and the topology editor. This may take a moment."
+
 Shape::notopedit =
-"Topology editor not found. You have to compile TopEdit.tm first."
+"Could not load the topology editor. Make sure you have J/Link and Java
+installed."
+
+Shape::javaerror =
+"Could not open a topology-editor window."
 
 Shape[ tops:TopologyList[___][___] | TopologyList[___] ] :=
-  MapIndexed[ (FAPrint[ 2, "> Top. ", #2[[1]] ]; Shape[#1])&,
+Block[ {remaining = Length[tops]},
+  MapIndexed[
+    (--remaining; FAPrint[ 2, "> Top. ", #2[[1]] ]; Shape[#1])&,
     List@@ tops ]
+]
 
 Shape[ top:P$Topology -> _ ] := Shape[top]
 
 Shape[ top:P$Topology, auto_:0 ] :=
-Block[ {edittop, gname, ghead, ginfo, arg1, arg2, res},
-  edittop = Take[#, 2]&/@ Topology@@ top /. External -> Incoming;
+Block[ {edittop, gname, ghead, ginfo, arg1, arg2, exitcode},
+  edittop = Take[#, 2]&/@ Topology@@ top /.
+    External -> Incoming /. Vertex[e_, _] -> Vertex[e];
   ghead = ShortHand[ #[[0, 1]] ]&/@ edittop;
   gname = StringJoin[
     # <> ToString[Count[ghead, #]] &/@ {"Inc", "Out", "Int", "Loop"} ];
@@ -795,7 +987,7 @@ Block[ {edittop, gname, ghead, ginfo, arg1, arg2, res},
 	(* attempt to load GraphInfo *)
     If[ !MemberQ[$LoadedGraphInfos, gname],
       Off[Get::noopen];
-      Get[$TopologyDataDir <> gname <> ".m"];
+      Get[ ToFileName[$TopologyDataDir, gname <> ".m"] ];
       On[Get::noopen];
       AppendTo[$LoadedGraphInfos, gname];
     ];
@@ -803,38 +995,61 @@ Block[ {edittop, gname, ghead, ginfo, arg1, arg2, res},
       --res; Set@@ {ginfo, AutoShape[edittop]} ];
   ];
   If[ res > 0, Return[ginfo] ];
-  If[ htopedit === False,
-    arg1 = $FeynArtsDir <> "TopEdit_" <> $Platform;
-    htopedit = If[ FileType[arg1] =!= None,
-      Install[arg1],
-      Message[Shape::notopedit]; True ] ];
-  arg1 = Apply[List, ginfo[[1]], {1}];
-  arg2 = Transpose[ {
-    List@@ Map[Position[arg1, #, {2}, 1][[1, 1]]&, edittop, {2}],
-    ginfo[[2]],
-    ginfo[[3]] } ] /. Propagator[_] -> Sequence;
-  res = TopEdit[ Flatten[arg1], Flatten[arg2, 1] ];
-  If[ res === $Failed, Uninstall[htopedit],
-    If[ res =!= $Aborted,
-      (#1[#2] = #3)&[ghead, edittop, ginfo = res];
-      $LoadedGraphInfos = Union[Append[$LoadedGraphInfos, gname]];
-      $ModifiedGraphInfos = Union[Append[$ModifiedGraphInfos, gname]];
-      System`$Epilog := SaveGraphInfos[] ]
+
+  If[ editorclass === False,
+    Message[Shape::wait];
+    Needs["JLink`"];
+    JLink`InstallJava[ JLink`ClassPath ->
+      ToFileName[{$FeynArtsDir, "FeynArts"}, "TopologyEditor.jar"] ];
+    editorclass = JLink`LoadClass["de.FeynArts.TopologyEditor"];
+    If[ Head[editorclass] =!= JLink`JavaClass, Message[Shape::notopedit] ]
   ];
+  If[ Head[editorclass] =!= JLink`JavaClass, Return[ginfo] ];
+
+  If[ !JLink`JavaObjectQ[editor],
+    editor = JLink`JavaNew[editorclass];
+    If[ !JLink`JavaObjectQ[editor],
+      Message[Shape::javaerror];
+      Return[ginfo] ];
+  ];
+
+  arg1 = Last/@ ginfo[[1]];
+  arg2 = MapThread[ ToJava,
+    { List@@ edittop /. MapIndexed[ First/@ Rule[##]&, ginfo[[1]] ],
+      ginfo[[2]],
+      ginfo[[3]] } ];
+  editor@putGraphInfo[ N[Flatten[arg1]], N[Flatten[arg2]] ];
+
+  exitcode = JLink`DoModal[];
+  If[ exitcode === 0,
+    ginfo = MapAt[ MapThread[Rule, {First/@ ginfo[[1]], #}]&,
+      editor@getGraphInfo[], 1 ];
+    (#1[#2] = #3)&[ghead, edittop, ginfo];
+    $LoadedGraphInfos = Union[Append[$LoadedGraphInfos, gname]];
+    $ModifiedGraphInfos =
+      Union[Append[$ModifiedGraphInfos, gname]];
+    System`$Epilog := SaveGraphInfos[] ];
+
+  If[ remaining === 0 || exitcode === 2,
+    editor@closeWindow[];
+    JLink`ReleaseObject[editor];
+    editor = False;
+    If[exitcode === 2, Abort[]];
+  ];
+
   ginfo
 ]
 
 
-htopedit = False
+editorclass = editor = False
 
-TopEdit[ __ ] = $Aborted
+remaining = 0
 
 
 $LoadedGraphInfos = $ModifiedGraphInfos = {}
 
-
 SaveGraphInfos[ ] := (
-  Put[ Definition[#], $TopologyDataDir <> # <> ".m" ]&/@
+  Put[ Definition[#], ToFileName[$TopologyDataDir, # <> ".m"] ]&/@
     $ModifiedGraphInfos;
   $ModifiedGraphInfos = {} )
 
@@ -844,104 +1059,188 @@ ShortHand[ Loop[_] ] = "Loop"
 ShortHand[ type_ ] := StringTake[ ToString[type], 3 ]
 
 
-SymbolChar[ c_ ] := FontForm[c, {"Symbol", #}]&
+ToPS[ "\\alpha" ] = SymbolChar["a"];
+ToPS[ "\\beta" ] = SymbolChar["b"];
+ToPS[ "\\gamma" ] = SymbolChar["g"];
+ToPS[ "\\delta" ] = SymbolChar["d"];
+ToPS[ "\\epsilon" ] = ToPS[ "\\varepsilon" ] = SymbolChar["e"];
+ToPS[ "\\zeta" ] = SymbolChar["z"];
+ToPS[ "\\eta" ] = SymbolChar["h"];
+ToPS[ "\\theta" ] = SymbolChar["q"];
+ToPS[ "\\vartheta" ] = SymbolChar["J"];
+ToPS[ "\\iota" ] = SymbolChar["i"];
+ToPS[ "\\kappa" ] = SymbolChar["k"];
+ToPS[ "\\lambda" ] = SymbolChar["l"];
+ToPS[ "\\mu" ] = SymbolChar["m"];
+ToPS[ "\\nu" ] = SymbolChar["n"];
+ToPS[ "\\xi" ] = SymbolChar["x"];
+ToPS[ "\\pi" ] = SymbolChar["p"];
+ToPS[ "\\varpi" ] = SymbolChar["v"];
+ToPS[ "\\rho" ] = ToPS[ "\\varrho" ] = SymbolChar["r"];
+ToPS[ "\\sigma" ] = SymbolChar["s"];
+ToPS[ "\\varsigma" ] = SymbolChar["V"];
+ToPS[ "\\tau" ] = SymbolChar["t"];
+ToPS[ "\\upsilon" ] = SymbolChar["u"];
+ToPS[ "\\phi" ] = SymbolChar["f"];
+ToPS[ "\\varphi" ] = SymbolChar["j"];
+ToPS[ "\\chi" ] = SymbolChar["c"];
+ToPS[ "\\psi" ] = SymbolChar["y"];
+ToPS[ "\\omega" ] = SymbolChar["w"];
+ToPS[ "\\Gamma" ] = SymbolChar["G"];
+ToPS[ "\\Delta" ] = SymbolChar["D"];
+ToPS[ "\\Theta" ] = SymbolChar["Q"];
+ToPS[ "\\Lambda" ] = SymbolChar["L"];
+ToPS[ "\\Xi" ] = SymbolChar["X"];
+ToPS[ "\\Pi" ] = SymbolChar["P"];
+ToPS[ "\\Sigma" ] = SymbolChar["S"];
+ToPS[ "\\Upsilon" ] = SymbolChar["\241"];
+ToPS[ "\\Phi" ] = SymbolChar["F"];
+ToPS[ "\\Psi" ] = SymbolChar["X"];
+ToPS[ "\\Omega" ] = SymbolChar["W"];
+ToPS[ "\\infty" ] = SymbolChar["\245"];
+ToPS[ "\\pm" ] = SymbolChar["\261"];
+ToPS[ "\\partial" ] = SymbolChar["\266"];
+ToPS[ "\\leq" ] = SymbolChar["\243"];
+ToPS[ "\\geq" ] = SymbolChar["\263"];
+ToPS[ "\\times" ] = SymbolChar["\264"];
+ToPS[ "\\otimes" ] = SymbolChar["\304"];
+ToPS[ "\\oplus" ] = SymbolChar["\305"];
+ToPS[ "\\nabla" ] = SymbolChar["\321"];
+ToPS[ "\\neq" ] = SymbolChar["\271"];
+ToPS[ "\\equiv" ] = SymbolChar["\272"];
+ToPS[ "\\approx" ] = SymbolChar["\273"];
+ToPS[ "\\ldots" ] = SymbolChar["\274"];
+ToPS[ "\\in" ] = SymbolChar["\316"];
+ToPS[ "\\notin" ] = SymbolChar["\317"];
+ToPS[ "\\sim" ] = SymbolChar["\176"];
+ToPS[ "\\sqrt" ] = SymbolChar["\326"];
+ToPS[ "\\propto" ] = SymbolChar["\265"];
+ToPS[ "\\subset" ] = SymbolChar["\314"];
+ToPS[ "\\supset" ] = SymbolChar["\311"];
+ToPS[ "\\subseteq" ] = SymbolChar["\315"];
+ToPS[ "\\supseteq" ] = SymbolChar["\312"];
+ToPS[ "\\bullet" ] = SymbolChar["\267"];
+ToPS[ "\\perp" ] = SymbolChar["^"];
+ToPS[ "\\simeq" ] = SymbolChar["@"];
+ToPS[ "\\vee" ] = SymbolChar["\332"];
+ToPS[ "\\wedge" ] = SymbolChar["\331"];
+ToPS[ "\\leftrightarrow" ] = SymbolChar["\253"];
+ToPS[ "\\leftarrow" ] = SymbolChar["\254"];
+ToPS[ "\\rightarrow" ] = ToPS[ "\\to" ] = SymbolChar["\256"];
+ToPS[ "\\uparrow" ] = SymbolChar["\255"];
+ToPS[ "\\downarrow" ] = SymbolChar["\257"];
+ToPS[ "\\Leftarrow" ] = SymbolChar["\334"];
+ToPS[ "\\Rightarrow" ] = SymbolChar["\336"];
+ToPS[ "\\Uparrow" ] = SymbolChar["\335"];
+ToPS[ "\\Downarrow" ] = SymbolChar["\337"];
+ToPS[ "\\bar" ] = "\305";
+ToPS[ "\\hat" ] = "\303";
+ToPS[ "\\tilde" ] = "\304";
+ToPS[ "\\dot" ] = "\307";
+ToPS[ "\\ddot" ] = "\310";
+ToPS[ "\\vec" ] = SymbolChar["\256"];
+ToPS[ "\\prime" ] = "'";
+ToPS[ "\\#" ] = "#";
+ToPS[ "\\&" ] = "&";
+ToPS[ "\\$" ] = "$";
+ToPS[ "\\%" ] = "%";
+ToPS[ "\\_" ] = "_";
+ToPS[ "-" ] = SymbolChar["-"];
+ToPS[ Null ] = SymbolChar[];
+ToPS[ ComposedChar[t__] ] := ToPS/@ {t};
+ToPS[ c_ ] := ToString[c]
 
-TextChar[ c_ ] := FontForm[c, {TextFont, #}]&
-
-TeXToPS[ "\\alpha" ] := SymbolChar["a"];
-TeXToPS[ "\\beta" ] := SymbolChar["b"];
-TeXToPS[ "\\gamma" ] := SymbolChar["g"];
-TeXToPS[ "\\delta" ] := SymbolChar["d"];
-TeXToPS[ "\\epsilon" ] := SymbolChar["e"];
-TeXToPS[ "\\varepsilon" ] := SymbolChar["e"];
-TeXToPS[ "\\zeta" ] := SymbolChar["z"];
-TeXToPS[ "\\eta" ] := SymbolChar["h"];
-TeXToPS[ "\\theta" ] := SymbolChar["q"];
-TeXToPS[ "\\vartheta" ] := SymbolChar["J"];
-TeXToPS[ "\\iota" ] := SymbolChar["i"];
-TeXToPS[ "\\kappa" ] := SymbolChar["k"];
-TeXToPS[ "\\lambda" ] := SymbolChar["l"];
-TeXToPS[ "\\mu" ] := SymbolChar["m"];
-TeXToPS[ "\\nu" ] := SymbolChar["n"];
-TeXToPS[ "\\xi" ] := SymbolChar["x"];
-TeXToPS[ "\\pi" ] := SymbolChar["p"];
-TeXToPS[ "\\varpi" ] := SymbolChar["v"];
-TeXToPS[ "\\rho" ] := SymbolChar["r"];
-TeXToPS[ "\\varrho" ] := SymbolChar["r"];
-TeXToPS[ "\\sigma" ] := SymbolChar["s"];
-TeXToPS[ "\\varsigma" ] := SymbolChar["V"];
-TeXToPS[ "\\tau" ] := SymbolChar["t"];
-TeXToPS[ "\\upsilon" ] := SymbolChar["u"];
-TeXToPS[ "\\phi" ] := SymbolChar["f"];
-TeXToPS[ "\\varphi" ] := SymbolChar["j"];
-TeXToPS[ "\\chi" ] := SymbolChar["c"];
-TeXToPS[ "\\psi" ] := SymbolChar["y"];
-TeXToPS[ "\\omega" ] := SymbolChar["w"];
-TeXToPS[ "\\Gamma" ] := SymbolChar["G"];
-TeXToPS[ "\\Delta" ] := SymbolChar["D"];
-TeXToPS[ "\\Theta" ] := SymbolChar["Q"];
-TeXToPS[ "\\Lambda" ] := SymbolChar["L"];
-TeXToPS[ "\\Xi" ] := SymbolChar["X"];
-TeXToPS[ "\\Pi" ] := SymbolChar["P"];
-TeXToPS[ "\\Sigma" ] := SymbolChar["S"];
-TeXToPS[ "\\Upsilon" ] := SymbolChar["\241"];
-TeXToPS[ "\\Phi" ] := SymbolChar["F"];
-TeXToPS[ "\\Psi" ] := SymbolChar["X"];
-TeXToPS[ "\\Omega" ] := SymbolChar["W"];
-TeXToPS[ "\\infty" ] := SymbolChar["\245"];
-TeXToPS[ "\\pm" ] := SymbolChar["\261"];
-TeXToPS[ "\\partial" ] := SymbolChar["\266"];
-TeXToPS[ "\\leq" ] := SymbolChar["\243"];
-TeXToPS[ "\\geq" ] := SymbolChar["\263"];
-TeXToPS[ "\\times" ] := SymbolChar["\264"];
-TeXToPS[ "\\otimes" ] := SymbolChar["\304"];
-TeXToPS[ "\\oplus" ] := SymbolChar["\305"];
-TeXToPS[ "\\nabla" ] := SymbolChar["\321"];
-TeXToPS[ "\\neq" ] := SymbolChar["\271"];
-TeXToPS[ "\\equiv" ] := SymbolChar["\272"];
-TeXToPS[ "\\approx" ] := SymbolChar["\273"];
-TeXToPS[ "\\ldots" ] := SymbolChar["\274"];
-TeXToPS[ "\\in" ] := SymbolChar["\316"];
-TeXToPS[ "\\notin" ] := SymbolChar["\317"];
-TeXToPS[ "\\sim" ] := SymbolChar["\176"];
-TeXToPS[ "\\forall" ] := SymbolChar["\""];
-TeXToPS[ "\\exists" ] := SymbolChar["$"];
-TeXToPS[ "\\sqrt" ] := SymbolChar["\326"];
-TeXToPS[ "\\propto" ] := SymbolChar["\265"];
-TeXToPS[ "\\subset" ] := SymbolChar["\314"];
-TeXToPS[ "\\supset" ] := SymbolChar["\311"];
-TeXToPS[ "\\subseteq" ] := SymbolChar["\315"];
-TeXToPS[ "\\supseteq" ] := SymbolChar["\312"];
-TeXToPS[ "\\bullet" ] := SymbolChar["\267"];
-TeXToPS[ "\\perp" ] := SymbolChar["^"];
-TeXToPS[ "\\simeq" ] := SymbolChar["@"];
-TeXToPS[ "\\vee" ] := SymbolChar["\332"];
-TeXToPS[ "\\wedge" ] := SymbolChar["\331"];
-TeXToPS[ "\\leftrightarrow" ] := SymbolChar["\253"];
-TeXToPS[ "\\leftarrow" ] := SymbolChar["\254"];
-TeXToPS[ "\\rightarrow" ] := SymbolChar["\256"];
-TeXToPS[ "\\to" ] := SymbolChar["\256"];
-TeXToPS[ "\\uparrow" ] := SymbolChar["\255"];
-TeXToPS[ "\\downarrow" ] := SymbolChar["\257"];
-TeXToPS[ "\\Leftarrow" ] := SymbolChar["\334"];
-TeXToPS[ "\\Rightarrow" ] := SymbolChar["\336"];
-TeXToPS[ "\\Uparrow" ] := SymbolChar["\335"];
-TeXToPS[ "\\Downarrow" ] := SymbolChar["\337"];
-TeXToPS[ "\\bar" ] := SymbolChar["-"];
-TeXToPS[ "-" ] := SymbolChar["-"];
-TeXToPS[ "\\hat" ] := TextChar["^"];
-TeXToPS[ "\\tilde" ] := TextChar["~"];
-TeXToPS[ "\\dot" ] := SymbolChar["\327"];
-TeXToPS[ "\\ddot" ] := SymbolChar["\327\327"];
-TeXToPS[ "\\vec" ] := SymbolChar["\256"];
-TeXToPS[ "\\prime" ] := TextChar["'"];
-TeXToPS[ "\\ast" ] := TextChar["*"];
-TeXToPS[ "\\#" ] := TextChar["#"];
-TeXToPS[ "\\&" ] := TextChar["&"];
-TeXToPS[ "\\$" ] := TextChar["$"];
-TeXToPS[ "\\%" ] := TextChar["%"];
-TeXToPS[ "\\_" ] := TextChar["_"];
-TeXToPS[ c_ ] := TextChar[ToString[c]]
+ToUnicode[ "\\alpha" ] = "\[Alpha]";
+ToUnicode[ "\\beta" ] = "\[Beta]";
+ToUnicode[ "\\gamma" ] = "\[Gamma]";
+ToUnicode[ "\\delta" ] = "\[Delta]";
+ToUnicode[ "\\epsilon" ] = "\[Epsilon]";
+ToUnicode[ "\\varepsilon" ] = "\[CurlyEpsilon]";
+ToUnicode[ "\\zeta" ] = "\[Zeta]";
+ToUnicode[ "\\eta" ] = "\[Eta]";
+ToUnicode[ "\\theta" ] = "\[Theta]";
+ToUnicode[ "\\vartheta" ] = "\[CurlyTheta]";
+ToUnicode[ "\\iota" ] = "\[Iota]";
+ToUnicode[ "\\kappa" ] = "\[Kappa]";
+ToUnicode[ "\\lambda" ] = "\[Lambda]";
+ToUnicode[ "\\mu" ] = "\[Mu]";
+ToUnicode[ "\\nu" ] = "\[Nu]";
+ToUnicode[ "\\xi" ] = "\[Xi]";
+ToUnicode[ "\\pi" ] = "\[Pi]";
+ToUnicode[ "\\varpi" ] = "\[CurlyPi]";
+ToUnicode[ "\\rho" ] = "\[Rho]";
+ToUnicode[ "\\varrho" ] = "\[CurlyRho]";
+ToUnicode[ "\\sigma" ] = "\[Sigma]";
+ToUnicode[ "\\varsigma" ] = "\[FinalSigma]";
+ToUnicode[ "\\tau" ] = "\[Tau]";
+ToUnicode[ "\\upsilon" ] = "\[Upsilon]";
+ToUnicode[ "\\phi" ] = "\[Phi]";
+ToUnicode[ "\\varphi" ] = "\[CurlyPhi]";
+ToUnicode[ "\\chi" ] = "\[Chi]";
+ToUnicode[ "\\psi" ] = "\[Psi]";
+ToUnicode[ "\\omega" ] = "\[Omega]";
+ToUnicode[ "\\Gamma" ] = "\[CapitalGamma]";
+ToUnicode[ "\\Delta" ] = "\[CapitalDelta]";
+ToUnicode[ "\\Theta" ] = "\[CapitalTheta]";
+ToUnicode[ "\\Lambda" ] = "\[CapitalLambda]";
+ToUnicode[ "\\Xi" ] = "\[CapitalXi]";
+ToUnicode[ "\\Pi" ] = "\[CapitalPi]";
+ToUnicode[ "\\Sigma" ] = "\[CapitalSigma]";
+ToUnicode[ "\\Upsilon" ] = "\[CapitalUpsilon]";
+ToUnicode[ "\\Phi" ] = "\[CapitalPhi]";
+ToUnicode[ "\\Psi" ] = "\[CapitalPsi]";
+ToUnicode[ "\\Omega" ] = "\[CapitalOmega]";
+ToUnicode[ "\\infty" ] = "\[Infinity]";
+ToUnicode[ "\\pm" ] = "\[PlusMinus]";
+ToUnicode[ "\\partial" ] = "\[PartialD]";
+ToUnicode[ "\\leq" ] = "\[LessEqual]";
+ToUnicode[ "\\geq" ] = "\[GreaterEqual]";
+ToUnicode[ "\\times" ] = "\[Times]";
+ToUnicode[ "\\otimes" ] = "\[CircleTimes]";
+ToUnicode[ "\\oplus" ] = "\[CirclePlus]";
+ToUnicode[ "\\nabla" ] = "\[Del]";
+ToUnicode[ "\\neq" ] = "\[NotEqual]";
+ToUnicode[ "\\equiv" ] = "\[Congruent]";
+ToUnicode[ "\\approx" ] = "\[TildeTilde]";
+ToUnicode[ "\\ldots" ] = "\[Ellipsis]";
+ToUnicode[ "\\in" ] = "\[Element]";
+ToUnicode[ "\\notin" ] = "\[NotElement]";
+ToUnicode[ "\\sim" ] = "\[Tilde]";
+ToUnicode[ "\\sqrt" ] = "\[Sqrt]";
+ToUnicode[ "\\propto" ] = "\[Proportional]";
+ToUnicode[ "\\subset" ] = "\[Subset]";
+ToUnicode[ "\\supset" ] = "\[Superset]";
+ToUnicode[ "\\subseteq" ] = "\[SubsetEqual]";
+ToUnicode[ "\\supseteq" ] = "\[SupersetEqual]";
+ToUnicode[ "\\bullet" ] = "\[FilledSmallCircle]";
+ToUnicode[ "\\perp" ] = "\[RightAngle]";
+ToUnicode[ "\\simeq" ] = "\[TildeEqual]";
+ToUnicode[ "\\vee" ] = "\[Vee]";
+ToUnicode[ "\\wedge" ] = "\[Wedge]";
+ToUnicode[ "\\leftrightarrow" ] = "\[LeftRightArrow]";
+ToUnicode[ "\\leftarrow" ] = "\[LeftArrow]";
+ToUnicode[ "\\rightarrow" ] = ToUnicode[ "\\to" ] = "\[RightArrow]";
+ToUnicode[ "\\uparrow" ] = "\[UpArrow]";
+ToUnicode[ "\\downarrow" ] = "\[DownArrow]";
+ToUnicode[ "\\Leftarrow" ] = "\[DoubleLeftArrow]";
+ToUnicode[ "\\Rightarrow" ] = "\[DoubleRightArrow]";
+ToUnicode[ "\\Uparrow" ] = "\[DoubleUpArrow]";
+ToUnicode[ "\\Downarrow" ] = "\[DoubleDownArrow]";
+ToUnicode[ "\\bar" ] = "-";
+ToUnicode[ "\\hat" ] = "^";
+ToUnicode[ "\\tilde" ] = "\[Tilde]";
+ToUnicode[ "\\dot" ] = "\[CenterDot]";
+ToUnicode[ "\\ddot" ] = "\[CenterDot]\[CenterDot]";
+ToUnicode[ "\\vec" ] = "\[RightVector]";
+ToUnicode[ "\\prime" ] = "'";
+ToUnicode[ "\\#" ] = "#";
+ToUnicode[ "\\&" ] = "&";
+ToUnicode[ "\\$" ] = "$";
+ToUnicode[ "\\%" ] = "%";
+ToUnicode[ "\\_" ] = "_";
+ToUnicode[ Null ] = " ";
+ToUnicode[ ComposedChar[t__] ] := ToUnicode/@ {t};
+ToUnicode[ c_ ] := ToString[c]
 
 End[]
 

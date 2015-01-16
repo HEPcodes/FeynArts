@@ -2,7 +2,7 @@
 	Insert.m
 		Insertion of fields into topologies created by 
 		CreateTopologies.
-		last modified 25 May 00 th
+		last modified 3 May 01 th
 
 The insertion is done in 3 levels: insertion of generic fields (Generic),
 of classes of a certain model (Classes) or of the members of the classes
@@ -24,9 +24,7 @@ Options[ InsertFields ] = {
   ExcludeParticles -> {}, 
   LastSelections -> {},
   ExcludeFieldPoints -> {},
-  Restrictions -> {},
-  VertexFunctions -> False,
-  ProcessName -> Automatic
+  Restrictions -> {}
 } 
 
 InsertFields::syntax =
@@ -48,12 +46,12 @@ InsertFields[ top:P$Topology, args__ ] :=
 
 InsertFields[ tops:TopologyList[__] | TopologyList[__][__],
   initial_ -> final_, options___Rule ] :=
-Block[ {mod, iorule, pp, ninc, nout, pinc, pout, iotops, lookup,
-chkfp, fields, ilevel, level, exclP, res, omit, need, topnr = 0,
+Block[ {mod, iorule, pp, ninc, nout, pinc, pout, iotops, fields,
+ilevel, level, exclP, res, omit, need, topnr = 0,
 opt = ActualOptions[InsertFields, options]},
 
-  If[ (ilevel = ResolveLevel[InsertionLevel /. opt]) === $Aborted,
-    Return[$Aborted] ];
+  If[ (ilevel = ResolveLevel[InsertionLevel /. opt]) === $Failed,
+    Return[$Failed] ];
 
   iorule = Flatten[{initial}] -> Flatten[{final}] /.
     _Integer p_Symbol -> p;
@@ -68,17 +66,17 @@ opt = ActualOptions[InsertFields, options]},
   pout = Count[iotops[[1]], Outgoing, Infinity, Heads -> True];
   If[ ninc =!= pinc || nout =!= pout,
     Message[InsertFields::extnumber, ninc, nout, pinc, pout];
-    Return[$Aborted]
+    Return[$Failed]
   ];
 
   If[ InitializeModel[ mod = Model /. opt,
     GenericModel -> (GenericModel /. opt),
-    Reinitialize -> False ] === $Aborted, Return[$Aborted] ];
+    Reinitialize -> False ] === $Failed, Return[$Failed] ];
 
   If[ Or@@ (If[ InModelQ[#], False,
     Message[InsertFields::badparticle, #, mod]; True ]&)/@
       Join@@ iorule,
-    Return[$Aborted] ];
+    Return[$Failed] ];
 
   exclP = RestrictCurrentModel[ Restrictions /. opt,
     Cases[opt, _[ExcludeFieldPoints | ExcludeParticles, _]]
@@ -90,27 +88,19 @@ opt = ActualOptions[InsertFields, options]},
   omit = Union[ Join[omit, AntiParticle/@ omit] ];
   need = CheckProperField/@ Complement[pp /. !x_ -> x, omit];
 
-  opt = Append[
-    opt /. (ProcessName -> Automatic) :>
-      (ProcessName -> StringJoin[FieldToString/@ Join@@ iorule]),
-    Process -> iorule ];
+  AppendTo[opt, Process -> iorule];
 
   FAPrint[2, ""];
   FAPrint[2, "inserting at level(s) ", ilevel];
 
   fields = MapIndexed[ Field@@ #2 -> #1 &,
     Join[ iorule[[1]], AntiParticle/@ iorule[[2]] ] ];
-  lookup = PossibleFields;
-  chkfp = CheckFieldPoint;
-  If[ VertexFunctions /. opt,
-    lookup = PossibleFieldsVF;
-    chkfp = CheckFieldPointVF ];
   ninc = Length[fields];
   level = Last[ilevel];
   res = PickLevel[ilevel][
     (TopologyList@@ opt)@@ TopologyInsert/@ iotops ];
 
-  WriteStatistics[1, "in total: ", res, ilevel, " insertions"];
+  FAPrint[1, "in total: ", Statistics[res, ilevel, " insertion"]];
 
   RestrictCurrentModel[];
   res /. Insertions -> NumberInsertions
@@ -182,10 +172,7 @@ TopologyInsert[ top_ -> Insertions[_][ins_, ___] ] :=
 
 TopologyInsert[ top:Topology[_][__] ] :=
   TopologyInsert[
-    MapIndexed[ Append[#1, Field@@ #2]&,
-      Sort[ Sort[Take[#, 2]]&/@ top /.
-        {Incoming -> AAA, Outgoing -> AAB} ] /.
-        {AAA -> Incoming, AAB -> Outgoing} ] ->
+    MapIndexed[ Append[#1, Field@@ #2]&, top ] ->
       { Graph@@ Join[fields,
           Array[Field[#] -> 0 &, Length[top] - ninc, ninc + 1]] } ]
 
@@ -194,18 +181,18 @@ Block[ {vertli, fpoints, res, topol = top},
   fpoints = Map[
     Function[ v,
       FieldPoint[ Append[Head[v], 0][[2]] ]@@ (TakeInc[v, #]&)/@ top ],
-    DeleteCases[Take[#, 2], Vertex[1][_]]&/@ top,
+    DeleteCases[Take[#, 2], Vertex[1, ___][_]]&/@ top,
     {2} ];
   vertli = Union[Flatten[ Apply[List, fpoints, {0, 1}] ]];
 
 	(* if the field points exist with the external particles
 	   inserted, start insertion process *)
   res =
-    If[ VectorQ[vertli /. ToClasses[fields], chkfp[Sort[#]]&],
+    If[ VectorQ[vertli /. ToClasses[fields], CheckFP],
       Catch[ DoInsert[level][ins] ],
       Insertions[Generic][] ];
-  WriteStatistics[ 2, "> Top. ", ++topnr, ": ",
-    top -> res, ilevel, " insertions" ];
+  FAPrint[2, "> Top. ", ++topnr, ": ",
+    Statistics[top -> res, ilevel, " insertion"]];
   top -> res
 ]
 
@@ -217,24 +204,22 @@ RightPartner[ fi_ ] := MixingPartners[fi][[-1]] /; FreeQ[fi, Field]
 
 ParticleLookup[ fp_, SV ] :=
   Flatten[ SVCompatibles/@
-    lookup[ fp[[0, 1]] ][V, FieldPoint@@ (fp /. Field[_] -> V)] ]
+    Lookup[ fp[[0, 1]] ][V, FieldPoint@@ (fp /. Field[_] -> V)] ]
 
 ParticleLookup[ fp_, VS ] :=
   Flatten[ SVCompatibles/@
-    lookup[ fp[[0, 1]] ][S, FieldPoint@@ (fp /. Field[_] -> S)] ]
+    Lookup[ fp[[0, 1]] ][S, FieldPoint@@ (fp /. Field[_] -> S)] ]
 
 ParticleLookup[ fp_, p_ ] :=
   Flatten[ Compatibles/@
-    lookup[ fp[[0, 1]] ][p, FieldPoint@@ (fp /. Field[_] -> p)] ]
+    Lookup[ fp[[0, 1]] ][p, FieldPoint@@ (fp /. Field[_] -> p)] ]
 
 
-(* for VertexFunctions -> True: *)
+Lookup[ cto_?NonNegative ] = PossibleFields[cto]
 
-PossibleFieldsVF[0] = PossibleFields[0]
+Lookup[ cto_ ][ 0, fp_ ] := PossibleFields[-cto][0, fp]
 
-PossibleFieldsVF[cto_][ 0, fp_ ] := PossibleFields[cto][0, fp]
-
-PossibleFieldsVF[_][ p_, fp_ ] :=
+Lookup[ _ ][ p_, fp_ ] :=
 Block[ {n = Position[fp, p, {1}, 1]},
   Select[
     Select[F$Classes, !FreeQ[#, p]&],
@@ -242,9 +227,12 @@ Block[ {n = Position[fp, p, {1}, 1]},
 ]
 
 
-CheckFieldPointVF[ fp_ ] :=
+CheckFP[ fp:FieldPoint[_?NonNegative][__] ] :=
+  CheckFieldPoint[ Sort[fp] ]
+
+CheckFP[ fp_ ] :=
   !FreeQ[fp, Field] ||
-  ( MemberQ[GenericFieldPoints[], FieldPoint@@ ToGeneric[fp] /. 0 -> _] &&
+  ( MemberQ[FieldPoints[Generic], FieldPoint@@ ToGeneric[fp] /. 0 -> _] &&
     VFAllowed[fp] )
 
 
@@ -267,7 +255,7 @@ Block[ {vx, leftpart, p = ru[[i, 2]], ckfp},
 
   leftpart = ParticleLookup[vx[[1]], AntiParticle[p]];
 
-  ckfp[ n_, fi_ ] := chkfp[Sort[ vx[[n]] /. Field[i] -> fi ]];
+  ckfp[ n_, fi_ ] := CheckFP[ vx[[n]] /. Field[i] -> fi ];
 
   leftpart = If[ Length[vx] === 1,		(* tadpoles *)
     Select[ Intersection[leftpart, F$AllowedFields], ckfp[1, #]& ],

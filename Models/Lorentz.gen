@@ -2,7 +2,7 @@
 	Lorentz.gen
 		Generic model file for the Lorentz formalism
 		by A. Denner, H. Eck, O. Hahn, S. Kueblbeck 1995
-		last modified 1 Jun 99 by Thomas Hahn
+		last modified 28 Sep 01 by Thomas Hahn
 
 This file defines the generic analytical propagators and couplings.
 The model described herein is the standard generic model of renormalizable
@@ -25,7 +25,7 @@ KinematicIndices[ S ] = {};
 KinematicIndices[ SV ] = {Lorentz};
 KinematicIndices[ U ] = {}
 
-Appearance[ Index[Lorentz, i_Integer] ] := Greek[i + 11]
+Appearance[ Index[Lorentz, mu_Integer] ] := Greek[mu + 11]
 
 Attributes[ MetricTensor ] = Attributes[ ScalarProduct ] = {Orderless}
 
@@ -36,11 +36,11 @@ M$GenericPropagators = {
 
 	(* general fermion propagator: *)
 
-  AnalyticalPropagator[External][ s F[i, mom] ] == 
+  AnalyticalPropagator[External][ s1 F[j1, mom] ] == 
     NonCommutative[
-      If[ SelfConjugate[F[i]],
+      If[ SelfConjugate[F[j1]],
         MajoranaSpinor,
-        DiracSpinor ][-mom, Mass[F[i]]] ],
+        DiracSpinor ][-mom, Mass[F[j1]]] ],
 
 	(* Remarks:
 	   Fermionic propagators have (like all others, too) their
@@ -54,41 +54,41 @@ M$GenericPropagators = {
 	   for a momentum flowing against the fermion flow so, again, we
 	   end up with S(-p). *)
 
-  AnalyticalPropagator[Internal][ s F[i, mom] ] ==
-    NonCommutative[ DiracSlash[-mom] + Mass[F[i]] ] *
-      I PropagatorDenominator[mom, Mass[F[i]]], 
+  AnalyticalPropagator[Internal][ s1 F[j1, mom] ] ==
+    NonCommutative[ DiracSlash[-mom] + Mass[F[j1]] ] *
+      I PropagatorDenominator[mom, Mass[F[j1]]], 
 
 	(* general vector boson propagator: *)
 
-  AnalyticalPropagator[External][ s V[i, mom, {li2}] ] ==
-    PolarizationVector[V[i], mom, li2],
+  AnalyticalPropagator[External][ s1 V[j1, mom, {li2}] ] ==
+    PolarizationVector[V[j1], mom, li2],
 
-  AnalyticalPropagator[Internal][ s V[i, mom, {li1} -> {li2}] ] ==
-    -I PropagatorDenominator[mom, Mass[V[i]]] *
-      (MetricTensor[li1, li2] - (1 - GaugeXi[V[i]]) *
+  AnalyticalPropagator[Internal][ s1 V[j1, mom, {li1} -> {li2}] ] ==
+    -I PropagatorDenominator[mom, Mass[V[j1]]] *
+      (MetricTensor[li1, li2] - (1 - GaugeXi[V[j1]]) *
          FourVector[mom, li1] FourVector[mom, li2] *
-         PropagatorDenominator[mom, Sqrt[GaugeXi[V[i]]] Mass[V[i]]]),
+         PropagatorDenominator[mom, Sqrt[GaugeXi[V[j1]]] Mass[V[j1]]]),
 
 	(* general mixing scalar-vector propagator: *)
 
-  AnalyticalPropagator[Internal][ s SV[i, mom, {li1} -> {li2}] ] == 
-    I Mass[SV[i]] PropagatorDenominator[mom, Mass[SV[i]]] *
-      FourVector[mom, If[s == 1 || s == -2, li1, li2]],
+  AnalyticalPropagator[Internal][ s1 SV[j1, mom, {li1} -> {li2}] ] == 
+    I Mass[SV[j1]] PropagatorDenominator[mom, Mass[SV[j1]]] *
+      FourVector[mom, If[s1 == 1 || s1 == -2, li1, li2]],
 
 	(* general scalar propagator: *)
 
-  AnalyticalPropagator[External][ s S[i, mom] ] == 1,
+  AnalyticalPropagator[External][ s1 S[j1, mom] ] == 1,
 
-  AnalyticalPropagator[Internal][ s S[i, mom] ] ==
-    I PropagatorDenominator[mom, Sqrt[GaugeXi[S[i]]] Mass[S[i]]],
+  AnalyticalPropagator[Internal][ s1 S[j1, mom] ] ==
+    I PropagatorDenominator[mom, Sqrt[GaugeXi[S[j1]]] Mass[S[j1]]],
 
 	(* general Fadeev-Popov ghost propagator: *)
 
-  AnalyticalPropagator[External][ s U[i, mom] ] == 1,
+  AnalyticalPropagator[External][ s1 U[j1, mom] ] == 1,
 
-  AnalyticalPropagator[Internal][ s U[i, mom] ] ==
-    I Sqrt[GaugeXi[U[i]]] *
-       PropagatorDenominator[mom, Sqrt[GaugeXi[U[i]]] Mass[U[i]]]
+  AnalyticalPropagator[Internal][ s1 U[j1, mom] ] ==
+    I Sqrt[GaugeXi[U[j1]]] *
+       PropagatorDenominator[mom, Sqrt[GaugeXi[U[j1]]] Mass[U[j1]]]
 }
 
 	(* Definition of the generic couplings.
@@ -119,37 +119,37 @@ M$GenericCouplings = {
 
 	(* V-V: *)
 
-  AnalyticalCoupling[ s1 V[i, mom1, {li1}], s2 V[j, mom2, {li2}] ] ==
-    G[1][s1 V[i], s2 V[j]] .
+  AnalyticalCoupling[ s1 V[j1, mom1, {li1}], s2 V[j2, mom2, {li2}] ] ==
+    G[1][s1 V[j1], s2 V[j2]] .
       { MetricTensor[li1, li2] ScalarProduct[mom1, mom2],
         MetricTensor[li1, li2],
         FourVector[mom1, li2] FourVector[mom2, li1] },
 
 	(* S-V: *)
 
-  AnalyticalCoupling[ s1 S[i, mom1], s2 V[j, mom2, {li2}] ] ==
-    G[1][s1 S[i], s2 V[j]] .
+  AnalyticalCoupling[ s1 S[j1, mom1], s2 V[j2, mom2, {li2}] ] ==
+    G[1][s1 S[j1], s2 V[j2]] .
       { FourVector[mom1, li2],
         FourVector[mom2, li2] },
 
 	(* S-S: *)
 
-  AnalyticalCoupling[ s1 S[i, mom1], s2 S[j, mom2] ] ==
-    G[1][s1 S[i], s2 S[j]] .
+  AnalyticalCoupling[ s1 S[j1, mom1], s2 S[j2, mom2] ] ==
+    G[1][s1 S[j1], s2 S[j2]] .
       { ScalarProduct[mom1, mom2],
         1 },
 
 	(* U-U: *)
 
-  AnalyticalCoupling[ s1 U[i, mom1], s2 U[j, mom2] ] ==
-    G[1][s1 U[i], s2 U[j]] .
+  AnalyticalCoupling[ s1 U[j1, mom1], s2 U[j2, mom2] ] ==
+    G[1][s1 U[j1], s2 U[j2]] .
       { ScalarProduct[mom1, mom2],
         1 },
 
 	(* F-F: *)
 
-  AnalyticalCoupling[ s1 F[i, mom1], s2 F[j, mom2] ] ==
-    G[-1][s1 F[i], s2 F[j]] .
+  AnalyticalCoupling[ s1 F[j1, mom1], s2 F[j2, mom2] ] ==
+    G[-1][s1 F[j1], s2 F[j2]] .
       { NonCommutative[DiracSlash[mom1], ChiralityProjector[-1]],
         NonCommutative[DiracSlash[mom2], ChiralityProjector[+1]],
         NonCommutative[ChiralityProjector[-1]],
@@ -157,83 +157,83 @@ M$GenericCouplings = {
 
 	(* V-V-V-V: *)
 
-  AnalyticalCoupling[ s1 V[i, mom1, {li1}], s2 V[j, mom2, {li2}], 
-      s3 V[k, mom3, {li3}], s4 V[l, mom4, {li4}] ] ==
-    G[1][s1 V[i], s2 V[j], s3 V[k], s4 V[l]] .
+  AnalyticalCoupling[ s1 V[j1, mom1, {li1}], s2 V[j2, mom2, {li2}], 
+      s3 V[j3, mom3, {li3}], s4 V[j4, mom4, {li4}] ] ==
+    G[1][s1 V[j1], s2 V[j2], s3 V[j3], s4 V[j4]] .
       { MetricTensor[li1, li2] MetricTensor[li3, li4],
         MetricTensor[li1, li3] MetricTensor[li2, li4],
         MetricTensor[li1, li4] MetricTensor[li3, li2] },
 
 	(* V-V-V: *)
 
-  AnalyticalCoupling[ s1 V[i, mom1, {li1}], s2 V[j, mom2, {li2}], 
-      s3 V[k, mom3, {li3}] ] ==
-    G[-1][s1 V[i], s2 V[j], s3 V[k]] .
+  AnalyticalCoupling[ s1 V[j1, mom1, {li1}], s2 V[j2, mom2, {li2}], 
+      s3 V[j3, mom3, {li3}] ] ==
+    G[-1][s1 V[j1], s2 V[j2], s3 V[j3]] .
       { MetricTensor[li1, li2] FourVector[mom2 - mom1, li3] +
           MetricTensor[li2, li3] FourVector[mom3 - mom2, li1] +
           MetricTensor[li3, li1] FourVector[mom1 - mom3, li2] },
 
 	(* S-S-S-S: *)
 
-  AnalyticalCoupling[ s1 S[i, mom1], s2 S[j, mom2],
-      s3 S[k, mom3], s4 S[l, mom4] ] ==
-    G[1][s1 S[i], s2 S[j], s3 S[k], s4 S[l]] .
+  AnalyticalCoupling[ s1 S[j1, mom1], s2 S[j2, mom2],
+      s3 S[j3, mom3], s4 S[j4, mom4] ] ==
+    G[1][s1 S[j1], s2 S[j2], s3 S[j3], s4 S[j4]] .
       { 1 },
 
 	(* S-S-S: *)
 
-  AnalyticalCoupling[ s1 S[i, mom1], s2 S[j, mom2], s3 S[k, mom3] ] ==
-    G[1][s1 S[i], s2 S[j], s3 S[k]] .
+  AnalyticalCoupling[ s1 S[j1, mom1], s2 S[j2, mom2], s3 S[j3, mom3] ] ==
+    G[1][s1 S[j1], s2 S[j2], s3 S[j3]] .
       { 1 },
 
 	(* S-S-V-V: *)
 
-  AnalyticalCoupling[ s1 S[i, mom1], s2 S[j, mom2],
-      s3 V[k, mom3, {li3}], s4 V[l, mom4, {li4}] ] ==
-    G[1][s1 S[i], s2 S[j], s3 V[k], s4 V[l]] .
+  AnalyticalCoupling[ s1 S[j1, mom1], s2 S[j2, mom2],
+      s3 V[j3, mom3, {li3}], s4 V[j4, mom4, {li4}] ] ==
+    G[1][s1 S[j1], s2 S[j2], s3 V[j3], s4 V[j4]] .
       { MetricTensor[li3, li4] },
 
 	(* S-S-V: *)
 
-  AnalyticalCoupling[ s1 S[i, mom1], s2 S[j, mom2],
-      s3 V[k, mom3, {li3}] ] == 
-    G[-1][s1 S[i], s2 S[j], s3 V[k]] .
+  AnalyticalCoupling[ s1 S[j1, mom1], s2 S[j2, mom2],
+      s3 V[j3, mom3, {li3}] ] == 
+    G[-1][s1 S[j1], s2 S[j2], s3 V[j3]] .
       { FourVector[mom1 - mom2, li3] },
 
 	(* S-V-V: *)
 
-  AnalyticalCoupling[ s1 S[i, mom1], s2 V[j, mom2, {li2}], 
-      s3 V[k, mom3, {li3}] ] ==
-    G[1][s1 S[i], s2 V[j], s3 V[k]] .
+  AnalyticalCoupling[ s1 S[j1, mom1], s2 V[j2, mom2, {li2}], 
+      s3 V[j3, mom3, {li3}] ] ==
+    G[1][s1 S[j1], s2 V[j2], s3 V[j3]] .
       { MetricTensor[li2, li3] },
 
 	(* F-F-V: *)
 
-  AnalyticalCoupling[ s1 F[i, mom1], s2 F[j, mom2],
-      s3 V[k, mom3, {li3}] ] ==
-    G[-1][s1 F[i], s2 F[j], s3 V[k]] .
+  AnalyticalCoupling[ s1 F[j1, mom1], s2 F[j2, mom2],
+      s3 V[j3, mom3, {li3}] ] ==
+    G[-1][s1 F[j1], s2 F[j2], s3 V[j3]] .
       { NonCommutative[DiracMatrix[li3], ChiralityProjector[-1]], 
         NonCommutative[DiracMatrix[li3], ChiralityProjector[+1]] },
  
 	(* F-F-S: *)
 
-  AnalyticalCoupling[ s1 F[i,mom1], s2 F[j,mom2], s3 S[k,mom3] ] ==
-    G[1][s1 F[i], s2 F[j], s3 S[k]] . 
+  AnalyticalCoupling[ s1 F[j1, mom1], s2 F[j2, mom2], s3 S[j3, mom3] ] ==
+    G[1][s1 F[j1], s2 F[j2], s3 S[j3]] . 
       { NonCommutative[ChiralityProjector[-1]],  
         NonCommutative[ChiralityProjector[+1]] },
 
 	(* U-U-V: *)
 
-  AnalyticalCoupling[ s1 U[i, mom1], s2 U[j, mom2],
-      s3 V[k, mom3, {li3}] ] ==
-    G[1][s1 U[i], s2 U[j], s3 V[k]] .
+  AnalyticalCoupling[ s1 U[j1, mom1], s2 U[j2, mom2],
+      s3 V[j3, mom3, {li3}] ] ==
+    G[1][s1 U[j1], s2 U[j2], s3 V[j3]] .
       { FourVector[mom1, li3],
         FourVector[mom2, li3] },
 
 	(* S-U-U: *)
 
-  AnalyticalCoupling[ s1 S[i, mom1], s2 U[j, mom2], s3 U[k, mom3] ] ==
-    G[1][s1 S[i], s2 U[j], s3 U[k]] .
+  AnalyticalCoupling[ s1 S[j1, mom1], s2 U[j2, mom2], s3 U[j3, mom3] ] ==
+    G[1][s1 S[j1], s2 U[j2], s3 U[j3]] .
       { 1 }
 }
 
@@ -260,9 +260,9 @@ M$FermionFlipRule[ 1 -> 2, 2 -> 1 ] =
 	   external Propagators defined in this file. *)
 
 M$TruncationRules = {
-  PolarizationVector[__] -> 1,
-  DiracSpinor[__] -> 1,
-  MajoranaSpinor[__] -> 1 
+  _PolarizationVector -> 1,
+  _DiracSpinor -> 1,
+  _MajoranaSpinor -> 1 
 }
 
 	(* LastGenericRules: the very last rules that are applied to an
@@ -270,8 +270,8 @@ M$TruncationRules = {
 
 M$LastGenericRules = {
 	(* outgoing vector bosons: throw away signs of momenta *)
-  PolarizationVector[p_, _. k:FourMomentum[Outgoing, _], li_] :>
-    Conjugate[PolarizationVector][p, k, li]
+  PolarizationVector[p_, _. mom:FourMomentum[Outgoing, _], li_] :>
+    Conjugate[PolarizationVector][p, mom, li]
 }
 
 
@@ -286,9 +286,8 @@ Format[
     NonCommutative[_[s1_. mom1_, mass1_]],
     r___,
     NonCommutative[_[s2_. mom2_, mass2_]]] ] :=
-  ColumnForm[{"_", If[FreeQ[mom1, Incoming], "u", "v"]},
-    Left, Above][mom1, mass1] . r .
-    If[FreeQ[mom2, Outgoing], "u", "v"][mom2, mass2]
+  Overscript[If[FreeQ[mom1, Incoming], "u", "v"], "_"][mom1, mass1] .
+    r . If[FreeQ[mom2, Outgoing], "u", "v"][mom2, mass2]
 
 Format[ DiracSlash ] = "gs"
 

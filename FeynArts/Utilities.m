@@ -1,7 +1,7 @@
 (*
 	Utilities.m
 		diverse utility functions for other parts of FA
-		last modified 1 Mar 00 th
+		last modified 19 Sep 01 th
 *)
 
 Begin["`Utilities`"]
@@ -40,7 +40,7 @@ ResolveLevel[ Classes ] = {Generic, Classes}
 ResolveLevel[ Particles ] = {Generic, Classes, Particles}
 
 ResolveLevel[ x_ ] :=
-  (Message[ResolveLevel::invalid, x]; $Aborted)
+  (Message[ResolveLevel::invalid, x]; $Failed)
 
 
 ContainsQ[ expr_, {} ] = True
@@ -48,6 +48,12 @@ ContainsQ[ expr_, {} ] = True
 ContainsQ[ expr_, {x_, ___} ] := False /; FreeQ[expr, x]
 
 ContainsQ[ expr_, {_, li___} ] := ContainsQ[expr, {li}]
+
+
+If[ System`Ordering[{1, 2}] =!= {1, 2},
+  System`Ordering[x_] :=
+    Last/@ Sort[Transpose[{x, Range[Length[x]]}]]
+]
 
 
 (* generic fields have no signs (attribute SelfConjugate exists
@@ -152,9 +158,12 @@ Block[ {perm, p},
 ]
 
 
-WriteStatistics[ blabla___, expr_, levels_, what_ ] :=
-  FAPrint[ blabla,
-    Sequence@@ Rest[Flatten[ {
+Pluralize[ n_, what_ ] :=
+  ToString/@ n <> what <> If[Plus@@ Cases[n, _Integer] === 1, "", "s"]
+
+Statistics[ expr_, levels_, what_ ] :=
+  Pluralize[
+    Rest[Flatten[ {
       ", ",
       Plus@@
         Cases[expr, Insertions[#][args__] :> Length[{args}], Infinity],
@@ -173,7 +182,7 @@ UCAlph[ n_ ] := FromCharacterCode[n + 64] /; n > 0 && n < 27
 
 UCAlph[ n_ ] := Message[Alph::badindex, n]
 
-MapIndexed[ Set@@ {Greek@@ #2, #1}&,
+MapIndexed[ (Greek[#1] = #2)&[#2[[1]], #1]&,
   { "\\alpha", "\\beta", "\\gamma", "\\delta", "\\epsilon", "\\zeta",
     "\\eta", "\\theta", "\\iota", "\\kappa", "\\lambda", "\\mu", "\\nu",
     "\\xi", "o", "\\pi", "\\rho", "\\sigma", "\\tau", "\\upsilon",
@@ -181,7 +190,7 @@ MapIndexed[ Set@@ {Greek@@ #2, #1}&,
 
 Greek[ n_ ] := Message[Alph::badindex, n]
 
-MapIndexed[ Set@@ {UCGreek@@ #2, #1}&,
+MapIndexed[ (UCGreek[#1] = #2)&[#2[[1]], #1]&,
   { "A", "B", "\\Gamma", "\\Delta", "E", "Z", "H", "\\Theta", "I", "K",
     "\\Lambda", "M", "N", "\\Xi", "O", "\\Pi", "P", "\\Sigma", "T",
     "\\Upsilon", "\\Phi", "X", "\\Psi", "\\Omega" } ]

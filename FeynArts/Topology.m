@@ -1,7 +1,7 @@
 (*
 	Topology.m
 		Creation of topologies for Feynman graphs
-		last modified 1 Mar 00 th
+		last modified 19 Sep 00 th
 *)
 
 Begin["`Topology`"]
@@ -11,7 +11,7 @@ Begin["`Topology`"]
    =================================
 
    The sets of starting topologies are classified according to their
-   loop number "l" and counterterm order "c" by definition of 
+   loop number "l" and counter-term order "c" by definition of 
    StartTop[l, c]. Usually its setting is a list of topologies
    that contains statements of the form "define[name] = starttop".
    The identifier "name" can then be used with StartingTopologies
@@ -68,7 +68,7 @@ StartTop[0, 1] = TopologyList[
 
 StartTop[0, 2] = TopologyList[
   define[Global`CT[0, 2][1]] = Topology[2][
-    Propagator[Internal][Vertex[1, 1][-1], Vertex[1, 1][-2]] ],
+    Propagator[Internal][Vertex[1, 1][-2], Vertex[1, 1][-1]] ],
   define[Global`CT[0, 2][2]] = Topology[1][
     Propagator[External][Vertex[1][1], Vertex[1, 2][2]] ]
 ]
@@ -80,7 +80,7 @@ StartTop[0, 3] = TopologyList[
     Propagator[Internal][Vertex[1, 1][1], Vertex[1, 2][2]] ],
   define[Global`CT[0, 3][3]] = Topology[2][
     Propagator[Internal][Vertex[1, 1][-1], Vertex[2, 1][1]],
-    Propagator[Internal][Vertex[2, 1][1], Vertex[1, 1][-2]] ],
+    Propagator[Internal][Vertex[1, 1][-2], Vertex[2, 1][1]] ],
   define[Global`CT[0, 3][4]] = Topology[6][
     Propagator[Internal][Vertex[1, 1][-1], Vertex[3][1]],
     Propagator[Internal][Vertex[1, 1][-2], Vertex[3][1]],
@@ -89,52 +89,52 @@ StartTop[0, 3] = TopologyList[
 
 StartTop[1, 0] = TopologyList[
   Topology[2][   
-    Propagator[Loop[1]][Vertex[3][2], Vertex[3][2]],
-    Propagator[External][Vertex[1][1], Vertex[3][2]] ]
+    Propagator[External][Vertex[1][1], Vertex[3][2]],
+    Propagator[Loop[1]][Vertex[3][2], Vertex[3][2]] ]
 ]
 
 StartTop[1, 1] = TopologyList[
   define[Global`CT[1, 1][1]] = Topology[2][
     Propagator[Loop[1]][Vertex[2, 1][1], Vertex[2, 1][1]] ],
   define[Global`CT[1, 1][2]] = Topology[2][
-    Propagator[Loop[1]][Vertex[3][2], Vertex[3][2]],
-    Propagator[Internal][Vertex[1, 1][1], Vertex[3][2]] ]
+    Propagator[Internal][Vertex[1, 1][1], Vertex[3][2]],
+    Propagator[Loop[1]][Vertex[3][2], Vertex[3][2]] ]
 ]
 
 StartTop[1, 2] = TopologyList[
   define[Global`CT[1, 2][1]] = Topology[2][
     Propagator[Loop[1]][Vertex[2, 2][1], Vertex[2, 2][1]] ],
   define[Global`CT[1, 2][2]] = Topology[2][
-    Propagator[Loop[1]][Vertex[3][2], Vertex[3][2]],
-    Propagator[Internal][Vertex[1, 2][1], Vertex[3][2]] ],
+    Propagator[Internal][Vertex[1, 2][1], Vertex[3][2]],
+    Propagator[Loop[1]][Vertex[3][2], Vertex[3][2]] ],
   define[Global`CT[1, 2][3]] = Topology[2][
-    Propagator[Loop[1]][Vertex[2, 1][1], Vertex[3][2]],
-    Propagator[Loop[1]][Vertex[2, 1][1], Vertex[3][2]],
-    Propagator[Internal][Vertex[1, 1][3], Vertex[3][2]] ],
+    Propagator[Internal][Vertex[1, 1][1], Vertex[3][2]],
+    Propagator[Loop[1]][Vertex[2, 1][3], Vertex[3][2]],
+    Propagator[Loop[1]][Vertex[2, 1][3], Vertex[3][2]] ],
   define[Global`CT[1, 2][4]] = Topology[2][
-    Propagator[Loop[1]][Vertex[3][3], Vertex[3][3]],
     Propagator[Internal][Vertex[1, 1][1], Vertex[2, 1][2]],
-    Propagator[Internal][Vertex[2, 1][2], Vertex[3][3]] ],
+    Propagator[Internal][Vertex[2, 1][2], Vertex[3][3]],
+    Propagator[Loop[1]][Vertex[3][3], Vertex[3][3]] ],
   define[Global`CT[1, 2][5]] = Topology[4][
-    Propagator[Loop[1]][Vertex[2, 1][-1], Vertex[2, 1][-2]],
-    Propagator[Loop[1]][Vertex[2, 1][-1], Vertex[2, 1][-2]] ],
+    Propagator[Loop[1]][Vertex[2, 1][-2], Vertex[2, 1][-1]],
+    Propagator[Loop[1]][Vertex[2, 1][-2], Vertex[2, 1][-1]] ],
   define[Global`CT[1, 2][6]] = Topology[4][
-    Propagator[Loop[1]][Vertex[3][2], Vertex[3][2]],
     Propagator[Internal][Vertex[1, 1][-1], Vertex[3][1]],
     Propagator[Internal][Vertex[1, 1][-2], Vertex[3][1]],
-    Propagator[Internal][Vertex[3][1], Vertex[3][2]] ],
+    Propagator[Internal][Vertex[3][1], Vertex[3][2]],
+    Propagator[Loop[1]][Vertex[3][2], Vertex[3][2]] ],
   define[Global`CT[1, 2][7]] = Topology[2][
-    Propagator[Loop[1]][Vertex[3, 1][2], Vertex[3, 1][2]],
-    Propagator[Internal][Vertex[1, 1][1], Vertex[3, 1][2]] ],
+    Propagator[Internal][Vertex[1, 1][1], Vertex[3, 1][2]],
+    Propagator[Loop[1]][Vertex[3, 1][2], Vertex[3, 1][2]] ],
   define[Global`CT[1, 2][8]] = Topology[4][
-    Propagator[Loop[1]][Vertex[3][-3], Vertex[3][-4]],
-    Propagator[Loop[1]][Vertex[3][-3], Vertex[3][-4]],
-    Propagator[Internal][Vertex[1, 1][-1], Vertex[3][-3]],
-    Propagator[Internal][Vertex[1, 1][-2], Vertex[3][-4]] ],
+    Propagator[Internal][Vertex[1, 1][-1], Vertex[3][-2]],
+    Propagator[Internal][Vertex[1, 1][-3], Vertex[3][-4]],
+    Propagator[Loop[1]][Vertex[3][-4], Vertex[3][-2]],
+    Propagator[Loop[1]][Vertex[3][-4], Vertex[3][-2]] ],
   define[Global`CT[1, 2][9]] = Topology[4][
-    Propagator[Loop[1]][Vertex[4][1], Vertex[4][1]],
     Propagator[Internal][Vertex[1, 1][-1], Vertex[4][1]],
-    Propagator[Internal][Vertex[1, 1][-2], Vertex[4][1]] ]
+    Propagator[Internal][Vertex[1, 1][-2], Vertex[4][1]],
+    Propagator[Loop[1]][Vertex[4][1], Vertex[4][1]] ]
 ]
 
 StartTop[2, 0] = TopologyList[
@@ -146,124 +146,124 @@ StartTop[2, 0] = TopologyList[
     Propagator[Loop[1]][Vertex[4][1], Vertex[4][1]],
     Propagator[Loop[1]][Vertex[4][1], Vertex[4][1]] ],
   define[Bicycle] = Topology[8][   
-    Propagator[Loop[1]][Vertex[3][-1], Vertex[3][-1]],
-    Propagator[Loop[2]][Vertex[3][-2], Vertex[3][-2]],
-    Propagator[Internal][Vertex[3][-2], Vertex[3][-1]] ]
+    Propagator[Internal][Vertex[3][-2], Vertex[3][-1]],
+    Propagator[Loop[1]][Vertex[3][-2], Vertex[3][-2]],
+    Propagator[Loop[2]][Vertex[3][-1], Vertex[3][-1]] ]
 ]
 
 StartTop[2, 1] = TopologyList[
   define[Global`CT[2, 1][1]] = Topology[6][
-    Propagator[Loop[1]][Vertex[3][-1], Vertex[3, 1][-2]],
-    Propagator[Loop[1]][Vertex[3][-1], Vertex[3, 1][-2]],
-    Propagator[Loop[1]][Vertex[3][-1], Vertex[3, 1][-2]] ],
+    Propagator[Loop[1]][Vertex[3][-2], Vertex[3, 1][-1]],
+    Propagator[Loop[1]][Vertex[3][-2], Vertex[3, 1][-1]],
+    Propagator[Loop[1]][Vertex[3][-2], Vertex[3, 1][-1]] ],
   define[Global`CT[2, 1][2]] = Topology[4][
-    Propagator[Loop[1]][Vertex[3][-1], Vertex[3][-2]],
-    Propagator[Loop[1]][Vertex[3][-1], Vertex[3][-2]],
-    Propagator[Loop[1]][Vertex[3][-1], Vertex[2, 1][1]],
-    Propagator[Loop[1]][Vertex[3][-2], Vertex[2, 1][1]] ],
+    Propagator[Loop[1]][Vertex[2, 1][1], Vertex[3][-1]],
+    Propagator[Loop[1]][Vertex[2, 1][1], Vertex[3][-2]],
+    Propagator[Loop[1]][Vertex[3][-2], Vertex[3][-1]],
+    Propagator[Loop[1]][Vertex[3][-2], Vertex[3][-1]] ],
   define[Global`CT[2, 1][3]] = Topology[8][
-    Propagator[Loop[1]][Vertex[3][-1], Vertex[3][-1]],
-    Propagator[Loop[2]][Vertex[3][-2], Vertex[3][-2]],
-    Propagator[Internal][Vertex[3][-1], Vertex[3][-3]],
-    Propagator[Internal][Vertex[3][-2], Vertex[3][-3]],
-    Propagator[Internal][Vertex[3][-3], Vertex[1, 1][1]] ],
+    Propagator[Internal][Vertex[1, 1][1], Vertex[3][-1]],
+    Propagator[Internal][Vertex[3][-2], Vertex[3][-1]],
+    Propagator[Internal][Vertex[3][-3], Vertex[3][-1]],
+    Propagator[Loop[1]][Vertex[3][-3], Vertex[3][-3]],
+    Propagator[Loop[2]][Vertex[3][-2], Vertex[3][-2]] ],
   define[Global`CT[2, 1][4]] = Topology[4][
-    Propagator[Loop[1]][Vertex[4][1], Vertex[4][1]],
-    Propagator[Loop[1]][Vertex[4][1], Vertex[2, 1][2]],
-    Propagator[Loop[1]][Vertex[4][1], Vertex[2, 1][2]] ],
+    Propagator[Loop[1]][Vertex[2, 1][1], Vertex[4][2]],
+    Propagator[Loop[1]][Vertex[2, 1][1], Vertex[4][2]],
+    Propagator[Loop[1]][Vertex[4][2], Vertex[4][2]] ],
   define[Global`CT[2, 1][5]] = Topology[8][
     Propagator[Loop[1]][Vertex[4, 1][1], Vertex[4, 1][1]],
     Propagator[Loop[1]][Vertex[4, 1][1], Vertex[4, 1][1]] ], 
   define[Global`CT[2, 1][6]] = Topology[6][
-    Propagator[Loop[1]][Vertex[3][2], Vertex[4][2]],
-    Propagator[Loop[1]][Vertex[3][2], Vertex[4][2]],
-    Propagator[Loop[1]][Vertex[3][2], Vertex[4][2]],
-    Propagator[Internal][Vertex[4][2], Vertex[1, 1][1]] ],
+    Propagator[Internal][Vertex[1, 1][1], Vertex[4][2]],
+    Propagator[Loop[1]][Vertex[3][3], Vertex[4][2]],
+    Propagator[Loop[1]][Vertex[3][3], Vertex[4][2]],
+    Propagator[Loop[1]][Vertex[3][3], Vertex[4][2]] ],
   define[Global`CT[2, 1][7]] = Topology[4][
-    Propagator[Loop[1]][Vertex[3][-1], Vertex[3][-2]],
-    Propagator[Loop[1]][Vertex[3][-1], Vertex[3][-2]],
+    Propagator[Internal][Vertex[1, 1][1], Vertex[3][2]],
     Propagator[Loop[1]][Vertex[3][-1], Vertex[3][2]],
-    Propagator[Loop[1]][Vertex[3][-2], Vertex[3][2]],
-    Propagator[Internal][Vertex[3][2], Vertex[1, 1][1]] ],
+    Propagator[Loop[1]][Vertex[3][-2], Vertex[3][-1]],
+    Propagator[Loop[1]][Vertex[3][-2], Vertex[3][-1]],
+    Propagator[Loop[1]][Vertex[3][-2], Vertex[3][2]] ],
   define[Global`CT[2, 1][8]] = Topology[4][
-    Propagator[Loop[1]][Vertex[4][2], Vertex[4][2]],
-    Propagator[Loop[1]][Vertex[4][2], Vertex[3][3]],
-    Propagator[Loop[1]][Vertex[4][2], Vertex[3][3]],
-    Propagator[Internal][Vertex[3][3], Vertex[1, 1][1]] ], 
+    Propagator[Internal][Vertex[1, 1][1], Vertex[3][2]],
+    Propagator[Loop[1]][Vertex[3][2], Vertex[4][3]],
+    Propagator[Loop[1]][Vertex[3][2], Vertex[4][3]],
+    Propagator[Loop[1]][Vertex[4][3], Vertex[4][3]] ], 
   define[Global`CT[2, 1][9]] = Topology[4][
-    Propagator[Loop[1]][Vertex[3][2], Vertex[3][2]],
-    Propagator[Internal][Vertex[3][2], Vertex[3][3]],
-    Propagator[Loop[2]][Vertex[3][3], Vertex[3][4]],
-    Propagator[Loop[2]][Vertex[3][3], Vertex[3][4]],
-    Propagator[Internal][Vertex[3][4], Vertex[1, 1][1]] ],
+    Propagator[Internal][Vertex[1, 1][1], Vertex[3][2]],
+    Propagator[Internal][Vertex[3][3], Vertex[3][4]],
+    Propagator[Loop[1]][Vertex[3][2], Vertex[3][4]],
+    Propagator[Loop[1]][Vertex[3][2], Vertex[3][4]],
+    Propagator[Loop[2]][Vertex[3][3], Vertex[3][3]] ],
   define[Global`CT[2, 1][10]] = Topology[8][
-    Propagator[Loop[1]][Vertex[3][-1], Vertex[3][-1]],
-    Propagator[Internal][Vertex[3][-1], Vertex[2, 1][1]],
-    Propagator[Internal][Vertex[3][-2], Vertex[2, 1][1]],
-    Propagator[Loop[2]][Vertex[3][-2], Vertex[3][-2]] ],
+    Propagator[Internal][Vertex[2, 1][1], Vertex[3][-1]],
+    Propagator[Internal][Vertex[2, 1][1], Vertex[3][-2]],
+    Propagator[Loop[1]][Vertex[3][-2], Vertex[3][-2]],
+    Propagator[Loop[2]][Vertex[3][-1], Vertex[3][-1]] ],
   define[Global`CT[2, 1][11]] = Topology[4][
-    Propagator[Loop[1]][Vertex[2, 1][1], Vertex[3][2]],
-    Propagator[Loop[1]][Vertex[2, 1][1], Vertex[3][2]],
-    Propagator[Loop[2]][Vertex[3][3], Vertex[3][3]],
-    Propagator[Internal][Vertex[3][2], Vertex[3][3]] ],
+    Propagator[Internal][Vertex[3][1], Vertex[3][2]],
+    Propagator[Loop[1]][Vertex[2, 1][3], Vertex[3][1]],
+    Propagator[Loop[1]][Vertex[2, 1][3], Vertex[3][1]],
+    Propagator[Loop[2]][Vertex[3][2], Vertex[3][2]] ],
   define[Global`CT[2, 1][12]] = Topology[4][
+    Propagator[Internal][Vertex[3, 1][1], Vertex[3][2]],
     Propagator[Loop[1]][Vertex[3, 1][1], Vertex[3, 1][1]],
-    Propagator[Loop[2]][Vertex[3][2], Vertex[3][2]],
-    Propagator[Internal][Vertex[3, 1][1], Vertex[3][2]] ], 
+    Propagator[Loop[2]][Vertex[3][2], Vertex[3][2]] ],
   define[Global`CT[2, 1][13]] = Topology[4][
-    Propagator[Loop[1]][Vertex[3][2], Vertex[3][2]],
-    Propagator[Internal][Vertex[3][2], Vertex[4][3]],
-    Propagator[Loop[2]][Vertex[4][3], Vertex[4][3]],
-    Propagator[Internal][Vertex[4][3], Vertex[1, 1][1]] ],
+    Propagator[Internal][Vertex[1, 1][1], Vertex[4][2]],
+    Propagator[Internal][Vertex[3][3], Vertex[4][2]],
+    Propagator[Loop[1]][Vertex[3][3], Vertex[3][3]],
+    Propagator[Loop[2]][Vertex[4][2], Vertex[4][2]] ],
   define[Global`CT[2, 1][14]] = Topology[8][
+    Propagator[Internal][Vertex[1, 1][1], Vertex[5][2]],
     Propagator[Loop[1]][Vertex[5][2], Vertex[5][2]],
-    Propagator[Loop[1]][Vertex[5][2], Vertex[5][2]],
-    Propagator[Internal][Vertex[5][2], Vertex[1, 1][1]] ]
+    Propagator[Loop[1]][Vertex[5][2], Vertex[5][2]] ]
 ]
 
 StartTop[3, 0] = TopologyList[ 
 	(* Mercedes star: 4 v3 *)
   define[Three[1]] = Topology[24][ 
-    Propagator[Loop[1]][Vertex[3][-1], Vertex[3][-2]],
-    Propagator[Loop[1]][Vertex[3][-2], Vertex[3][-3]],
+    Propagator[Loop[1]][Vertex[3][-2], Vertex[3][-1]],
+    Propagator[Loop[1]][Vertex[3][-3], Vertex[3][-2]],
     Propagator[Loop[1]][Vertex[3][-3], Vertex[3][-1]],
-    Propagator[Loop[1]][Vertex[3][-1], Vertex[3][-4]],
-    Propagator[Loop[1]][Vertex[3][-2], Vertex[3][-4]],
-    Propagator[Loop[1]][Vertex[3][-3], Vertex[3][-4]] ],
+    Propagator[Loop[1]][Vertex[3][-4], Vertex[3][-3]],
+    Propagator[Loop[1]][Vertex[3][-4], Vertex[3][-2]],
+    Propagator[Loop[1]][Vertex[3][-4], Vertex[3][-1]] ],
 	(* 2 Circles: 4 v3 *)
   define[Three[2]] = Topology[16][ 
-    Propagator[Loop[1]][Vertex[3][-1], Vertex[3][-2]],
-    Propagator[Loop[1]][Vertex[3][-2], Vertex[3][-3]],
-    Propagator[Loop[1]][Vertex[3][-2], Vertex[3][-3]],
-    Propagator[Loop[1]][Vertex[3][-3], Vertex[3][-4]],
+    Propagator[Loop[1]][Vertex[3][-2], Vertex[3][-1]],
+    Propagator[Loop[1]][Vertex[3][-3], Vertex[3][-2]],
+    Propagator[Loop[1]][Vertex[3][-3], Vertex[3][-2]],
+    Propagator[Loop[1]][Vertex[3][-4], Vertex[3][-3]],
     Propagator[Loop[1]][Vertex[3][-4], Vertex[3][-1]],
-    Propagator[Loop[1]][Vertex[3][-1], Vertex[3][-4]] ],
+    Propagator[Loop[1]][Vertex[3][-4], Vertex[3][-1]] ],
 	(* 2 Circles in touch: 2 v3 + 1 v4 *)
   define[Three[3]] = Topology[8][
-    Propagator[Loop[1]][Vertex[3][-1], Vertex[3][-2]],
-    Propagator[Loop[1]][Vertex[3][-1], Vertex[4][1]],
-    Propagator[Loop[1]][Vertex[3][-1], Vertex[4][1]],
+    Propagator[Loop[1]][Vertex[3][-2], Vertex[3][-1]],
     Propagator[Loop[1]][Vertex[3][-2], Vertex[4][1]],
-    Propagator[Loop[1]][Vertex[3][-2], Vertex[4][1]] ],
+    Propagator[Loop[1]][Vertex[3][-2], Vertex[4][1]],
+    Propagator[Loop[1]][Vertex[3][-1], Vertex[4][1]],
+    Propagator[Loop[1]][Vertex[3][-1], Vertex[4][1]] ],
 	(* Extended Theta (1): 2 v3 + 1 v4 *)
   define[Three[4]] = Topology[8][
-    Propagator[Loop[1]][Vertex[3][-1], Vertex[3][-2]],
-    Propagator[Loop[1]][Vertex[3][-1], Vertex[3][-2]],
-    Propagator[Loop[1]][Vertex[3][-1], Vertex[4][1]],
+    Propagator[Loop[1]][Vertex[3][-2], Vertex[3][-1]],
+    Propagator[Loop[1]][Vertex[3][-2], Vertex[3][-1]],
     Propagator[Loop[1]][Vertex[3][-2], Vertex[4][1]],
+    Propagator[Loop[1]][Vertex[3][-1], Vertex[4][1]],
     Propagator[Loop[1]][Vertex[4][1], Vertex[4][1]] ],
 	(* Eye of the tiger: 2 v4 *)
   define[Three[5]] = Topology[48][
-    Propagator[Loop[1]][Vertex[4][-1], Vertex[4][-2]],
-    Propagator[Loop[1]][Vertex[4][-1], Vertex[4][-2]],
-    Propagator[Loop[1]][Vertex[4][-1], Vertex[4][-2]],
-    Propagator[Loop[1]][Vertex[4][-1], Vertex[4][-2]] ],
+    Propagator[Loop[1]][Vertex[4][-2], Vertex[4][-1]],
+    Propagator[Loop[1]][Vertex[4][-2], Vertex[4][-1]],
+    Propagator[Loop[1]][Vertex[4][-2], Vertex[4][-1]],
+    Propagator[Loop[1]][Vertex[4][-2], Vertex[4][-1]] ],
 	(* 3 Circles: 2 v4 *)
   define[Three[6]] = Topology[16][
     Propagator[Loop[1]][Vertex[4][-1], Vertex[4][-1]],
-    Propagator[Loop[1]][Vertex[4][-1], Vertex[4][-2]],
-    Propagator[Loop[1]][Vertex[4][-1], Vertex[4][-2]],
-    Propagator[Loop[1]][Vertex[4][-2], Vertex[4][-2]] ],
+    Propagator[Loop[1]][Vertex[4][-2], Vertex[4][-1]],
+    Propagator[Loop[1]][Vertex[4][-2], Vertex[4][-2]],
+    Propagator[Loop[1]][Vertex[4][-2], Vertex[4][-1]] ],
 	(* Extended Theta (2): 1 v3 + 1 v5 *)
   define[Three[7]] = Topology[12][
     Propagator[Loop[1]][Vertex[3][1], Vertex[5][2]],
@@ -277,55 +277,55 @@ StartTop[3, 0] = TopologyList[
     Propagator[Loop[1]][Vertex[6][1], Vertex[6][1]] ],
 	(* Theta + Tadpole on Vertex *)
   define[ThreeRed[1]] = Topology[12][
-    Propagator[Loop[1]][Vertex[3][1], Vertex[4][2]],
-    Propagator[Loop[1]][Vertex[3][1], Vertex[4][2]],
-    Propagator[Loop[1]][Vertex[3][1], Vertex[4][2]],
-    Propagator[Internal][Vertex[4][2], Vertex[3][3]],
-    Propagator[Loop[2]][Vertex[3][3], Vertex[3][3]] ],
+    Propagator[Internal][Vertex[3][1], Vertex[4][2]],
+    Propagator[Loop[1]][Vertex[3][1], Vertex[3][1]],
+    Propagator[Loop[2]][Vertex[3][3], Vertex[4][2]],
+    Propagator[Loop[2]][Vertex[3][3], Vertex[4][2]],
+    Propagator[Loop[2]][Vertex[3][3], Vertex[4][2]] ],
 	(* Theta + Tadpole on Propagator *)
   define[ThreeRed[2]] = Topology[8][
-    Propagator[Loop[1]][Vertex[3][-1], Vertex[3][-2]],
-    Propagator[Loop[1]][Vertex[3][-1], Vertex[3][-2]],
-    Propagator[Loop[1]][Vertex[3][-1], Vertex[3][1]],
-    Propagator[Loop[1]][Vertex[3][-2], Vertex[3][1]],
     Propagator[Internal][Vertex[3][1], Vertex[3][2]],
+    Propagator[Loop[1]][Vertex[3][-1], Vertex[3][1]],
+    Propagator[Loop[1]][Vertex[3][-2], Vertex[3][-1]],
+    Propagator[Loop[1]][Vertex[3][-2], Vertex[3][-1]],
+    Propagator[Loop[1]][Vertex[3][-2], Vertex[3][1]],
     Propagator[Loop[2]][Vertex[3][2], Vertex[3][2]] ],
 	(* 3 Tadpoles *)
   define[ThreeRed[3]] = Topology[48][
-    Propagator[Internal][Vertex[3][1], Vertex[3][-1]],
-    Propagator[Internal][Vertex[3][1], Vertex[3][-2]],
-    Propagator[Internal][Vertex[3][1], Vertex[3][-3]],
-    Propagator[Loop[1]][Vertex[3][-1], Vertex[3][-1]],
+    Propagator[Internal][Vertex[3][-1], Vertex[3][1]],
+    Propagator[Internal][Vertex[3][-2], Vertex[3][1]],
+    Propagator[Internal][Vertex[3][-3], Vertex[3][1]],
+    Propagator[Loop[1]][Vertex[3][-3], Vertex[3][-3]],
     Propagator[Loop[2]][Vertex[3][-2], Vertex[3][-2]],
-    Propagator[Loop[3]][Vertex[3][-3], Vertex[3][-3]] ],
+    Propagator[Loop[3]][Vertex[3][-1], Vertex[3][-1]] ],
 	(* Bicycle + Tadpole on Loop *)
   define[ThreeRed[4]] = Topology[16][
-    Propagator[Loop[1]][Vertex[3][-1], Vertex[3][-1]],
-    Propagator[Internal][Vertex[3][-1], Vertex[3][-2]],
-    Propagator[Loop[2]][Vertex[3][-2], Vertex[3][-3]],
-    Propagator[Loop[2]][Vertex[3][-2], Vertex[3][-3]],
-    Propagator[Internal][Vertex[3][-3], Vertex[3][-4]],
-    Propagator[Loop[3]][Vertex[3][-4], Vertex[3][-4]] ],
+    Propagator[Internal][Vertex[3][-2], Vertex[3][-1]],
+    Propagator[Internal][Vertex[3][-4], Vertex[3][-3]],
+    Propagator[Loop[1]][Vertex[3][-4], Vertex[3][-4]],
+    Propagator[Loop[2]][Vertex[3][-3], Vertex[3][-2]],
+    Propagator[Loop[2]][Vertex[3][-3], Vertex[3][-2]],
+    Propagator[Loop[3]][Vertex[3][-1], Vertex[3][-1]] ],
 	(* Bicycle + Tadpole on Vertex *)
   define[ThreeRed[5]] = Topology[16][
-    Propagator[Loop[1]][Vertex[3][-1], Vertex[3][-1]],
     Propagator[Internal][Vertex[3][-1], Vertex[4][1]],
-    Propagator[Loop[2]][Vertex[4][1], Vertex[4][1]],
-    Propagator[Internal][Vertex[4][1], Vertex[3][-2]],
-    Propagator[Loop[3]][Vertex[3][-2], Vertex[3][-2]] ],
+    Propagator[Internal][Vertex[3][-2], Vertex[4][1]],
+    Propagator[Loop[1]][Vertex[3][-2], Vertex[3][-2]],
+    Propagator[Loop[2]][Vertex[3][-1], Vertex[3][-1]],
+    Propagator[Loop[3]][Vertex[4][1], Vertex[4][1]] ],
 	(* Eight + Tadpole on Loop *)
   define[ThreeRed[6]] = Topology[8][
-    Propagator[Loop[1]][Vertex[4][1], Vertex[4][1]],
-    Propagator[Loop[1]][Vertex[4][1], Vertex[3][2]],
-    Propagator[Loop[1]][Vertex[4][1], Vertex[3][2]],
-    Propagator[Internal][Vertex[3][2], Vertex[3][3]],
-    Propagator[Loop[2]][Vertex[3][3], Vertex[3][3]] ],
+    Propagator[Internal][Vertex[3][1], Vertex[3][2]],
+    Propagator[Loop[1]][Vertex[3][1], Vertex[4][3]],
+    Propagator[Loop[1]][Vertex[3][1], Vertex[4][3]],
+    Propagator[Loop[2]][Vertex[3][2], Vertex[3][2]],
+    Propagator[Loop[1]][Vertex[4][3], Vertex[4][3]] ],
 	(* Eight + Tadpole on vertex => v5 *)
   define[ThreeRed[7]] = Topology[16][
-    Propagator[Loop[1]][Vertex[5][1], Vertex[5][1]],
-    Propagator[Loop[1]][Vertex[5][1], Vertex[5][1]],
-    Propagator[Internal][Vertex[5][1], Vertex[3][2]],
-    Propagator[Loop[2]][Vertex[3][2], Vertex[3][2]] ]
+    Propagator[Internal][Vertex[3][1], Vertex[5][2]],
+    Propagator[Loop[1]][Vertex[3][1], Vertex[3][1]],
+    Propagator[Loop[2]][Vertex[5][2], Vertex[5][2]],
+    Propagator[Loop[2]][Vertex[5][2], Vertex[5][2]] ]
 ]
 
 
@@ -336,7 +336,7 @@ Options[ CreateTopologies ] = {
   Adjacencies -> {3, 4},
   ExcludeTopologies -> {},
   StartingTopologies -> All,
-  CountertermOrder -> 0
+  CTOrder -> 0
 }
 
 CreateTopologies::nostart = 
@@ -368,15 +368,15 @@ opt = ActualOptions[CreateTopologies, options]},
   If[ !VectorQ[adj = Flatten[{Adjacencies /. opt}],
         IntegerQ[#] && # > 2 &],
     Message[CreateTopologies::badadj];
-    Return[$Aborted] ];
+    Return[$Failed] ];
 
-  If[ !IntegerQ[cto = CountertermOrder /. opt] || cto < 0,
+  If[ !IntegerQ[cto = CTOrder /. opt] || cto < 0,
     Message[CreateTopologies::badcto, cto];
-    Return[$Aborted] ];
+    Return[$Failed] ];
 
   If[ Head[StartTop[l, cto]] === StartTop,
     Message[CreateTopologies::nostart, l, cto];
-    Return[$Aborted] ]; 
+    Return[$Failed] ]; 
 
   If[ (start = StartingTopologies /. opt) === All,
     start = StartTop[l, cto],
@@ -412,7 +412,7 @@ opt = ActualOptions[CreateTopologies, options]},
       excl = ReplacePart[excl, tree, Drop[#, -1]&/@ Rest[forb]] ];
     tops = Select[tops, excl] ];
 
-  Map[Sort, tops, 2]
+  Sort[CanonicalOrder/@ tops]
 ]
 
 
@@ -420,13 +420,19 @@ CreateCTTopologies::cterr =
 "Error in CreateTopologies for `1` loops and counter-term order `2`."
 
 CreateCTTopologies[ c_Integer,
-  e:(_Integer -> _Integer) | _Integer, opt___Rule ] :=
+  n:(_Integer -> _Integer) | _Integer, opt___Rule ] :=
 Block[ {x},
   TopologyList@@ Array[
-    ( x = CreateTopologies[#, e, CountertermOrder -> c - #, opt];
-      If[x === $Aborted, Message[CreateCTTopologies::cterr, #, c - #] ];
+    ( x = CreateTopologies[#, n, CTOrder -> c - #, opt];
+      If[x === $Failed, Message[CreateCTTopologies::cterr, #, c - #] ];
       x )&, c, 0 ]
 ]
+
+
+CreateVFTopologies[ vf_Integer,
+  n:(_Integer -> _Integer) | _Integer, opt___Rule ] :=
+  CreateTopologies[0, n, CTOrder -> vf, opt] /.
+    Vertex[e_, c_] -> Vertex[e, -c]
 
 
 (* Recursive creation of topologies. The internal function that does
@@ -490,6 +496,50 @@ Block[ {vert},
 
 AddOne[ top_, n_, emax_ ] :=
   TopologyList[ AddPropagator[top, n], AddVertex[top, n, emax] ]
+
+
+(* Order topologies canonically (sort of) *)
+
+tosort[ Vertex[1][n_] ] := (vc = Max[vc, n]; vert[1][n, 0])
+
+tosort[ Vertex[e_, c_:0][n_] ] := vert[e][1000 + n, c]
+
+tosort[ Propagator[Loop[n_]][v__] ] :=
+  prop[Loop, psort[v], {Loop[1000 + n]}]
+
+tosort[ Propagator[type_][v__] ] := prop[type, psort[v]]
+
+fromv[ vert[e_][n_, 0] ] := Vertex[e][n]
+
+fromv[ vert[e_][n_, c_] ] := Vertex[e, c][n]
+
+fromp[ t_, v_ ] := fromv/@ Propagator[t]@@ v
+
+fromp[ _, v_, _[t_] ] := fromv/@ Propagator[t]@@ v
+
+
+Attributes[psort] = Attributes[plist] = {Orderless}
+
+plist[ t_, r___ ] := { Map[renum, t, {2}], plist[r] }
+
+plist[ ] = {}
+
+
+renum[ x:_[n_, ___] ] := x /; n < 500
+
+renum[ x_Loop ] := x = Loop[++lc]
+
+renum[ x:h_[n_, r___] ] := (x = h[++vc, r]) /; n > 1000
+
+renum[ x:h_[_, r___] ] := x = h[--pc, r]
+
+
+CanonicalOrder[ tops_TopologyList ] := CanonicalOrder/@ tops
+
+CanonicalOrder[ top:P$Topology ] :=
+Block[ {vert, Loop, lc = 0, vc = 0, pc = 0},
+  Head[top]@@ Apply[fromp, Flatten[plist@@ Map[tosort, top, 2]], 1]
+]
 
 
 (* Compare topologies *)

@@ -2,22 +2,22 @@
 	Analytic.m
 		Translation of InsertFields output into
 		analytic expressions
-		last modified 1 Mar 00 th
+		last modified 19 Oct 01 th
 *)
 
 Begin["`Analytic`"]
 
 Options[ CreateFeynAmp ] = {
   AmplitudeLevel -> InsertionLevel,	(* i.e. taken from InsertFields *)
-  GaugeRules -> GaugeXi[_] -> 1,
-  HoldTimes -> False,
-  PreFactor -> -I (2 Pi)^(-4 LoopNr),
+  GaugeRules -> {_GaugeXi -> 1,
+    Global`MG0 -> Global`MZ, Global`MGp -> Global`MW},
+  PreFactor -> -I (2 Pi)^(-4 LoopNumber),
   Truncated -> False,
   MomentumConservation -> True
 }
 
 (* for D dimensions use
-   PreFactor -> -I (Global`Mu^(4 - $D) / (2 Pi)^$D)^LoopNr *)
+   PreFactor -> -I (Global`Mu^(4 - $D) / (2 Pi)^$D)^LoopNumber *)
 
 CreateFeynAmp::nolevel =
 "Warning: Level `1` is not contained in this insertion."
@@ -28,9 +28,6 @@ Please check the classes model and try again."
 
 CreateFeynAmp::noprop =
 "Cannot resolve propagator of field `1`."
-
-CreateFeynAmp::novert =
-"Cannot find vertex `1`."
 
 CreateFeynAmp::nocoupl =
 "Cannot resolve coupling `1` for kinematical object `2`."
@@ -51,37 +48,25 @@ CreateFeynAmp[ top:(P$Topology -> _), opt___Rule ] :=
 CreateFeynAmp[ TopologyList[tops__], opt___Rule ] :=
   CreateFeynAmp[ TopologyList[][tops], opt ]
 
-CreateFeynAmp[ TopologyList[info___][], ___ ] :=
-  FeynAmpList[info][] /.
-    (Process -> iorule_) :>
-      (Process -> MapIndexed[{#1, iomom@@ #2, TheMass[#1]}&, iorule, {2}])
-
-CreateFeynAmp[ tops:TopologyList[info___][__], options___Rule ] :=
-Block[ {alevel, name, kinobjects, pref, next, gaugeru, truncru, momcons,
-vfuncs, Mult, topnr = 1, opt = ActualOptions[CreateFeynAmp, options]},
+CreateFeynAmp[ tops:TopologyList[info___][___], options___Rule ] :=
+Block[ {alevel, pref, next, gaugeru, truncru, momcons,
+topnr = 1, opt = ActualOptions[CreateFeynAmp, options]},
 
   If[ (alevel = ResolveLevel[AmplitudeLevel /. opt /. {info} /.
-        Options[InsertFields]]) === $Aborted,
-    Return[$Aborted] ];
+        Options[InsertFields]]) === $Failed,
+    Return[$Failed] ];
 
   If[ InitializeModel[ Model /. {info} /. Options[InsertFields],
     GenericModel -> (GenericModel /. {info} /. Options[InsertFields]),
-    Reinitialize -> False ] === $Aborted, Return[$Aborted] ];
+    Reinitialize -> False ] === $Failed, Return[$Failed] ];
 
   FAPrint[2, ""];
   FAPrint[2, "creating amplitudes at level(s) ", alevel];
 
-  kinobjects = Prepend[
-    Take[ KIarr,
-      Length[ Union[Flatten[Last/@ DownValues[KinematicIndices]]] ] ],
-    Mom ];
-  name = ProcessName /. {info};
-  vfuncs = TrueQ[VertexFunctions /. {info}];
   next = Plus@@ Length/@ (Process /. {info});
   pref = PreFactor /. opt;
   gaugeru = GaugeRules /. opt;
   truncru = If[ TrueQ[Truncated /. opt], M$TruncationRules, {} ];
-  If[ !(HoldTimes /. opt), Mult = Times ];
   momcons = TrueQ[MomentumConservation /. opt];
 
   amps = PickLevel[alevel][tops];
@@ -90,13 +75,13 @@ vfuncs, Mult, topnr = 1, opt = ActualOptions[CreateFeynAmp, options]},
   amps = CreateAmpTop/@ ( amps //.
     (_ -> Insertions[_][]) :> Seq[] /.
     (Field[i_] -> fi_?AtomQ) -> (Field[i] -> fi[Index[Generic, i]]) );
-  WriteStatistics[1, "in total: ",
-    {Insertions[Generic]@@ amps}, alevel, " amplitudes"];
+  FAPrint[1, "in total: ",
+    Statistics[{Insertions[Generic]@@ amps}, alevel, " amplitude"]];
 
   amps = (FeynAmpList[info] /.
     (Process -> iorule_) :> (Process ->
       MapIndexed[{#1, iomom@@ #2, TheMass[#1]}&, iorule, {2}]))@@ amps /.
-    MTF[__] -> 1 //. M$LastModelRules;
+    _MTF -> 1 /. gaugeru //. M$LastModelRules;
 
   If[ Length[alevel] === 1, PickLevel[ alevel[[1]] ][amps], amps ]
 ]
@@ -136,11 +121,11 @@ Block[ {momtop, imom, oldmom, amp, c, toppref, mtf, mc = 0, gennr = 0},
   imom = Apply[RenumberMom, oldmom, 1];
   momtop = momtop /. Thread[oldmom -> imom];
 
-  toppref = pref /. LoopNr :> Genus[top];
+  toppref = pref /. LoopNumber :> Genus[top];
 
   amp = Sequence@@ (CreateAmpGraph[momtop, #]&)/@ ins;
-  WriteStatistics[2, "> Top. ", topnr++, ": ",
-    {Insertions[Generic][amp]}, alevel, " amplitudes"];
+  FAPrint[2, "> Top. ", topnr++, ": ",
+    Statistics[{Insertions[Generic][amp]}, alevel, " amplitude"]];
   amp
 ]
 
@@ -151,7 +136,7 @@ Genus[ top_ ] :=
 Block[ {c, vn = {}},
   c[ n_ ] := (AppendTo[vn, n]; 0);
   ++c[ #[[0, 1]] ]&/@ Union[Cases[top, Vertex[__][_], {2}]];
-  (Plus@@ ((# - 2) * c[#] &)/@ vn) / 2 + 1
+  (Plus@@ ((# - 2) c[#] &)/@ vn) / 2 + 1
 ]
 
 
@@ -266,9 +251,9 @@ scalars = {RelativeCF, toppref, 1 / s}},
     PV -> TakeNC;
 
   FeynAmp[
-    GraphName[name, Topology == topnr, Generic == ++gennr],
+    GraphID[Topology == topnr, Generic == ++gennr],
     Integral@@ imom,
-    Mult@@ DeleteCases[Flatten[scalars], 1] *
+    Times@@ DeleteCases[Flatten[scalars], 1] *
       LoopPD[Expand[Times@@ Flatten[prden], PropagatorDenominator]] *
       Times@@ res /.
       {dot -> FermionChain, tr -> MatrixTrace} /.
@@ -378,6 +363,10 @@ Block[ {res},
 ] /; FreeQ[fi, Field]
 
 
+	(* useful for Truncated -> True *)
+NonCommutative[ 1 ] = Sequence[]
+
+
 SignedMixers[ fi_ ] := MixingPartners[fi][[-1]] /; FreeQ[fi, Generic]
 
 SignedMixers[ -fi_[x__] ] := -MixingPartners[AntiParticle[fi]][[-1]][x]
@@ -386,18 +375,14 @@ SignedMixers[ fi_[x__] ] := MixingPartners[fi][[-1]][x]
 
 
 ResolveGeneric[ cto_, vert_, props_ ] :=
-Block[ {v, gv, p},
+Block[ {v, perm},
   v = SignedMixers/@ (TakeInc[vert, #]&)/@ props;
-  gv = ToGeneric[v];
-  p = Position[GenericFieldPoints[], FieldPoint@@ gv, 1, 1];
-  If[ Length[p] === 0,
-    Message[CreateFeynAmp::novert, vert];
-    Return[{}] ];
-  v = (p = Position[gv, #1, 1, 1][[1, 1]]; gv[[p]] = 0; v[[p]])&/@
-    ReferenceOrder[Generic][[ p[[1, 1]] ]];
-  If[ cto =!= 0 && vfuncs,
+  perm = FindVertex[ToGeneric[v], Generic];
+  If[ perm === $Failed, Return[{}] ];
+  v = v[[perm]];
+  If[ cto < 0,
     I PV[ If[FreeQ[v, F | U], Identity, NonCommutative][
-            VertexFunction[cto]@@ v ] ],
+            VertexFunction[-cto]@@ v ] ],
   (* else *)
     AnalyticalCoupling[cto]@@ v ]
 ]
@@ -444,10 +429,6 @@ Block[ {res},
     res,
     Message[CreateFeynAmp::noprop, part]; Propagator[part] ]
 ]
-
-
-	(* useful for Truncated -> True *)
-NonCommutative[ 1 ] = Sequence[]
 
 
 TakeNC[ f_List ] :=
@@ -527,40 +508,23 @@ Block[ {ext, int, ins, deltas},
    it will issue a warning and return C[cto][fields][kinpart]. *) 
 
 GtoC[ sym_ ][ cto_ ][ fi__ ][ kin__ ] :=
-Block[ {vert, ref, cv, p, posmap, kinpart},
+Block[ {vert, cv, perm, kinpart},
 
   vert = MixingPartners[#][[-1]]&/@ {fi};
+  perm = FindVertex[ToClasses[vert], Classes];
+  If[ perm === $Failed, Return[(C[cto]@@ vert)@@ kin] ];
+  cv = vert[[perm]];
 
-	(* at classes level there may be several definitions for
-	   fermionic vertices, e.g. C[F, -F, ...] and C[-F, F, ...].
-	   Thus, an exact match is attempted first and only then the
-	   sorted form is used. *)
-  cv = ToClasses[vert];
-  p = Position[ReferenceOrder[Classes], cv, 1, 1];
-  If[ Length[p] === 0,
-    p = Position[FieldPoints[], FieldPoint@@ cv, 1, 1] ];
-  If[ Length[p] === 0,
-    Message[CreateFeynAmp::novert, vert];
-    Return[ (C[cto]@@ vert)@@ kin ] ];
-  ref = ReferenceOrder[Classes][[ p[[1, 1]] ]];
-
-	(* find a list of position replacement rules describing
-	   how the given vertex is permuted into the template vertex,
-	   i.e. a list of the form {1 -> 3, 2 -> 1, 3 -> 2} *)
-  posmap = MapIndexed[
-    (ref[[ p = Position[ref, #1, 1, 1][[1, 1]] ]] = 0; #2[[1]] -> p)&,
-    cv ];
-
-	(* apply FermionFlipRules and transpose momenta and kinematical
-	   indices according to posmap *)
+	(* to apply the FermionFlipRules we need a list of position
+	   replacement rules describing how the given vertex is
+	   permuted into the template vertex, i.e. a list of the form
+	   {1 -> 3, 2 -> 1, 3 -> 2} *)
+  perm = Sort[Thread[ perm -> Range[Length[perm]] ]];
   kinpart =
-    If[ FreeQ[vert, F], {kin}, {kin} /. M$FermionFlipRule@@ posmap ] /.
-      Flatten[ Thread/@ Map[Through[kinobjects[#]]&, posmap, {2}] ];
+    If[ FreeQ[vert, F], {kin}, {kin} /. M$FermionFlipRule@@ perm ] /.
+      Flatten[ Thread/@ Map[Through[kinobjs[#]]&, perm, {2}] ];
 
-	(* apply posmap and then try to resolve coupling *)
-  cv = vert;
-  Apply[(cv[[#2]] = vert[[#1]])&, posmap, 1];
-
+	(* try to resolve coupling *)
   If[ Head[cv = (TheC@@ kinpart)@@ cv] =!= List && sym === -1,
     cv = -MapAt[-#&, cv, {0, 1}] ];
 
@@ -568,7 +532,7 @@ Block[ {vert, ref, cv, p, posmap, kinpart},
     Message[CreateFeynAmp::nocoupl, vert, kinpart];
     Return[ (C[cto]@@ vert)@@ kinpart ] ];
 
-	(* check requested counter-term order: *)
+	(* check requested counter-term order *)
   If[ Length[cv] <= cto,
     Message[CreateFeynAmp::counter, vert, cto];
     Return[ (C[cto]@@ vert)@@ kinpart ] ];
@@ -576,14 +540,37 @@ Block[ {vert, ref, cv, p, posmap, kinpart},
   cv[[cto + 1]]
 ]
 
+kinobjs = Flatten[{Mom, KIs}]
+
+
+FindVertex::novert =
+"Cannot find vertex `1`."
+
+	(* at classes level there may be several definitions for
+	   fermionic vertices, e.g. C[F, -F, ...] and C[-F, F, ...].
+	   Thus, an exact match is attempted first and only then the
+	   sorted form is used. *)
+FindVertex[ v_, Classes ] := Range[Length[v]] /;
+  MemberQ[ReferenceOrder[Classes], v]
+
+FindVertex[ v_, lev_ ] :=
+Block[ {pos, fp},
+  pos = Position[FieldPoints[lev], FieldPoint@@ v, 1, 1];
+  If[ Length[pos] === 0,
+    Message[FindVertex::novert, v];
+    Return[$Failed] ];
+  fp = ReferenceOrder[lev][[ pos[[1, 1]] ]];
+  pos = Ordering[v];
+  MapThread[(pos[[#1]] = #2)&, {Ordering[fp], pos}];
+  pos
+]
+
 
 Format[ G[sym_][cto_][fi__] ] :=
-  SequenceForm[ "G",
-    ColumnForm[
-      { "(" <> ToString[cto] <> ")",
-        "",
-        StringJoin@@ ToString/@ ToGeneric[{fi}] },
-      Left, Center ] ]
+  DisplayForm[
+    SubsuperscriptBox[ "G",
+      StringJoin@@ ToString/@ ToGeneric[{fi}],
+      "(" <> ToString[cto] <> ")" ] ]
 
 Format[ NonCommutative[nc__] ] := Dot[nc]
 
@@ -622,7 +609,7 @@ Block[ {Rule, levels, res},
         Insertions[Particles]@@ Join@@ TakeIns/@ gr,
     _,
       tops ];
-  levels = Flatten[{lev} /. Generic -> {}];
+  levels = DeleteCases[Flatten[{lev}], Generic];
   If[ Length[levels] =!= 0,
     res = MapAt[ Select[#, ContainsQ[#, levels]&]&, res,
       Array[{#, 2}&, Length[res]] ] ];
@@ -646,7 +633,7 @@ Block[ {n = 0, c = 0, warn = True},
 
 LevelPick[ Generic ][ amp_ ] :=
 Block[ {RelativeCF = 1},
-  If[ Length[amp] =!= 3 || MatchQ[amp[[1]], GraphName[__, Generic == _]],
+  If[ Length[amp] =!= 3 || MatchQ[amp[[1]], GraphID[__, Generic == _]],
     Insert[ Take[amp, 3], Number == ++n, {1, -1} ],
   (* else *)
     If[warn, Message[PickLevel::nocontain, Generic]; warn = False];
@@ -656,7 +643,7 @@ Block[ {RelativeCF = 1},
 LevelPick[ lev:Classes | Particles ][ amp_ ] := (
   Sequence@@ (Insert[#, Number == ++n, {1, -1}]&)/@
     If[ Length[amp] === 3,
-      If[ MatchQ[amp[[1]], GraphName[__, lev == _]], amp,
+      If[ MatchQ[amp[[1]], GraphID[__, lev == _]], amp,
         If[warn, Message[PickLevel::nocontain, lev]; warn = False]; {}],
     (* else *)
       ApplyGMRules[Take[amp, 3], amp[[-1]], lev] ]
@@ -678,14 +665,16 @@ Block[ {partru},
 ]
 
 
-WeedOut[ g:Graph[_, t_ == _][__] -> _[] ] :=
-  If[ MemberQ[lev, t], g, Seq[] ]
-
-WeedOut[ a_ ] := a
+DefWeedOut[ lev_ ] := (
+  WeedOut[ g:Graph[_, lev == _][__] -> _[] ] = g;
+  WeedOut[ _ -> _[] ] = Sequence[];
+  WeedOut[ a_ ] = a;
+  Rule[_] := Sequence[]
+)
 
 
 Discard[ tops:TopologyList[info__][__], diags__ ] :=
-Block[ {p, lev, Rule},
+Block[ {p, lev, WeedOut, Rule},
   p = Position[tops, Graph[__][__]];
   lev = ResolveLevel[InsertionLevel /. {info}];
   If[ FreeQ[lev, Generic], p = Select[p, Length[#] =!= 4 &] ];
@@ -693,7 +682,7 @@ Block[ {p, lev, Rule},
     {diags} /. a_Integer (Repeated | RepeatedNull)[b_] :>
                  Range@@ Sort[Floor[{b, a}]] ] ] ]];
   If[ Head[p] === Part, Return[$Failed] ];
-  Rule[_] := Sequence[];
+  DefWeedOut[ lev[[-1]] ];
   Delete[tops, p] /. ins:Insertions[_][__] :> WeedOut/@ ins /.
     (Topology[__][__] -> _[]) :> Seq[]
 ]
@@ -705,12 +694,11 @@ Discard[ amp_, diags__ ] :=
 
 
 DiagramSelect[ tops:TopologyList[info__][__], crit_ ] :=
-Block[ {lev, iselect, Rule},
-  lev = ResolveLevel[InsertionLevel /. {info}];
-  Rule[_] := Sequence[];
-  iselect[lev_][gr__] :=
-    Select[Insertions[lev][gr], crit] /; FreeQ[{gr}, iselect];
-  tops /. Insertions -> iselect /.
+Block[ {lev, WeedOut, Rule},
+  lev = ResolveLevel[InsertionLevel /. {info}][[-1]];
+  DefWeedOut[lev];
+  tops /.
+    Graph[_, lev == _][fi__] :> Seq[] /; crit[{fi}] =!= True /.
     ins:Insertions[_][__] :> WeedOut/@ ins /.
     (Topology[__][__] -> _[]) :> Seq[]
 ]
@@ -718,10 +706,19 @@ Block[ {lev, iselect, Rule},
 DiagramSelect[ amp_, crit_ ] := Select[amp, crit]
 
 
+ToJoin[ h:Topology == _, r__ ] := {h, ToJoin[r]}
+
+ToJoin[ r__, h:Number == _ ] := {ToJoin[r], h}
+
+
 ToFA1Conventions[ expr_ ] :=
-Block[ {lev, FourMomentum, Conjugate, Global`PolarizationVector,
+Block[ {GraphID, FourMomentum, Conjugate, Global`PolarizationVector,
 Global`DiracSpinor, Index, Integral = Sequence, FermionChain = Dot,
 NonCommutative = Dot, MatrixTrace = Global`DiracTrace},
+
+  GraphID[ id__ ] := Global`GraphName@@
+    Apply[StringJoin, Flatten[{"", ToJoin[id]}] /.
+      lev_ == n_ :> {StringTake[ToString[lev], 1], ToString[n]}, 1];
 
   FourMomentum[ Incoming | External, n_Integer ] :=
     FourMomentum[ Incoming | External, n ] =
@@ -738,18 +735,12 @@ NonCommutative = Dot, MatrixTrace = Global`DiracTrace},
   Global`PolarizationVector[ _, mom_, li_ ] =
     Global`PolarizationVector[mom, li];
 
-  Global`DiracSpinor[ mom_, mass_, ___ ] := Global`Spinor[mom, mass];
+  Global`DiracSpinor[ mom_, mass_, ___ ] := FeynArts`Spinor[mom, mass];
 
   Index[ Global`Lorentz, n_ ] := Index[Global`Lorentz, n] =
     ToExpression["li" <> ToString[n]];
 
-  lev = Scan[ If[!FreeQ[expr, #], Return[#]]&,
-    {Generic, Classes, Particles} ];
-  expr /. {
-    (Number == n_) :> ToExpression["N" <> ToString[n]],
-    (Topology == n_) :> ToExpression["T" <> ToString[n]],
-    (lev == n_) :> ToExpression["I" <> ToString[n]],
-    (_ == n_) :> Seq[] }
+  expr
 ]
 
 End[]

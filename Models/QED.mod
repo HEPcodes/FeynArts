@@ -2,7 +2,7 @@
 	QED.mod
 		Classes model file for leptons-only QED
 		by Hagen Eck and Sepp Kueblbeck
-		last modified 2 Jun 99 by Thomas Hahn
+		last modified 13 Jun 00 by Thomas Hahn
 
 
 This file introduces the following symbols:
@@ -58,9 +58,9 @@ M$ClassesDescription = {
 	PropagatorArrow -> None }
 }
 
-TheMass[ F[1, {1}] ] = ME;
-TheMass[ F[1, {2}] ] = MM;
-TheMass[ F[1, {3}] ] = ML
+MLE[1] = ME;
+MLE[2] = MM;
+MLE[3] = ML
 
 TheLabel[ F[1, {1}] ] = "e";
 TheLabel[ F[1, {2}] ] = "\\mu";

@@ -2,7 +2,7 @@
 	SMbgf.mod
 		Classes model file for the Standard Model in
 		the background field formalism
-		last modified 27 Mar 00 by Thomas Hahn
+		last modified 20 Jul 01 by Thomas Hahn
 
 Reference:
 	A. Denner, S. Dittmaier, and G. Weiglein
@@ -55,15 +55,15 @@ GaugeXi[ U[1] ] = 1;
 GaugeXi[ U[2 | 3 | 4] ] = GaugeXi[Q]
 
 
-TheMass[ F[2, {1}] ] = MLE[1] = ME;
-TheMass[ F[2, {2}] ] = MLE[2] = MM;
-TheMass[ F[2, {3}] ] = MLE[3] = ML;
-TheMass[ F[3, {1}] ] = MQU[1] = MU;
-TheMass[ F[3, {2}] ] = MQU[2] = MC;
-TheMass[ F[3, {3}] ] = MQU[3] = MT;
-TheMass[ F[4, {1}] ] = MQD[1] = MD;
-TheMass[ F[4, {2}] ] = MQD[2] = MS;
-TheMass[ F[4, {3}] ] = MQD[3] = MB
+MLE[1] = ME;
+MLE[2] = MM;
+MLE[3] = ML;
+MQU[1] = MU;
+MQU[2] = MC;
+MQU[3] = MT;
+MQD[1] = MD;
+MQD[2] = MS;
+MQD[3] = MB
 
 TheLabel[ F[1, {1}] ] = ComposedChar["\\nu", "e"];
 TheLabel[ F[1, {2}] ] = ComposedChar["\\nu", "\\mu"];
@@ -122,3 +122,82 @@ NoQuarkMixing =
     FieldPoint[_][-F[4, {3}], F[3, {2}], S[3 | 30]],
     FieldPoint[_][-F[4, {3}], F[3, {2}], V[3 | 30]] }
 
+
+(* The following definitions of renormalization constants
+   are for the on-shell renormalization of the Standard Model in
+   the background-field formulation in the scheme of A. Denner,
+   S. Dittmaier, and G. Weiglein, Nucl Phys B440 (1995) 95.
+
+   The renormalization constants are not directly used by
+   FeynArts, and hence do not restrict the generation of diagrams
+   and amplitudes in any way. *)
+
+Clear[RenConst]
+
+RenConst[ dMf1[type_, j1_] ] :=
+Block[ {m1 = TheMass[F[type, {j1}]], sff},
+  sff = SelfEnergy[F[type, {j1}] -> F[type, {j1}], m1];
+  ReTilde[ m1/2 (LVectorCoeff[sff] + RVectorCoeff[sff]) +
+    LScalarCoeff[sff] ]
+]
+
+RenConst[ dZfL1[type_, j1_, j1_] ] :=
+Block[ {m1 = TheMass[F[type, {j1}]], sff, dsff},
+  sff = SelfEnergy[F[type, {j1}] -> F[type, {j1}], m1];
+  dsff = DSelfEnergy[F[type, {j1}] -> F[type, {j1}], m1];
+  -ReTilde[ LVectorCoeff[sff] +
+    m1^2 (LVectorCoeff[dsff] + RVectorCoeff[dsff]) +
+    2 m1 LScalarCoeff[dsff] ]
+]
+
+RenConst[ dZfL1[type_, j1_, j2_] ] :=
+Block[ {m1 = TheMass[F[type, {j1}]], m2 = TheMass[F[type, {j2}]], sff},
+  sff = SelfEnergy[F[type, {j1}] -> F[type, {j2}], m2];
+  2/(m1^2 - m2^2) ReTilde[
+    m2^2 LVectorCoeff[sff] + m1 m2 RVectorCoeff[sff] +
+    (m1^2 + m2^2)/m1 LScalarCoeff[sff] ]
+]
+
+RenConst[ dZfR1[type_, j1_, j1_] ] :=
+Block[ {m1 = TheMass[F[type, {j1}]], sff, dsff},
+  sff = SelfEnergy[F[type, {j1}] -> F[type, {j1}], m1];
+  dsff = DSelfEnergy[F[type, {j1}] -> F[type, {j1}], m1];
+  -ReTilde[ RVectorCoeff[sff] +
+    m1^2 (LVectorCoeff[dsff] + RVectorCoeff[dsff]) +
+    2 m1 LScalarCoeff[dsff] ]
+]
+
+RenConst[ dZfR1[type_, j1_, j2_] ] :=
+Block[ {m1 = TheMass[F[type, {j1}]], m2 = TheMass[F[type, {j2}]], sff},
+  sff = SelfEnergy[F[type, {j1}] -> F[type, {j2}], m2];
+  2 m2/(m1^2 - m2^2) ReTilde[
+    m2 RVectorCoeff[sff] + m1 LVectorCoeff[sff] + 2 LScalarCoeff[sff] ]
+]
+
+RenConst[ dMZsq1 ] := -ReTilde[SelfEnergy[V[20] -> V[20], MZ]]
+
+RenConst[ dMWsq1 ] := -ReTilde[SelfEnergy[V[30] -> V[30], MW]]
+
+RenConst[ dMHsq1 ] := ReTilde[SelfEnergy[S[10] -> S[10], MH]]
+
+RenConst[ dZAA1  ] := ReTilde[DSelfEnergy[V[10] -> V[10], 0]]
+
+RenConst[ dZAZ1  ] := 2 CW/SW (dMWsq1/MW^2 - dMZsq1/MZ^2)
+
+RenConst[ dZZA1  ] := 0
+
+RenConst[ dZZZ1  ] := dZAA1 - (CW^2 - SW^2)/(2 CW SW) dZAZ1
+
+RenConst[ dZW1   ] := dZAA1 - CW/SW/2 dZAZ1
+
+RenConst[ dZH1   ] := dZW1 + dMWsq1/MW2
+
+RenConst[ dTad1  ] := -ReTilde[SelfEnergy[S[10] -> {}]]
+
+RenConst[ dZe1   ] := -1/2 (dZAA1 + SW/CW dZZA1)
+
+RenConst[ dWFZ1  ] := ReTilde[DSelfEnergy[V[20] -> V[20], MZ]] - dZZZ1
+
+RenConst[ dWFAZ1 ] := 2 ReTilde[SelfEnergy[V[10] -> V[20], MZ]] - dZAZ1
+
+RenConst[ dWFW1  ] := ReTilde[DSelfEnergy[V[30] -> V[30], MW]] - dZW1

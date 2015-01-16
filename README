@@ -1,95 +1,26 @@
-FeynArts 2.2 README file
+FeynArts 3 README file
 
-FeynArts is a program for the generation and visualization of Feynman
-diagrams and amplitudes.
+FeynArts is a Mathematica package for the generation and
+visualization of Feynman diagrams and amplitudes.
 
-Some of the features of version 2.2 are:
+To install FeynArts, unpack the archive FeynArts3.tar.gz in a
+directory. FeynArts requires Mathematica 3 or higher. The topology
+editor needs a Java VM and the J/Link package. Both ingredients can
+be obtained free of charge from
 
-- Generation of diagrams is possible at three levels, generic fields,
-  classes of fields, or specific particles.
+http://www.wolfram.com/solutions/mathlink/jlink		(J/Link),
+http://java.sun.com/j2se				(Java).
 
-- The representation of the kinematical quantities like spinors or vector
-  fields can be chosen by the user in a generic model file.
+Installing a Java VM may not even be necessary, as many systems
+(e.g. Windows) have it pre-installed. Follow the instructions
+that come with J/Link for installation on the various platforms.
 
-- Generation of counter terms and generic 1PI vertex functions is
-  supported.
-
-- Fermion-number violating theories are supported.
-
-- Vertices of arbitrary degree are allowed (needed for effective
-  theories).
-
-- Mixing propagators are supported.
-
-- Sophisticated graphics capabilities including output in LaTeX picture
-  environment.
-
-            *)
-Requirements  :
-
-- Mathematica 2.2 or above, 
-
-- for the topology editor: gcc and an X11 platform (including developer's
-  tools, i.e. include files, xmkmf, libX*).
-
-
-Installation notes for the impatient:
-
-- unpack the archive FeynArts22.tar.gz in some directory
-  (presumably you did this already or else you wouldn't be reading
-  this file)
-
-- run ./compile to compile the C programs needed by FeynArts
-
-For more detailed instructions see the manual in FA22Guide.ps.gz.
-
-The latest version of FeynArts can be downloaded from
-http://www.feynarts.de.
+More detailed instructions can be found in the manual, in the file
+FA3Guide.ps.gz. The latest version of FeynArts can be downloaded
+from http://www.feynarts.de.
 
 Enjoy!
 
 Thomas Hahn
 hahn@feynarts.de
 
-
-*)
-  Notes on the X11 requirement:
-
-Background:
-  A topology does not by itself provide information on how to draw it.
-  When FeynArts encounters a topology for which is does not yet know the
-  shape, it tries to autoshape the topology, and then calls the topology
-  editor for the user to refine the shape. Shapes once defined are saved.
-
-Problem:
-  The topology editor is a function (called Shape) which before version
-  2.2 was written entirely in Mathematica, and whereas Mathematica has
-  considerable graphics _output_ capabilities, it has no way except the
-  keyboard to obtain _input_ from the user. In other words, the user
-  interface of the old Shape function was slow and tedious to use.
-  In 2.2 it has been replaced by a nice point-and-click topology editor
-  written in C, TopEdit, which uses MathLink to communicate with
-  Mathematica. The drawback is that TopEdit relies on the X-Windows
-  graphics interface that customarily comes with Unix.
-
-Impact:
-  Since the shapes are already defined for many standard topologies, the
-  topology editor might never be needed. Even for a new topology, FeynArts
-  tries very hard to work out a reasonable shape before sending it to the
-  editor. If there is no topology editor, the shapes cannot be refined,
-  and that is that. The program does not crash or hang. Generation of
-  topologies, diagrams, or amplitudes is not affected in any way.
-
-Solution/Workaround:
-  Reformat your hard disk and install Linux, then try again.
-  Caution: this process may lose data ;-)
-
-  Seriously: If you feel the topology editor is necessary for your
-  application, you should use an old version of FeynArts. For instance,
-  the old version 1.2 is a perfectly functional program if you don't need
-  the extensions of version 2, like fermion-number violating couplings.
-  If you want to try to compile TopEdit anyway: TopEdit itself uses only
-  the very basic Xlib calls, and no fancy Motif widgets etc. Apart from
-  the Xlib calls, the TopEdit program should be ANSI C and not use any
-  specific Unix commands. An X11 emulator is only helpful if it includes
-  developer's tools, like include files, xmkmf, and the X libraries.

@@ -1,7 +1,7 @@
 (*
 	Initialize.m
 		Functions for the initialization of models
-		last modified 21 Apr 00 th
+		last modified 20 Sep 01 th
 *)
 
 Begin["`Initialize`"]
@@ -83,10 +83,17 @@ overall format is wrong, or it contains symbols that were already
 assigned values somewhere in your model file (most often \"i\" or \"j\").
 Please check your generic model file and try again."
 
-InitializeModel[ model_?AtomQ, options___Rule ] :=
-Block[ {filelist, reini, genmod, mod = ToString[model],
-opt = ActualOptions[InitializeModel, options]},
+InitializeModel[ options___Rule ] :=
+Block[ {reini, genmod, opt = ActualOptions[InitializeModel, options]},
+  reini = TrueQ[Reinitialize /. opt];
+  genmod = ToString[GenericModel /. opt];
+  If[ reini || genmod =!= $GenericModel, InitGenericModel[genmod] ];
+  True
+]
 
+InitializeModel[ model_?AtomQ, options___Rule ] :=
+Block[ {reini, genmod, mod = ToString[model],
+opt = ActualOptions[InitializeModel, options]},
   reini = TrueQ[Reinitialize /. opt];
   genmod = ToString[GenericModel /. opt];
   If[ reini || genmod =!= $GenericModel, InitGenericModel[genmod] ];
@@ -98,10 +105,14 @@ InitializeModel[ mod_, ___Rule ] :=
   (Message[InsertFields::modspec, mod]; Abort[])
 
 
+$GenericModel = $Model = ""
+
+
 (* initializing a generic model: *)
 
 InitGenericModel[ genmod_ ] :=
-Block[ {savecp = $ContextPath, file = $ModelDir <> genmod <> ".gen"},
+Block[ {savecp = $ContextPath,
+file = FullFileName[genmod <> ".gen", $ModelPath]},
 
 	(* no Global symbols allowed for these operations *)
   $ContextPath = DeleteCases[$ContextPath, "Global`"];
@@ -109,19 +120,18 @@ Block[ {savecp = $ContextPath, file = $ModelDir <> genmod <> ".gen"},
 
   FAPrint[2, ""];
   FAPrint[2, "initializing generic model file ", file];
-  Clear[ AnalyticalPropagator, AnalyticalCoupling,
-    ReferenceCoupling, CouplingVector,
+  Clear[AnalyticalPropagator, AnalyticalCoupling, KinematicVector,
     PossibleFields, CheckFieldPoint, Combinations,
-    Compatibles, MixingPartners, M$FermionFlipRule ];
+    Compatibles, MixingPartners, M$FermionFlipRule];
   $ExcludedFPs = $ExcludedParticleFPs = {};
   M$TruncationRules = M$LastGenericRules = {};
   Off[Syntax::newl, Syntax::com]; 
-  If[ Get[file] === $Failed, Abort[] ];
+  Check[Get[file], Abort[]];
   On[Syntax::newl, Syntax::com];
 
   ReferenceOrder[Generic] =
     Union[ ToGeneric[(List@@ #[[1]])&/@ M$GenericCouplings] ];
-  GenericFieldPoints[] = (FieldPoint@@ #)&/@ ReferenceOrder[Generic];
+  FieldPoints[Generic] = Apply[FieldPoint, ReferenceOrder[Generic], 1];
   Scan[ BuildCombinations, Union[Length/@ ReferenceOrder[Generic]] ];
 
   F$Generic = Union[ ToGeneric[#[[1, 1]]&/@ M$GenericPropagators] ];
@@ -138,10 +148,9 @@ Block[ {savecp = $ContextPath, file = $ModelDir <> genmod <> ".gen"},
   F$AllGeneric = F$Generic;
   MixingPartners[ p_ ] = {p};
   Compatibles[ p_ ] = {p};
-  SVCompatibles[ _ ] = {};
 
   Apply[ (CheckFieldPoint[ FieldPoint[_][##] ] = True)&,
-    GenericFieldPoints[], 1 ];
+    FieldPoints[Generic], 1 ];
 	(* CheckFieldPoint must yield True in cases where some part
 	   of the vertex is yet unknown, e.g. FieldPoint[0, V, V, V] *)
   CheckFieldPoint[ fp_ ] :=
@@ -151,7 +160,7 @@ Block[ {savecp = $ContextPath, file = $ModelDir <> genmod <> ".gen"},
   M$FermionFlipRule[ __ ] = {};
 
   PossibleFields[_][ __ ] = {};
-  SetPossibleFields[_, Table[0, {Length[#]}]&, GenericFieldPoints[]];
+  SetPossibleFields[_, Table[0, {Length[#]}]&, FieldPoints[Generic]];
 
   (SetDelayed@@ {PropFieldPattern/@ #[[1]], PV[ #[[2]] ]})&/@
     M$GenericPropagators;
@@ -193,8 +202,10 @@ Block[ {f, h, i, v},
 TakeOut[ 1, n_ ] := Array[List, n]
 
 TakeOut[ m_, n_ ] := TakeOut[m, n] =
-   Join@@ Function[z, Append[z, #]&/@ Range[Last[z] + 1, n]]/@
-     TakeOut[m - 1, n]
+  Flatten[
+    Function[z, Flatten[{z, #}]&/@ Range[Last[z] + 1, n]]/@
+      TakeOut[m - 1, n],
+    1 ]
 
 
 (* construct PossibleFields from the vertex lists: *) 
@@ -216,9 +227,9 @@ Block[ {id = Sequence[], pl = {}},
 (* Transformation of Equal in the generic couplings to SetDelayed:
    lhs has to be changed to patterns, rhs is changed from
    G . {g1, g2, ...} to {G[g1], G[g2], ...} * {g1, g2, ...}.
-   Both lhs and rhs get an additional argument, the counterterm order.
-   Also, the function CouplingVector is defined which gives only the
-   G part of the coupling *)
+   Both lhs and rhs get an additional argument, the counter-term order.
+   Also, the function KinematicVector is defined which gives only the
+   kinematic part of the coupling *)
 
 InitGenericCoupling[ lhs_ == s_. g:G[_][__] ] :=
   InitGenericCoupling[ lhs == g . {s} ]
@@ -229,29 +240,29 @@ InitGenericCoupling[
 
 InitGenericCoupling[
   AnalyticalCoupling[f__] == G[n_][g__] . kinvec_List ] :=
-Block[ {lhs, cpl, Global`cto, x, ref},
+Block[ {lhs, cpl, Global`cto, x},
 
   lhs = CoupFieldPattern/@ {f};
-  Evaluate[cpl@@ lhs] = G[n][Global`cto][g] . kinvec;
+  Evaluate[cpl@@ lhs] = kinvec;
 
 	(* put Mom and KI dummies in the fields on the rhs. These dummies 
 	   will appear as part of the Lorentz term indexing of the G's. *)
-  ref = ToGeneric[{f}];
-  x = Evaluate[CouplingVector@@ ref] =
-    cpl@@ MapIndexed[ #1 /. {
-      (fi:P$Generic)[i__, _, ki:{__}] :>
-        fi[i, Mom@@ #2, Through[ Take[KIarr, Length[ki]][ #2[[1]] ] ]],
-      (fi:P$Generic)[i__, _] :> fi[i, Mom@@ #2]
-    }&, {f} ] /. Dot -> Map;
+  x = Evaluate[KinematicVector@@ ToGeneric[{f}]] =
+    cpl@@ MapIndexed[KinDummies, {f}];
 
-  SetDelayed@@ {AnalyticalCoupling[Global`cto_]@@ lhs, PV[x . kinvec]}
+  SetDelayed@@ {
+    AnalyticalCoupling[Global`cto_]@@ lhs,
+    PV[(G[n][Global`cto][g]/@ x) . kinvec] }
 ]
 
 InitGenericCoupling[ AnalyticalCoupling[f__] == _ ] :=
   Message[InitializeModel::rhs2, ToGeneric[{f}]]
 
 
-KIarr = Array[ToExpression["Global`KI" <> ToString[#]]&, 10]
+KinDummies[ s_. (f:P$Generic)[i__, _, ki_List], {n_} ] :=
+  s f[i, Mom[n], Through[Take[KIs, Length[ki]][n]]]
+
+KinDummies[ s_. (f:P$Generic)[i__, _], {n_} ] := s f[i, Mom[n]]
 
 
 Off[RuleDelayed::rhs]
@@ -272,7 +283,7 @@ PropFieldPattern[
 PropFieldPattern[ s_Symbol fi:_[___] ] := s_. PropFieldPattern[fi]
 
 PropFieldPattern[ fi_ ] :=
-  (Message[InitializeModel::nosymb, FullForm[f]]; Interrupt[])
+  (Message[InitializeModel::nosymb, FullForm[fi]]; Abort[])
 
 
 CoupFieldPattern[ fi_[i_Symbol, m_Symbol] ] := fi[i__, m_, ___List]
@@ -287,7 +298,7 @@ CoupFieldPattern[
 CoupFieldPattern[ s_Symbol fi:_[___] ] := s_. CoupFieldPattern[fi]
 
 CoupFieldPattern[ fi_ ] :=
-  (Message[InitializeModel::nosymb, FullForm[f]]; Interrupt[])
+  (Message[InitializeModel::nosymb, FullForm[fi]]; Abort[])
 
 
 On[RuleDelayed::rhs]
@@ -298,11 +309,17 @@ AllFields[ fi_ ] :=
     If[SelfConjugate[fi], fi, {fi, -fi}] ]
 
 
+Attributes[ClearClassesDefs] = {HoldAll}
+
+ClearClassesDefs[ defs_ ] :=
+  defs = Select[defs, FreeQ[#, P$Generic[__]]&]
+
+
 (* Initialization of a classes model: *)
 
 InitClassesModel[ mod_ ] :=
 Block[ {unsortedFP, unsortedCT, savecp = $ContextPath,
-file = $ModelDir <> mod <> ".mod"},
+file = FullFileName[mod <> ".mod", $ModelPath]},
 
 	(* no Global symbols allowed for these operations *)
   $ContextPath = DeleteCases[$ContextPath, "Global`"];
@@ -310,7 +327,10 @@ file = $ModelDir <> mod <> ".mod"},
 
   FAPrint[2, ""];
   FAPrint[2, "initializing classes model file ", file];
-  Clear[ InsertOnly, Diagonal, TheC, QuantumNumbers ];
+  Clear[SVCompatibles, InsertOnly, Diagonal, TheC, QuantumNumbers];
+  ClearClassesDefs[DownValues[CheckFieldPoint]];
+  ClearClassesDefs[DownValues[MixingPartners]];
+  ClearClassesDefs[SubValues[PossibleFields]];
   M$LastModelRules = {};
   Off[Syntax::newl, Syntax::com];
   If[ Get[file] === $Failed, Abort[] ];
@@ -324,6 +344,7 @@ file = $ModelDir <> mod <> ".mod"},
     ( M$ClassesDescription /.
       {Mass -> TheMass, PropagatorLabel -> TheLabel} );
 
+  SVCompatibles[ _ ] = {};
   Cases[ DownValues[MixingPartners],
     (_[_[p:_[__]]] :> m_) :> AssignMixing[p, m] ];
 
@@ -350,7 +371,7 @@ file = $ModelDir <> mod <> ".mod"},
   unsortedFP = Flatten[InitClassesCoupling/@ M$CouplingMatrices, 1];
   On[Rule::rhs];
   ReferenceOrder[Classes] = Union[Apply[List, unsortedFP, 1]];
-  FieldPoints[] = (FieldPoint@@ #)&/@ ReferenceOrder[Classes];
+  FieldPoints[Classes] = Apply[FieldPoint, ReferenceOrder[Classes], 1];
 
   L$CTOrders = Union[Cases[unsortedFP, FieldPoint[n_][__] -> n]];
   Scan[
@@ -377,19 +398,6 @@ CC[ fi__ ] == coup_ ^:= Sequence[
   C[fi] == coup,
   AntiParticle/@ C[fi] == ConjugateCoupling[fi][coup]
 ]
-
-
-KinematicVector[ a___, _. (f:P$Generic)[__], b___ ] :=
-  KinematicVector[a, f, b]
-
-KinematicVector[ a___, _Integer f:P$Generic, b___ ] :=
-  KinematicVector[a, f, b]
-
-KinematicVector[ fi__ ] :=
-Block[ {p = Position[GenericFieldPoints[], FieldPoint[fi]]},
-  If[ Length[p] === 0, {},
-    First/@ CouplingVector@@ ReferenceOrder[Generic][[ p[[1, 1]] ]] ]
-] /; Head[GenericFieldPoints[]] === List
 
 
 ConjugateCoupling[__][ ConjugateCoupling[__][coup_] ] = coup
@@ -445,19 +453,19 @@ Block[ {lhs, rhs, l, cv, x, res, genref = ToGeneric[List@@ vert]},
 	   Note: whereas formerly the classes coupling was allowed to be
 	         given in a different order than the generic coupling, a
 	         strict match is now required *)
-  If[ Position[ReferenceOrder[Generic], genref, 1, 1] === {},
+  If[ !MemberQ[ReferenceOrder[Generic], genref],
     Message[InitializeModel::nogeneric, vert]; Return[{}] ];
 
 	(* in the special case of a one-dimensional coupling supply
 	   the extra List if omitted *)
-  l = Length[cv = CouplingVector@@ genref];
+  l = Length[cv = KinematicVector@@ genref];
   rhs = If[ l === 1 && !MatchQ[coup, {{__}}], {coup},
     If[ l =!= Length[coup],
       Message[InitializeModel::incomp1, vert, l];
       Abort[] ];
     coup ];
 
-	(* check structure of field indices in coupling: *)
+	(* check structure of field indices in coupling *)
   If[ Or@@ (If[ SameQ@@ (x = IndexCount[#]), False,
         Message[InitializeModel::incomp2, vert, #, Sequence@@ x];
         True ]&)/@ vert,
@@ -466,7 +474,7 @@ Block[ {lhs, rhs, l, cv, x, res, genref = ToGeneric[List@@ vert]},
 	(* change symbols in model file to patterns: *)
   lhs = vert //. {a___, j_Symbol, b___} -> {a, j_, b};
 	(* this assigns TheC for all components of the coupling vector *)
-  Evaluate[ ((TheC@@ #)@@ lhs)&/@ cv ] = rhs;
+  Evaluate[ (TheC[#]@@ lhs)&/@ cv ] = rhs;
 
   lhs = VSort[lhs];
   cv = ToClasses[vert];
@@ -513,6 +521,9 @@ Indices[ _Integer fi_ ] := Indices[fi]
 Indices[ fi_[i_, __] ] := Indices[fi[i]]
 
 Indices[ _ ] = {}
+
+
+IndexSum[0, _] = 0
 
 
 KinematicIndices[ VS ] := KinematicIndices[SV]
@@ -620,9 +631,9 @@ TheLabel[ SV ] = {"S", "V"}
 
 TheLabel[ VS ] = {"V", "S"}
 
-TheLabel[ i_Integer ] := ToString[i]
+TheLabel[ i_Integer ] = i
 
-TheLabel[ fi:P$Generic ] := ToString[fi]
+TheLabel[ fi:P$Generic ] = fi
 
 TheLabel[ (2 | -2) fi_ ] := Reverse[Flatten[{TheLabel[fi]}]]
 

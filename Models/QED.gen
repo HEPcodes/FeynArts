@@ -3,7 +3,7 @@
 		Generic model file for QED
 		(simplex version of Lorentz.gen)
 		by A. Denner, H. Eck, O. Hahn, S. Kueblbeck
-		last modified 1 Jun 99 by Thomas Hahn
+		last modified 24 Oct 00 by Thomas Hahn
 *)
 
 
@@ -114,8 +114,8 @@ M$FermionFlipRule[ 1 -> 2, 2 -> 1 ] = {
 	   external Propagators defined in this file. *)
 
 M$TruncationRules = {
-  PolarizationVector[__] -> 1,
-  DiracSpinor[__] -> 1
+  _PolarizationVector -> 1,
+  _DiracSpinor -> 1
 }
 
 	(* LastGenericRules: the very last rules that are applied to an
@@ -138,9 +138,8 @@ Format[
     NonCommutative[_[s1_. mom1_, mass1_]],
     r___,
     NonCommutative[_[s2_. mom2_, mass2_]]] ] :=
-  ColumnForm[{"_", If[FreeQ[mom1, Incoming], "u", "v"]},
-    Left, Above][mom1, mass1] . r .
-    If[FreeQ[mom2, Outgoing], "u", "v"][mom2, mass2]
+  Overscript[If[FreeQ[mom1, Incoming], "u", "v"], "_"][mom1, mass1] .
+    r . If[FreeQ[mom2, Outgoing], "u", "v"][mom2, mass2]
 
 Format[ DiracSlash ] = "gs"
 

@@ -3,7 +3,7 @@
 		Add-on model file for non-minimal flavour-violation
 		("upgrades" ordinary to full 6x6 squark mixing)
 		by Thomas Hahn and Jose Illana
-		last modified 25 Oct 07 by th
+		last modified 14 Jun 08 by th
 *)
 
 
@@ -24,7 +24,9 @@ TheMass[ S[t:13 | 14, {as_, ___}] ] := MASf[as, t - 10]
 
 
 ReplaceCoupling[lhs_ == rhs_, {n_}] :=
-  ReplaceSf[ReplaceAf[lhs == (rhs /. Af[t:3 | 4, __] -> af[t]), n], n]
+  ReplaceSf[ReplaceAf[lhs == (rhs /. {
+    Af[t:3 | 4, __] -> af[t],
+    AfC[t:3 | 4, __] -> Conjugate[af[t]] }), n], n]
 
 
 ReplaceAf[

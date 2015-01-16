@@ -1,13 +1,13 @@
 (*
 
-This is FeynArts, Version 3.3
-Copyright by Sepp Kueblbeck, Hagen Eck, and Thomas Hahn 1991-2007
-last modified 21 Jan 08 by Thomas Hahn
+This is FeynArts, Version 3.4
+Copyright by Sepp Kueblbeck, Hagen Eck, and Thomas Hahn 1991-2009
+last modified 29 Jun 09 by Thomas Hahn
 
 Release notes:
 
 FeynArts is free software, but is not in the public domain.
-Instead it is covered by the GNU library general public license.
+Instead it is covered by the GNU Lesser General Public License.
 In plain English this means:
 
 1. We don't promise that this software works.
@@ -44,9 +44,9 @@ Have fun!
 
 
 Print[""];
-Print["FeynArts 3.3"];
+Print["FeynArts 3.4"];
 Print["by Hagen Eck, Sepp Kueblbeck, and Thomas Hahn"];
-Print["last revised 21 Jan 08"]
+Print["last revised 19 Jun 09"]
 
 
 BeginPackage["FeynArts`"]
@@ -54,7 +54,7 @@ BeginPackage["FeynArts`"]
 (* definitions for Utilities.m *)
 
 FAPrint::usage =
-"FAPrint[l, s] prints the string s if l <= $Verbose."
+"FAPrint[l, s] prints s if l <= $Verbose."
 
 ActualOptions::usage =
 "ActualOptions[sym, options] returns a list of options of sym with the
@@ -63,6 +63,10 @@ valid options of sym replaced by their actual values."
 ResolveLevel::usage =
 "ResolveLevel[lev] returns a full set of levels selected by lev.  For
 example, ResolveLevel[Particles] gives {Generic, Classes, Particles}."
+
+ResolveType::usage =
+"ResolveType[t] returns an abridged class of propagator with values
+External, Internal, or Loop."
 
 ContainsQ::usage =
 "ContainsQ[expr, items] gives True if expr contains every element in
@@ -84,10 +88,6 @@ automatically."
 Vertices::usage =
 "Vertices[top] returns a list of all vertices of topology top."
 
-TakeInc::usage =
-"TakeInc[v, pr] returns the incoming particle from vertex v in
-propagator pr."
-
 PSort::usage =
 "PSort[p] sorts the first two elements of a propagator p."
 
@@ -101,6 +101,11 @@ topology top."
 Compare::usage =
 "Compare[t] is the `pure' compare function to eliminate equivalent
 topologies of a TopologyList t."
+
+ProcessName::usage =
+"ProcessName[amp] constructs a string suitable as filename for the
+inserted topology or amplitude list amp which is unique to the model
+and particle selection."
 
 Pluralize::usage =
 "Pluralize is an internal function."
@@ -179,6 +184,15 @@ ExcludeTopologies -> {filt, ...}.  It must be defined as a pure function
 (i.e. func[#]&).  Given a topology, this function must return True if
 the topology shall not be discarded."
 
+Loops::usage =
+"Loops[n] is a filter used with ExcludeTopologies.  It excludes
+topologies containing loops that are connected to the rest of the graph
+with n propagators."
+
+CTs::usage =
+"CTs[n] is a filter used with ExcludeTopologies.  It excludes the
+counter-term topologies corresponding to Loops[n]."
+
 Tadpoles::usage =
 "Tadpoles is a filter used with ExcludeTopologies.  It excludes
 topologies containing loops that are connected to the rest of the graph
@@ -217,17 +231,35 @@ topologies containing loops that are connected to the rest of the graph
 with three propagators."
 
 TriangleCTs::usage =
-"TriangleCTs is a filter used with ExcludeTopologies.  It excludes
+"TriangleCTs is a filter used with ExcludeTopologies.  It excludes the
 counter-term topologies corresponding to Triangles."
 
 Boxes::usage =
-"Boxes[n] is a filter used with ExcludeTopologies.  It excludes
+"Boxes is a filter used with ExcludeTopologies.  It excludes
 topologies containing loops that are connected to the rest of the graph
-with n propagators."
+with four propagators."
 
 BoxCTs::usage =
-"BoxCTs[n] is a filter used with ExcludeTopologies.  It excludes
-counter-term topologies corresponding to Boxes[n]."
+"BoxCTs is a filter used with ExcludeTopologies.  It excludes the
+counter-term topologies corresponding to Boxes."
+
+Pentagons::usage =
+"Pentagons is a filter used with ExcludeTopologies.  It excludes
+topologies containing loops that are connected to the rest of the graph
+with five propagators."
+
+PentagonCTs::usage =
+"PentagonCTs is a filter used with ExcludeTopologies.  It excludes the
+counter-term topologies corresponding to Pentagons."
+
+Hexagons::usage =
+"Hexagons is a filter used with ExcludeTopologies.  It excludes
+topologies containing loops that are connected to the rest of the graph
+with six propagators."
+
+HexagonCTs::usage =
+"HexagonCTs is a filter used with ExcludeTopologies.  It excludes the
+counter-term topologies corresponding to Hexagons."
 
 AllBoxes::usage =
 "AllBoxes is a filter used with ExcludeTopologies.  It excludes
@@ -242,33 +274,49 @@ TadpolesOnly::usage =
 "TadpolesOnly is a short-cut used with CreateTopologies to keep only
 topologies containing tadpoles."
 
-SelfEnergiesOnly::usage =
-"SelfEnergiesOnly is a short-cut used with CreateTopologies to keep only
-topologies containing self-energies on internal lines."
-
-TrianglesOnly::usage =
-"TrianglesOnly is a short-cut used with CreateTopologies to keep only
-topologies containing triangles."
-
-BoxesOnly::usage =
-"BoxesOnly is a short-cut used with CreateTopologies to keep only
-topologies containing boxes (i.e. loops with adjacency four or more)."
-
 TadpoleCTsOnly::usage =
 "TadpoleCTsOnly is a short-cut used with CreateCTTopologies to keep only
 topologies containing one-point counter-terms."
+
+SelfEnergiesOnly::usage =
+"SelfEnergiesOnly is a short-cut used with CreateTopologies to keep only
+topologies containing self-energies on internal lines."
 
 SelfEnergyCTsOnly::usage =
 "SelfEnergyCTsOnly is a short-cut used with CreateCTTopologies to keep
 only topologies containing two-point counter-terms on internal lines."
 
+TrianglesOnly::usage =
+"TrianglesOnly is a short-cut used with CreateTopologies to keep only
+topologies containing triangles."
+
 TriangleCTsOnly::usage =
 "TriangleCTsOnly is a short-cut used with CreateCTTopologies to keep
 only topologies containing three-point counter-terms."
 
+BoxesOnly::usage =
+"BoxesOnly is a short-cut used with CreateTopologies to keep only
+topologies containing boxes."
+
 BoxCTsOnly::usage =
 "BoxCTsOnly is a shortcut used with CreateCTTopologies to keep only
-topologies containing four- or more-point counter-terms."
+topologies containing four-point counter-terms."
+
+PentagonsOnly::usage =
+"PentagonsOnly is a short-cut used with CreateTopologies to keep only
+topologies containing pentagons."
+
+PentagonCTsOnly::usage =
+"PentagonCTsOnly is a shortcut used with CreateCTTopologies to keep
+only topologies containing five-point counter-terms."
+
+HexagonsOnly::usage =
+"HexagonsOnly is a short-cut used with CreateTopologies to keep only
+topologies containing hexagons."
+
+HexagonCTsOnly::usage =
+"HexagonCTsOnly is a shortcut used with CreateCTTopologies to keep
+only topologies containing six-point counter-terms."
 
 ToTree::usage =
 "ToTree[top] returns top with the loops shrunk to points named
@@ -283,6 +331,14 @@ FreeWFQ::usage =
 one-point vertices specified by patt1 and two-point vertices specified
 by patt2 on external legs.  For example, the WFCorrections filter uses
 FreeWFQ[ToTree[top], Centre[1], Centre[2]]&."
+
+LoopFields::usage =
+"LoopFields[top] returns a list of the fields that are part of any
+loop in the topology top.  LoopFields[rul, top] first substitutes
+the insertion rules rul into the bare topology top before proceeding. 
+This function is typically used as a filter for DiagramSelect or
+DiagramGrouping, as in
+DiagramSelect[diags, FreeQ[LoopFields[##], V[1]]&]."
 
 WFCorrectionFields::usage =
 "WFCorrectionFields[top] extracts the fields external to any
@@ -425,6 +481,18 @@ Process::usage =
 "Process is returned by InsertFields as an option of TopologyList.  
 It specifies the process as a rule \"inparticles -> outparticles\"."
 
+FieldPoints::usage =
+"FieldPoints[top] returns a list of the field points contained in
+the topology top.  FieldPoints[rul, top] first substitutes the
+insertion rules rul into the bare topology top before proceeding. 
+This function is typically used as a filter for DiagramSelect or
+DiagramGrouping, as in
+DiagramSelect[diags, MemberQ[FieldPoints[##], (some field point)]&]."
+
+TakeInc::usage =
+"TakeInc[v][p] returns the incoming particle from vertex v in
+propagator p."
+
 IndexDelta::usage =
 "IndexDelta[i1, i2] is a symbol in the definition of a classes coupling
 indicating that the coupling is diagonal in the indices i1 and i2."
@@ -498,6 +566,24 @@ V[1]] also excludes FieldPoint[F[3, {1}], -F[3, {1}], V[1]] etc.
 Further, the exclusion of a field point always implies exclusion of its
 charge-conjugate field point."
 
+FieldMatchQ::usage =
+"FieldMatchQ[f, fpatt] returns True if the field f matches the pattern
+fpatt and False otherwise.  The matching takes into account field levels,
+e.g. F[1] matches F."
+
+FieldMemberQ::usage =
+"FieldMemberQ[flist, fpatt] returns True if an element of flist matches
+fpatt in the sense that FieldMatchQ returns True."
+
+FieldPointMatchQ::usage =
+"FieldPointMatchQ[fp, fppatt] returns True if the field point fp matches
+the pattern fppatt and False otherwise.  The matching takes into account
+field levels, e.g. F[1] matches F."
+
+FieldPointMemberQ::usage =
+"FieldPointMemberQ[fplist, fppatt] returns True if an element of fplist
+matches fppatt in the sense that FieldPointMatchQ returns True."
+
 ExcludedQ::usage =
 "ExcludedQ[vertlist] gives True if vertlist contains any vertices
 currently excluded at Particles level."
@@ -516,7 +602,8 @@ AntiParticle::usage =
 
 TheMass::usage =
 "TheMass[p] gives the value of the mass of particle p (if specified in
-the model file)."
+the model file).  TheMass[p, t] gives the mass for particle p running
+on a propagator of type t (External, Internal, Loop)."
 
 Indices::usage =
 "Indices[c] gives a list of index names of class c."
@@ -552,11 +639,11 @@ FieldPoint::usage =
 "FieldPoint[cto][f1, f2, ...] is the representation of a field point of
 counter-term order cto with incoming fields f1, f2, ..."
 
-FieldPoints::usage =
-"FieldPoints[cto] returns a list of field points of counter-term order
-cto in the current model, FieldPoints[Classes] returns a list of field
+FieldPointList::usage =
+"FieldPointList[cto] returns a list of field points of counter-term order
+cto in the current model, FieldPointList[Classes] returns a list of field
 points of all orders in the current classes model, and
-FieldPoints[Generic] returns a list of all generic field points."
+FieldPointList[Generic] returns a list of all generic field points."
 
 KinematicVector::usage =
 "KinematicVector[fi] returns the kinematic vector of the coupling of the
@@ -605,6 +692,9 @@ vector."
 
 KIs = {KI1, KI2, KI3, KI4}
 
+CI::usage = "CI[n] is the classes index of the nth field in the
+kinematic vector."
+
 PV::usage =
 "PV is the head of a general analytical expression in FeynArts.  
 The letters stand for Propagator/Vertex."
@@ -650,6 +740,33 @@ $Model::usage =
 
 $GenericModel::usage =
 "$GenericModel is the currently initialized generic model."
+
+ModelDebug::usage =
+"ModelDebug can be wrapped around a model name to enable debugging for
+that model."
+
+$ModelDebug::usage =
+"$ModelDebug determines whether changes introduced by add-on model files
+will be reported as a model is initialized.  It can be set to True, in
+which case debugging output will be generated for all add-on model
+files, or to the name (or list of names) of the add-on model file(s) to
+be debugged."
+
+$ModelDebugForm::usage =
+"$ModelDebugForm specifies the output form for debugging output when
+$ModelDebug = True is set."
+
+$ModelAdded::usage =
+"$ModelAdded contains the couplings added by the most recently
+initialized add-on model file if $ModelDebug = True."
+
+$ModelChanged::usage =
+"$ModelAdded contains the couplings changed by the most recently
+initialized add-on model file if $ModelDebug = True."
+
+$ModelRemoved::usage =
+"$ModelRemoved contains the couplings removed by the most recently
+initialized add-on model file if $ModelDebug = True."
 
 $ExcludedFPs::usage =
 "$ExcludedFPs is the list of currently excluded Generic- and
@@ -715,10 +832,12 @@ field fi carries.  For example, KinematicIndices[V] = {Lorentz} in
 Lorentz.gen."
 
 MatrixTraceFactor::usage =
-"MatrixTraceFactor -> n is an optional entry for fermions in the
-M$ClassesDescription list.  A MatrixTrace (a closed loop of fermions) is
-multiplied by the MatrixTraceFactor of its consituents.  Typical usage
-is MatrixTraceFactor -> 3 for quarks."
+"MatrixTraceFactor -> n is an optional entry for fermions in the 
+M$ClassesDescription list.  A MatrixTrace (a closed loop of fermions) is 
+multiplied by the MatrixTraceFactor of its consituents.  Typical usage 
+is MatrixTraceFactor -> 3 for quarks.  The factor may contain objects of 
+the form Index[type], which are substituted by the actual indices 
+carried by the fields in the loop."
 
 SelfConjugate::usage =
 "SelfConjugate -> True | False is an entry in the M$ClassesDescription
@@ -735,10 +854,11 @@ InsertOnly[p] returns the types of propagators in which field p may be
 inserted into."
 
 Mass::usage =
-"Mass[p] denotes the mass of particle p.  It is just a symbol carrying
-no further information.  FeynArts defines the function TheMass that
-returns the explicit symbol of the mass (if specified by the model
-file)."
+"Mass[p] denotes the mass of particle p.  Mass[p, t] denotes the mass of
+particle p running on a propagator of type t (External, Internal, Loop). 
+It is just a symbol carrying no further information.  FeynArts defines
+the function TheMass that returns the explicit symbol of the mass (if
+specified by the model file)."
 
 MixingPartners::usage =
 "MixingPartners -> {...} is an entry in the M$ClassesDescription list
@@ -906,13 +1026,22 @@ lists you can never delete the Generic level."
 
 Discard::usage =
 "Discard[expr, d] discards the diagrams d from the topology or amplitude
-list expr.  d may be of the form {3, 8, 17...28} which selects diagrams
-3, 8, and 17 through 28."
+list expr.  d may be of the form {3, 42, 17...28} which selects diagrams
+3, 42, and 17 through 28."
+
+DiagramMap::usage =
+"DiagramMap[foo, diags] maps foo over all Feynman diagrams in diags."
 
 DiagramSelect::usage =
 "DiagramSelect[diags, crit] selects the diagrams from diags for which
 crit is true.  For example, for selecting diagrams where field #5 is not
 a S[1], one could use DiagramSelect[diags, FreeQ[#, Field[5] -> S[1]]&]."
+
+DiagramGrouping::usage =
+"DiagramGrouping[tops, foo] returns a list of parts of the inserted
+topologies tops, grouped according to the output of foo.  For example,
+DiagramGrouping[tops, FermionRouting] returns a list of
+fermion-flow-ordered diagrams."
 
 FermionRouting::usage =
 "FermionRouting[top] finds out which external lines are connected
@@ -921,8 +1050,23 @@ FermionRouting[rul, top] first substitutes the insertion rules rul
 into the bare topology top before proceeding.  The output is a list
 of integers of which every successive two denote the end-points of
 a fermion line in the diagram.  This function is typically used as
-a filter for DiagramSelect, as in
+a filter for DiagramSelect or DiagramGrouping, as in
 DiagramSelect[diags, FermionRouting[##] == {1, 4, 2, 3} &]."
+
+FeynAmpCases::usage =
+"FeynAmpCases[patt, lev][amp] finds the instances of pattern patt in the
+amplitude amp.  FeynAmpCases[patt, lev][rul, top, h] does the same for
+the amplitude resulting from topology top inserted with insertion rules
+rul using topology-list header h.  The level specification lev is
+optional and defaults to Infinity.  This function is typically used as
+a filter for DiagramSelect or DiagramGrouping, as in
+DiagramGrouping[diags, FeynAmpCases[_[Index[Colour | Gluon, _], ___]]]."
+
+FeynAmpExpr::usage =
+"FeynAmpExpr[rul, top, h] returns the amplitude resulting from topology
+top inserted with insertion rules rul using topology-list header h. 
+This function is typically used as a filter for DiagramSelect or
+DiagramGrouping."
 
 DiagramComplement::usage =
 "DiagramComplement[diagall, diag1, diag2, ...] gives all diagrams in
@@ -977,7 +1121,9 @@ external particle there is a third argument, External."
 
 PropagatorDenominator::usage =
 "PropagatorDenominator[p, m] stands for the expression 1/(p^2 - m^2)
-that is contained in internal propagators of a Feynman graph."
+that is contained in internal propagators of a Feynman graph. 
+PropagatorDenominator[p, m, d] is the denominator raised to the
+power d."
 
 FeynAmpDenominator::usage =
 "FeynAmpDenominator[d1, d2, ...] contains the PropagatorDenominators 
@@ -1102,6 +1248,10 @@ $Verbose::usage =
 "$Verbose is an integer that determines the extent of run-time messages
 in FeynArts.  It ranges from 0 (no messages) to 2 (normal)."
 
+$FADebug::usage =
+"$FADebug = True causes various functions to print internal information
+for debugging purposes."
+
 $FeynArtsDir::usage =
 "$FeynArtsDir points to the directory from which FeynArts was loaded."
 
@@ -1133,15 +1283,20 @@ P$Generic = F | S | V | T | U | SV
 
 P$NonCommuting = F | U
 
-P$InsertionObjects = G[_][_][__][__] | Mass[_] | GaugeXi[_] |
+P$InsertionObjects = G[_][_][__][__] | _Mass | _GaugeXi |
   VertexFunction[_][__]
 
-$FeynArts = 3.3
+$FeynArts = 3.4
 
 $FeynArtsDir = DirectoryName[ File /.
   FileInformation[System`Private`FindFile[$Input]] ]
 
 $FeynArtsProgramDir = ToFileName[{$FeynArtsDir, "FeynArts"}]
+
+
+Get[ ToFileName[$FeynArtsDir, "Setup.m"] ]
+
+If[ FileType["Setup.m"] === File, Get["Setup.m"] ]
 
 
 Block[ {$Path = {$FeynArtsProgramDir}},
@@ -1155,8 +1310,6 @@ Block[ {$Path = {$FeynArtsProgramDir}},
 
 EndPackage[]
 
-
-Get[ ToFileName[$FeynArtsDir, "Setup.m"] ]
 
 Null
 

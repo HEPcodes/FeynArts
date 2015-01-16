@@ -1,7 +1,7 @@
 (*
 	Initialize.m
 		Functions for the initialization of models
-		last modified 21 Jan 08 th
+		last modified 29 Jun 09 th
 *)
 
 Begin["`Initialize`"]
@@ -18,7 +18,7 @@ Begin["`Initialize`"]
 	F$Particles:		currently used particles
 	F$AllowedFields:	all used fields
    For the construction of the couplings the following lists are defined:
-	FieldPoints[0, 1, 2, ...]
+	FieldPointList[0, 1, 2, ...]
 	ReferenceOrder[Generic | Classes]
    Furthermore, InitializeModel defines the functions
 	PossibleFields	-> fields `fitting' on a half-filled vertex
@@ -39,12 +39,24 @@ Begin["`Initialize`"]
 Attributes[ FieldPoint ] = {Orderless}
 
 
-ToModelName[mod_] := ToString/@ Flatten[{mod}]
+ToModelName[mod_] := str/@ Flatten[{mod}]
+
+str[ mod:_[___] ] := str/@ mod
+
+str[ mod_ ] := ToString[mod]
 
 
 indent = ""
 
-ReadModelFile[ type_, ext_ ][ name_ ] :=
+Attributes[ ReadModelFile ] = {HoldFirst}
+
+ReadModelFile[ args__ ][ ModelDebug[name_] ] :=
+  ReadModelFile[args][name, True]
+
+ReadModelFile[ args__ ][ name_ ] :=
+  ReadModelFile[args][name, $ModelDebug]
+
+ReadModelFile[ newitems_, type_, ext_ ][ name_, deb_ ] :=
 Block[ {$Path = $ModelPath, file},
   file = System`Private`FindFile[name <> ext];
   FAPrint[2, indent, "loading ", type, " model file ", file];
@@ -53,14 +65,70 @@ Block[ {$Path = $ModelPath, file},
   Check[ Block[{indent = indent <> "  "}, Get[file]], Abort[] ];
   (*On[Syntax::newl, Syntax::com];*)
 
+  DebugModel[newitems, name, deb];
+  olditems = newitems;
+
   name
 ]
+
+
+Attributes[ DebugModel ] = {HoldFirst}
+
+DebugModel[ __, False ] = 0
+
+DebugModel[ newitems_, name_, True ] :=
+  MapThread[ ReportChanges[name],
+    {Block[newitems, ToString/@ newitems], newitems, olditems} ] /;
+  olditems =!= 0
+
+DebugModel[ newitems_, name_, other_ ] :=
+  DebugModel[newitems, name, MemberQ[ToString/@ Flatten[{other}], name]]
+
+
+ReportChanges[ _ ][ _, new_, new_ ] = True
+
+ReportChanges[ name_ ][ item_, new_, old_ ] := (
+  {$ModelRemoved, $ModelChanged, $ModelAdded} =
+    FindDiff[new, old, {}, {}];
+
+  Print[];
+
+  If[ Length[$ModelAdded] > 0,
+    Print[name, " added the following ", Length[$ModelAdded],
+      " items to ", item, ":"];
+    Print[$ModelAdded //$ModelDebugForm] ];
+
+  If[ Length[$ModelRemoved] > 0,
+    Print[name, " removed the following ", Length[$ModelRemoved],
+      " items from ", item, ":"];
+    Print[$ModelRemoved //$ModelDebugForm] ];
+
+  If[ Length[$ModelChanged] > 0,
+    Print[name, " changed the following ", Length[$ModelChanged],
+      " items in ", item, ":"];
+    Print[$ModelChanged //$ModelDebugForm] ];
+
+  False
+)
+
+
+FindDiff[ {c_, d___}, {a___, c_, b___}, diff_, add_ ] :=
+  FindDiff[{d}, {a, b}, diff, add]
+ 
+FindDiff[ {c_ == x_, d___}, {a___, k_ == y_, b___}, diff_, add_ ] :=
+  FindDiff[{d}, {a, b}, {diff, c}, add] /; ToClasses[c] === ToClasses[k]
+
+FindDiff[ {c_, d___}, old_, diff_, add_ ] :=
+  FindDiff[{d}, old, diff, {add, c}]
+
+FindDiff[ {}, r__ ] := Replace[Flatten/@ {r}, x_ == _ -> x, {2}]
 
 
 General::genmiss =
 "Definition missing in generic model file."
 
-LoadGenericModel[ genmod_, ext_String:".gen" ] := (
+LoadGenericModel[ genmod_, ext_String:".gen" ] :=
+Block[ {olditems = 0},
   M$GenericPropagators := (
     Message[M$GenericPropagators::genmiss];
     Abort[]; );
@@ -69,14 +137,18 @@ LoadGenericModel[ genmod_, ext_String:".gen" ] := (
     Abort[]; );
   M$FlippingRules = M$TruncationRules = M$LastGenericRules = {};
 
-  ReadModelFile["generic", ext]/@ ToModelName[genmod]
-)
+  ReadModelFile[
+    {M$GenericPropagators, M$GenericCouplings,
+      M$FlippingRules, M$TruncationRules, M$LastGenericRules},
+    "generic", ext ]/@ ToModelName[genmod]
+]
 
 
 General::modmiss =
 "Definition missing in classes model file."
 
-LoadModel[ mod_, ext_String:".mod" ] := (
+LoadModel[ mod_, ext_String:".mod" ] :=
+Block[ {olditems = 0},
   M$ClassesDescription := (
     Message[M$ClassesDescription::modmiss];
     Abort[]; );
@@ -85,8 +157,10 @@ LoadModel[ mod_, ext_String:".mod" ] := (
     Abort[]; );
   M$LastModelRules = {};
 
-  ReadModelFile["classes", ext]/@ ToModelName[mod]
-)
+  ReadModelFile[
+    {M$ClassesDescription, M$CouplingMatrices, M$LastModelRules},
+    "classes", ext ]/@ ToModelName[mod]
+]
 
 
 (* this is a workaround for a Mathematica bug in Put, known
@@ -142,46 +216,34 @@ InitializeModel::norange =
 "Index `` has no IndexRange specification."
 
 InitializeModel::incomp1 =
-"Coupling definition in model file for `` is incompatible to generic
+"Coupling definition in model file for `` is incompatible to generic \
 coupling structure.  Coupling is not a vector of length ``."
 
 InitializeModel::incomp2 =
-"Incompatible index structure in classes coupling ``.  Field ``
-needs `` indices, not ``."
+"Incompatible index structure in classes coupling ``.  \
+Field `` needs `` indices, not ``."
 
 InitializeModel::nogeneric =
 "Warning: Classes coupling `` matches no generic coupling."
 
 InitializeModel::rhs1 =
-"R.h.s. of generic coupling `` has G-expressions inside the
+"R.h.s. of generic coupling `` has G-expressions inside the \
 kinematic vector."
 
 InitializeModel::rhs2 =
-"Generic coupling `` is not of the form
+"Generic coupling `` is not of the form \
 AnalyticalCoupling[__] == G[_][__] . {__}."
 
 InitializeModel::badrestr =
 "Warning: `` is not a valid model restriction."
 
 InitializeModel::nosymb =
-"Cannot properly analyze the field specification ``.  Either the
-overall format is wrong, or it contains symbols that were already
-assigned values somewhere in your model file (most often \"i\" or \"j\").
+"Cannot properly analyze the field specification ``.  Either the \
+overall format is wrong, or it contains symbols that were already \
+assigned values somewhere in your model file (most often \"i\" or \"j\").  \
 Please check your generic model file and try again."
 
-InitializeModel[ options___?OptionQ ] :=
-Block[ {reini, genmod,
-opt = ActualOptions[InitializeModel, options]},
-  reini = TrueQ[Reinitialize /. opt];
-
-  genmod = ToModelName[GenericModel /. opt];
-  If[ reini || genmod =!= $GenericModel,
-    (InitGenericModel[GenericModelEdit] /. opt)[genmod] ];
-
-  True
-]
-
-InitializeModel[ model_, options___?OptionQ ] :=
+InitializeModel[ model_:{}, options___?OptionQ ] :=
 Block[ {reini, genmod, mod,
 opt = ActualOptions[InitializeModel, options]},
   reini = TrueQ[Reinitialize /. opt];
@@ -191,7 +253,7 @@ opt = ActualOptions[InitializeModel, options]},
     (InitGenericModel[GenericModelEdit] /. opt)[genmod] ];
 
   mod = ToModelName[model];
-  If[ reini || mod =!= $Model,
+  If[ Length[mod] > 0 && (reini || mod =!= $Model),
     (InitModel[ModelEdit] /. opt)[mod] ];
 
   True
@@ -217,12 +279,12 @@ Block[ {savecp = $ContextPath},
   $ExcludedFPs = $ExcludedParticleFPs = {};
 
   FAPrint[2, ""];
-  LoadGenericModel[genmod];
+  $GenericModel = LoadGenericModel[genmod];
   edit;
 
   ReferenceOrder[Generic] =
     Union[ ToGeneric[(List@@ #[[1]])&/@ M$GenericCouplings] ];
-  FieldPoints[Generic] = Apply[FieldPoint, ReferenceOrder[Generic], 1];
+  FieldPointList[Generic] = Apply[FieldPoint, ReferenceOrder[Generic], 1];
   Scan[ BuildCombinations, Union[Length/@ ReferenceOrder[Generic]] ];
 
   F$Generic = Union[ ToGeneric[#[[1, 1]]&/@ M$GenericPropagators] ];
@@ -241,7 +303,7 @@ Block[ {savecp = $ContextPath},
   Compatibles[ p_ ] = {p};
 
   Apply[ (CheckFieldPoint[ FieldPoint[_][##] ] = True)&,
-    FieldPoints[Generic], 1 ];
+    FieldPointList[Generic], 1 ];
 	(* CheckFieldPoint must yield True in cases where some part
 	   of the vertex is yet unknown, e.g. FieldPoint[0, V, V, V] *)
   CheckFieldPoint[ fp_ ] :=
@@ -249,15 +311,14 @@ Block[ {savecp = $ContextPath},
       Length[Union[AtomQ/@ fp]] =!= 1;
 
   PossibleFields[_][ __ ] = {};
-  SetPossibleFields[_, Table[0, {Length[#]}]&, FieldPoints[Generic]];
+  SetPossibleFields[_, Table[0, {Length[#]}]&, FieldPointList[Generic]];
 
   (SetDelayed@@ {PropFieldPattern/@ #[[1]], PV[ #[[2]] ]})&/@
     M$GenericPropagators;
   InitGenericCoupling/@ M$GenericCouplings;
 
   $ContextPath = savecp;
-  $GenericModel = genmod;
-  FAPrint[1, "generic model ", genmod, " initialized"];
+  FAPrint[1, "generic model ", $GenericModel, " initialized"];
 ]
 
 
@@ -347,10 +408,10 @@ InitGenericCoupling[ AnalyticalCoupling[f__] == _ ] :=
   Message[InitializeModel::rhs2, ToGeneric[{f}]]
 
 
-KinDummies[ s_. (f:P$Generic)[i__, _, ki_List], {n_} ] :=
-  s f[i, Mom[n], Through[Take[KIs, Length[ki]][n]]]
+KinDummies[ s_. (f:P$Generic)[__, ki_List], {n_} ] :=
+  s f[CI[n], Mom[n], Through[Take[KIs, Length[ki]][n]]]
 
-KinDummies[ s_. (f:P$Generic)[i__, _], {n_} ] := s f[i, Mom[n]]
+KinDummies[ s_. (f:P$Generic)[__], {n_} ] := s f[CI[n], Mom[n]]
 
 
 Off[RuleDelayed::rhs]
@@ -399,8 +460,18 @@ AllFields[ fi_ ] :=
 
 Attributes[ ClearDefs ] = {HoldAll}
 
-ClearDefs[ defs_ ] :=
-  defs = Select[defs, FreeQ[#, P$Generic[__]]&]
+ClearDefs[ defs_ ] := defs = Select[defs, FreeQ[#, P$Generic[__]]&]
+
+
+Attributes[ Assign ] = {Listable}
+
+Assign[ fi_, Mass[t___] -> b_ ] := TheMass[fi, t] = b
+
+Assign[ fi_, Mass -> b_ ] := TheMass[fi] = b
+
+Assign[ fi_, PropagatorLabel -> b_ ] := TheLabel[fi] = b
+
+Assign[ fi_, a_ -> b_ ] := a[fi] = b
 
 
 (* Initialization of a classes model: *)
@@ -413,23 +484,20 @@ Block[ {unsortedFP, unsortedCT, savecp = $ContextPath},
   $ContextPath = DeleteCases[$ContextPath, "Global`"];
   $Model = "";
 
-  Clear[SVCompatibles, InsertOnly, CouplingDeltas, TheC,
-    QuantumNumbers, RenConst];
-  ClearDefs[ DownValues[CheckFieldPoint] ];
-  ClearDefs[ DownValues[MixingPartners] ];
-  ClearDefs[ SubValues[PossibleFields] ];
+  Clear[SVCompatibles, CouplingDeltas, TheC, RenConst];
+  ClearDefs[SubValues[PossibleFields]];
+  ClearDefs[DownValues[#]]&/@ {CheckFieldPoint,
+    SelfConjugate, Indices, MixingPartners, TheMass,
+    QuantumNumbers, MatrixTraceFactor, InsertOnly,
+    TheLabel, PropagatorType, PropagatorArrow};
 
   FAPrint[2, ""];
-  LoadModel[mod];
+  $Model = LoadModel[mod];
   edit;
 
 	(* initialize particles:
 	   set properties of classes from their description list: *)
-  QuantumNumbers[ -fi_ ] := -QuantumNumbers[fi];
-  QuantumNumbers[ _ ] = {};
-  Cases[ Thread[#], (fi_ == (a_ -> b_)) :> (a[fi] = b) ]&/@
-    ( M$ClassesDescription /.
-      {Mass -> TheMass, PropagatorLabel -> TheLabel} );
+  Apply[Assign, M$ClassesDescription, 1];
 
   SVCompatibles[ _ ] = {};
   Cases[ DownValues[MixingPartners],
@@ -458,25 +526,24 @@ Block[ {unsortedFP, unsortedCT, savecp = $ContextPath},
   unsortedFP = Flatten[InitCoupling/@ M$CouplingMatrices, 1];
   On[Rule::rhs];
   ReferenceOrder[Classes] = Union[Apply[List, unsortedFP, 1]];
-  FieldPoints[Classes] = Apply[FieldPoint, ReferenceOrder[Classes], 1];
+  FieldPointList[Classes] = Apply[FieldPoint, ReferenceOrder[Classes], 1];
 
   L$CTOrders = Union[Cases[unsortedFP, FieldPoint[n_][__] -> n]];
   Scan[
     Function[cto,
       unsortedCT = Union[Select[unsortedFP, #[[0, 1]] === cto &]];
-      FieldPoints[cto] = Apply[FieldPoint, unsortedCT, 1];
+      FieldPointList[cto] = Apply[FieldPoint, unsortedCT, 1];
       FAPrint[2, "> ", Length[unsortedCT],
         If[ cto === 0, " vertices",
           " counter terms of order " <> ToString[cto] ]];
       Apply[ (CheckFieldPoint[ FieldPoint[cto][##] ] = True)&,
-        FieldPoints[cto], 1 ];
-      SetPossibleFields[cto, ToGeneric, FieldPoints[cto]] ],
+        FieldPointList[cto], 1 ];
+      SetPossibleFields[cto, ToGeneric, FieldPointList[cto]] ],
     If[ $CounterTerms,
       FAPrint[2, "> $CounterTerms are ON"]; L$CTOrders,
       FAPrint[2, "> $CounterTerms are OFF"]; {0} ] ];
 
-  $Model = mod;
-  FAPrint[1, "classes model ", mod, " initialized"];
+  FAPrint[1, "classes model ", $Model, " initialized"];
   $ContextPath = savecp;
 ]
 
@@ -601,6 +668,13 @@ DeltaSelect[ _ ] = {}
 
 (* some defaults for the classes properties: *)
 
+SelfConjugate[ _Integer fi_ ] := SelfConjugate[fi]
+
+SelfConjugate[ fi_[i_, __] ] := SelfConjugate[fi[i]]
+
+SelfConjugate[ _ ] = False
+
+
 IndexRange[ error_ ] :=
   (Message[InitializeModel::norange, error]; IndexRange[error] = {})
 
@@ -620,6 +694,10 @@ AddHC[ h_[type___, i_, j_], weight_:(1&) ] :=
   weight[i, j] h[type, i, j]/2 +
   weight[j, i] Conjugate[h[type, j, i]]/2
 
+AddHC[ h_, weight_:(1&) ] :=
+  weight[i, j] h/2 +
+  weight[j, i] Conjugate[h]/2
+
 
 KinematicIndices[ VS ] := KinematicIndices[SV]
 
@@ -633,11 +711,16 @@ MatrixTraceFactor[ fi_[i_, __] ] := MatrixTraceFactor[fi[i]]
 MatrixTraceFactor[ _ ] = 1
 
 
-SelfConjugate[ _Integer fi_ ] := SelfConjugate[fi]
+InsertOnly[ _Integer fi_ ] := InsertOnly[fi]
 
-SelfConjugate[ fi_[i_, __] ] := SelfConjugate[fi[i]]
+InsertOnly[ fi_[i_, __] ] := InsertOnly[fi[i]]
 
-SelfConjugate[ _ ] = False
+InsertOnly[ _ ] = {External, Internal, Loop}
+
+
+QuantumNumbers[ -fi_ ] := -QuantumNumbers[fi]
+
+QuantumNumbers[ _ ] = {}
 
 
 (* There are no direct definitions for the masses of the particles since
@@ -646,15 +729,22 @@ SelfConjugate[ _ ] = False
    destroy this information.  All those definitions are given for the
    function TheMass. *)
 
-TheMass[ _Integer fi_ ] := TheMass[fi]
+TheMass[ _Integer fi_, t___ ] := TheMass[fi, t]
 
-TheMass[ fi_[i_, j_List, __] ] := TheMass[fi[i, j]]
+TheMass[ fi_[i_, j_List, __], t___ ] := TheMass[fi[i, j], t]
 
-TheMass[ fi_[i_, {j___}] ] :=
-  If[NumberQ[#], #, #[j]]&[ TheMass[fi[i]] ] /;
-  Head[ TheMass[fi[i]] ] =!= Mass
+TheMass[ fi_[i_, j_List], t___ ] :=
+  Block[ {m = TheMass[fi[i], t]}, IndexMass[m, j] /; Head[m] =!= Mass ]
 
-TheMass[ fi_ ] = Mass[fi]
+TheMass[ fi_, t_ ] :=
+  Block[ {m = TheMass[fi]}, m /; Head[m] =!= Mass ]
+
+TheMass[ fi__ ] = Mass[fi]
+
+
+IndexMass[ n_?NumberQ, _ ] = n
+
+IndexMass[ s_, {j___} ] := s[j]
 
 
 (* Note: AntiParticle[...] := AntiParticle[...] = ... is not possible
@@ -823,7 +913,7 @@ Block[ {ex, exclFP, exclP, lG, lC, lP, fps},
     $ExcludedFPs = Union[ Join[$ExcludedFPs, exclFP] ];
     FAPrint[2, ""];
     FAPrint[2, "Excluding ", Length[exclFP] + Length[ex],
-      " field point(s) (incl. charge conjugate ones)"];
+      " field point(s) (incl. charge-conjugate ones)"];
   ];
 
   {ExcludeParticles -> exclP, ExcludeFieldPoints -> exclFP}
@@ -837,23 +927,38 @@ ValidFP[ f:FieldPoint[_][__] ] = f
 ValidFP[ f_ ] := (Message[RestrictCurrentModel::badfp, f]; Seq[])
 
 
-FieldMatchQ[ _. fi_[___], _. fi_ ] = True
+FieldMatchQ[ _. (fi:P$Generic)[___], _. fi_ ] = True
 
-FieldMatchQ[ _. fi_[i_, ___], _. fi_[j_] ] := MatchQ[i, j]
+FieldMatchQ[ _. (fi:P$Generic)[i_, ___], _. fi_[j_] ] := MatchQ[i, j]
 
-FieldMatchQ[ _. fi_[i__], _. fi_[j__] ] := MatchQ[{i}, {j}]
+FieldMatchQ[ _. (fi:P$Generic)[i__], _. fi_[j_, {r__}] ] :=
+  MatchQ[{i}, {j, {r, ___}}]
 
-FieldMatchQ[ _. fi_, _. fi_ ] = True
+FieldMatchQ[ _. fi:P$Generic, _. fi_ ] = True
 
 FieldMatchQ[ fi1_, fi2_ ] := MatchQ[fi1, fi2]
 
 
+FieldMemberQ[ li_, fi_ ] :=
+  !VectorQ[List@@ li, !FieldMatchQ[#, fi]&]
+
+
+FieldPointMatchQ[ fp_, FieldPoint[f__] ] :=
+  FieldPointMatchQ[fp, FieldPoint[_][f]]
+
 FieldPointMatchQ[ FieldPoint[cto1_][fi1__], FieldPoint[cto2_][fi2__] ] :=
   MatchQ[cto1, cto2] &&
     Length[{fi1}] === Length[{fi2}] &&
-    VectorQ[ Transpose[{{fi1}, {fi2}}], FieldMatchQ@@ # & ]
+    Catch[
+      If[ VectorQ[Transpose[{{fi1}, #}], (FieldMatchQ@@ #)&],
+        Throw[True] ]&/@ Permutations[{fi2}];
+      False ]
 
 FieldPointMatchQ[ ___ ] = False
+
+
+FieldPointMemberQ[ li_, fp_ ] :=
+  !VectorQ[List@@ li, !FieldPointMatchQ[#, fp]&]
 
 
 ExcludedQ[ vertlist_ ] :=

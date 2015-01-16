@@ -4,14 +4,14 @@
 		S[0,  {h}] = Sum[UHiggs[h,i] S[i], {i, 3}]
 		S[10, {h}] = Sum[ZHiggs[h,i] S[i], {i, 3}]
 		this file is part of FeynArts
-		last modified 26 Oct 07 th
+		last modified 8 Sep 08 th
 *)
 
 
 IndexRange[ Index[Higgs] ] = Range[3]
 
 M$ClassesDescription = Flatten[{
-  DeleteCases[M$ClassesDescription, S[1|2|3] == _],
+  M$ClassesDescription,
   S[0] == {
 	SelfConjugate -> True,
 	Indices -> {Index[Higgs]},
@@ -50,7 +50,7 @@ NewCoup[other_] = other;
 
 UZPerm[_[_[c_]], rhs_] := FoldList[
   ReplaceAll,
-  c == (*rhs*) (Simplify[rhs] /. CB TB -> SB),
+  c == rhs (* (Simplify[rhs] /. CB TB -> SB) *),
   Cases[c, S[0, {h_}] -> {UHiggs[h, i_] -> ZHiggs[h, i],
                           S[0, {h}] -> S[10, {h}]}] ];
 
@@ -67,9 +67,5 @@ M$CouplingMatrices = Flatten[{oldcoup, newcoup}];
 ]
 
 
-DownValues[RenConst] = DownValues[RenConst] /. {
-  S[1] -> S[10, {1}],
-  S[2] -> S[10, {2}],
-  S[3] -> S[10, {3}]
-}
+DownValues[RenConst] = DownValues[RenConst] /. S[h:1|2|3] -> S[0, {h}]
 

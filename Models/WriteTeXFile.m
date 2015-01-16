@@ -2,63 +2,52 @@
 	WriteTeXFile.m
 		writes out the couplings of a FeynArts
 		model file in TeX form
-		last modified 26 Nov 07 th
+		last modified 17 Mar 09 th
 
 	Usage:	WriteTeXFile["model.mod"]
+
+NOTE: This program must currently be run in Mathematica versions
+      4 or lower.
 *)
 
 
 BeginPackage["WriteTeXFile`", "FeynArts`"]
 
-WriteTeXFile::usage =
-"WriteTeXFile[\"model.mod\"] writes the Feynman rules in model.mod in
-TeX format to model.tex."
+WriteTeXFile::usage = "WriteTeXFile[\"model.mod\"] writes the Feynman
+rules in model.mod in TeX format to model.tex."
 
-TeXFile::usage =
-"TeXFile is an option of WriteTeXFile.  It specifies the output filename
-to use.  If set to Automatic, the name of the model file with extension
-\".tex\" is used."
+TeXFile::usage = "TeXFile is an option of WriteTeXFile.  It specifies
+the output filename to use.  If set to Automatic, the name of the model
+file with extension \".tex\" is used."
 
-MaxLeaf::usage =
-"MaxLeaf is an option of WriteTeXFile.  It specifies the maximum
-permissible leaf count per line."
+MaxLeaf::usage = "MaxLeaf is an option of WriteTeXFile.  It specifies
+the maximum permissible leaf count per line."
 
-Numbers::usage =
-"Numbers is an option of WriteTeXFile.  It specifies whether to print
-the position of the coupling in the M$CouplingMatrices array next to the
-coupling."
+Numbers::usage = "Numbers is an option of WriteTeXFile.  It specifies
+whether to print the position of the coupling in the M$CouplingMatrices
+array next to the coupling."
 
-Sym::usage =
-"Sym[s, sub, sup] prints as symbol s with subscript sub and superscript
-sup, where sub and sup are optional."
+Sym::usage = "Sym[s, sub, sup] prints as symbol s with subscript sub and
+superscript sup, where sub and sup are optional."
 
-delta::usage =
-"delta[sym] outputs \"delta sym\"."
+SymRules::usage = "SymRules specifies a list of rules to transform model
+symbols."
 
-SymRules::usage =
-"SymRules specifies a list of rules to transform model symbols."
+WidthRules::usage = "WidthRules specifies a list of rules which are
+supposed to replace symbols by objects with a leaf count that better
+corresponds to their width.  This is used for computing line breaks."
 
-WidthRules::usage =
-"WidthRules specifies a list of rules which are supposed to replace
-symbols by objects with a leaf count that better corresponds to their
-width.  This is used for computing line breaks."
-
-ConjSym::usage =
-"ConjSym[f] specifies a conjugation symbol for field f.  Choices are:\n
+ConjSym::usage = "ConjSym[f] specifies a conjugation symbol for field f.  
+Choices are:\n
   ConjSym[f] = \"-\"\n
   -- f prints as f^-, anti-f prints as f^+,\n
-  ConjSym[f] = NoDagger\n
+  ConjSym[f] = \"\\\\nodagger\"\n
   -- f prints as f, anti-f prints as f^\\dagger,\n
   ConjSym[f] = Null\n
   -- f prints as f, anti-f prints as \\bar f."
 
-NoDagger::usage =
-"NoDagger is a symbol used with ConjSym to indicate printing of the
-conjugate field with a dagger."
-
-Class::usage =
-"Class associates each field a class which is used to group the
-couplings."
+Class::usage = "Class associates each field a class which is used to
+group the couplings."
 
 
 Begin["`Private`"]
@@ -83,12 +72,10 @@ Sym[sym_, sub_:{}, sup_:{}] := TeXSym[
   Flatten[MakeList[sub]],
   Flatten[MakeList[sup]] ]
 
-delta[x_] := HoldForm["\[Delta]", x]
-
 Format[TeXSym[sym__, sub_, sup_], TeXForm] :=
   Wrap[Identity][sym, 
     Wrap[Subscript][sub],
-    Wrap[Superscript][sup /. NoDagger -> Sequence[] /.
+    Wrap[Superscript][sup /. "\\nodagger" -> Sequence[] /.
       {a__, ","} -> {a}]]
 
 Wrap[_][{}] = Sequence[]
@@ -112,11 +99,11 @@ TeXSym/: Bar[TeXSym[x__, {r___, "-"}]] := TeXSym[x, {r, "+"}]
 
 TeXSym/: Bar[TeXSym[x__, {r___, "+"}]] := TeXSym[x, {r, "-"}]
 
-TeXSym/: Bar[TeXSym[x__, {r___, NoDagger}]] :=
-  TeXSym[x, {r, "\[Dagger]"}]
+TeXSym/: Bar[TeXSym[x__, {r___, "\\nodagger"}]] :=
+  TeXSym[x, {r, "\\dagger"}]
 
-TeXSym/: Bar[TeXSym[x__, {r___, "\[Dagger]"}]] :=
-  TeXSym[x, {r, NoDagger}]
+TeXSym/: Bar[TeXSym[x__, {r___, "\\dagger"}]] :=
+  TeXSym[x, {r, "\\nodagger"}]
 
 
 Unprotect[Times];
@@ -273,14 +260,14 @@ MakeSum[{var_, from_:1, to_}, a___][b___, expr_] :=
 
 ToTeX[c_, lhs_, rhs_, n_] := class[c] = {class[c],
   If[ numbers, {"\\nbox{", ToString[n], "}$\n"}, "$\n" ],
-  ToString[ ToBar/@ lhs == CoupVec@@ rhs /.
+  ToString[ToBar/@ lhs == CoupVec@@ rhs /.
     Plus -> SplitLongPlus //.
     SymRules /.
     FieldRules /.
     Conjugate[(t:Times)[a__]] :> Conjugate[Sym[{"(", a, ")"}]] /.
     Conjugate[x_] :> Conjugate[Sym[x]] /.
     IndexSum :> (MakeSum[##2][#1]&) /.
-    Times -> TimesS, TeXForm ],
+    Times -> TimesS, TeXForm],
   "\n$\\\\\n\\bigskip\n"}
 
 
@@ -339,7 +326,7 @@ mod, FieldRules, class, couplings, hh},
   WriteString[hh,
     StringReplace[
       StringJoin[template /. "COUPLINGS\n" -> couplings],
-      {"MODEL" -> mod, "\n \n" -> "\n"} ]
+      {"MODEL" -> StringJoin[mod], "\n \n" -> "\n"} ]
   ];
   Close[hh]
 ]
@@ -380,10 +367,9 @@ sferm[i_] := "\\tilde " <> ferm[i]
 
 ConjSym[F[1|2|3|4]] = ConjSym[_U] = Null
 
-ConjSym[S[11|12|13|14]] = NoDagger
+ConjSym[S[11|12|13|14]] = "\\nodagger"
 
 ConjSym[_] = "-"
-
 
 SymRules = {
   $HKSign -> 1 (* "(-)" *),
@@ -392,21 +378,21 @@ SymRules = {
   GS :> AAA[Sym["g", "s"]],
   SW :> Sym["s", "W"],
   CW :> Sym["c", "W"],
-  SA :> Sym["s", "\[Alpha]"],
-  CA :> Sym["c", "\[Alpha]"],
-  SB :> Sym["s", "\[Beta]"],
-  CB :> Sym["c", "\[Beta]"],
-  TB :> Sym["t", "\[Beta]"],
-  SAB :> Sym["s", "\[Alpha]" + "\[Beta]"],
-  SBA :> Sym["s", "\[Beta]" - "\[Alpha]"],
-  CAB :> Sym["c", "\[Alpha]" + "\[Beta]"],
-  CBA :> Sym["c", "\[Beta]" - "\[Alpha]"],
-  S2A :> Sym["s", 2 "\[Alpha]"],
-  S2B :> Sym["s", 2 "\[Beta]"],
-  C2A :> Sym["c", 2 "\[Alpha]"],
-  C2B :> Sym["c", 2 "\[Beta]"],
-  MUE :> Sym["\[Mu]"],
-  Lambda5 :> Sym["\[Lambda]", "5"],
+  SA :> Sym["s", "\\alpha"],
+  CA :> Sym["c", "\\alpha"],
+  SB :> Sym["s", "\\beta"],
+  CB :> Sym["c", "\\beta"],
+  TB :> Sym["t", "\\beta"],
+  SAB :> Sym["s", "\\alpha+\\beta"],
+  SBA :> Sym["s", "\\beta-\\alpha"],
+  CAB :> Sym["c", "\\alpha+\\beta"],
+  CBA :> Sym["c", "\\beta-\\alpha"],
+  S2A :> Sym["s", "2\\alpha"],
+  S2B :> Sym["s", "2\\beta"],
+  C2A :> Sym["c", "2\\alpha"],
+  C2B :> Sym["c", "2\\beta"],
+  MUE :> Sym["\\mu"],
+  Lambda5 :> Sym["\\lambda", "5"],
   Yuk1 :> Sym["Y", "1"],
   Yuk2 :> Sym["Y", "2"],
   Yuk3 :> Sym["Y", "3"],
@@ -421,13 +407,15 @@ SymRules = {
   MQU[j_] :> Sym["m", F[3, {j}]],
   MQD[j_] :> Sym["m", F[4, {j}]],
   Mass[f_] :> Sym["m", f],
+  UHiggs[h__] :> Sym["U", {h}, "H"],
+  ZHiggs[h__] :> Sym["Z", {h}, "H"],
   ZNeu[n__] :> Sym["Z", {n}],
   VCha[c__] :> Sym["V", {c}],
   UCha[c__] :> Sym["U", {c}],
   USf[t_, g_][s__] :> Sym["U", {s}, {sferm[t], g}],
   UASf[t_][as__] :> Sym["R", {as}, sferm[t]],
   Af[t_, i__] :> Sym["A", {i}, ferm[t]],
-  CKM[g__] :> Sym["CKM", {g}],
+  CKM[g__] :> Sym["\\Mvariable{CKM}", {g}],
   SUNTSum[c1_, c2_, c3_, c4_] :>
     Sym[{SUNT[x, c1, c2], SUNT[x, c3, c4]}],
   SUNT[g_, c1_, c2_] :> Sym["T", {c1, c2}, g],
@@ -437,36 +425,35 @@ SymRules = {
     Sym[{SUNF[g1, g2, "x"], SUNF["x", g3, g4]}],
   SUNF[g1_, g2_, g3_] :> Sym["f", Null, {g1, g2, g3}],
   d_IndexDelta :> 1 /; !FreeQ[d, o1|o2|o3|o4],
-  IndexDelta[n_Integer, i_] :> Sym["\[Delta]", {i, n}],
-  IndexDelta[i__] :> Sym["\[Delta]", {i}],
-  GaugeXi[v_] :> Sym["\[Xi]", v],
-  dZe1 :> Sym[delta["Z"], "e"],
-  dMHsq1 :> Sym[delta["M"], "H", "2"],
-  dMWsq1 :> Sym[delta["M"], "W", "2"],
-  dMZsq1 :> Sym[delta["M"], "Z", "2"],
-  dMf1[t_, j_] :> Sym[delta["m"], j, ferm[t]],
-  dMf1[t_, j_] :> Sym[delta["m"], j, ferm[t]],
-  dSW1 :> Sym[delta["s"], "W"],
-  dCW1 :> Sym[delta["c"], "W"],
-  dZH1 :> Sym[delta["Z"], "H"],
-  dZW1 :> Sym[delta["Z"], "W"],
-  dZAA1 :> Sym[delta["Z"], "\[Gamma]\[Gamma]"],
-  dZZA1 :> Sym[delta["Z"], "Z\[Gamma]"],
-  dZAZ1 :> Sym[delta["Z"], "\[Gamma]Z"],
-  dZZZ1 :> Sym[delta["Z"], "ZZ"],
-  dUW1 :> Sym[delta["U"], "W"],
-  dUAA1 :> Sym[delta["U"], "\[Gamma]\[Gamma]"],
-  dUZA1 :> Sym[delta["U"], "Z\[Gamma]"],
-  dUAZ1 :> Sym[delta["U"], "\[Gamma]Z"],
-  dUZZ1 :> Sym[delta["U"], "ZZ"],
-  dZG01 :> Sym[delta["Z"], Sym["G", Null, "0"]],
-  dZGp1 :> Sym[delta["Z"], "G"],
-  dZfL1[t_, j1_, j2_] :> Sym[delta["Z"], {j1, j2}, {ferm[t], "L"}],
-  dZfR1[t_, j1_, j2_] :> Sym[delta["Z"], {j1, j2}, {ferm[t], "R"}],
-  dCKM1[j1_, j2_] :> Sym[delta["CKM"], {j1, j2}],
-  dTad1 :> Sym[delta["T"]]
+  IndexDelta[n_Integer, i_] :> Sym["\\delta", {i, n}],
+  IndexDelta[i__] :> Sym["\\delta", {i}],
+  GaugeXi[v_] :> Sym["\\xi", v],
+  dZe1 :> Sym["\\delta Z", "e"],
+  dMHsq1 :> Sym["\\delta M", "H", "2"],
+  dMWsq1 :> Sym["\\delta M", "W", "2"],
+  dMZsq1 :> Sym["\\delta M", "Z", "2"],
+  dMf1[t_, j_] :> Sym["\\delta m", j, ferm[t]],
+  dMf1[t_, j_] :> Sym["\\delta m", j, ferm[t]],
+  dSW1 :> Sym["\\delta s", "W"],
+  dCW1 :> Sym["\\delta c", "W"],
+  dZH1 :> Sym["\\delta Z", "H"],
+  dZW1 :> Sym["\\delta Z", "W"],
+  dZAA1 :> Sym["\\delta Z", "\\gamma\\gamma"],
+  dZZA1 :> Sym["\\delta Z", "Z\\gamma"],
+  dZAZ1 :> Sym["\\delta Z", "\\gamma Z"],
+  dZZZ1 :> Sym["\\delta Z", "ZZ"],
+  dUW1 :> Sym["\\delta U", "W"],
+  dUAA1 :> Sym["\\delta U", "\\gamma\\gamma"],
+  dUZA1 :> Sym["\\delta U", "Z\\gamma"],
+  dUAZ1 :> Sym["\\delta U", "\\gamma Z"],
+  dUZZ1 :> Sym["\\delta U", "ZZ"],
+  dZG01 :> Sym["\\delta Z", Sym["G", Null, "0"]],
+  dZGp1 :> Sym["\\delta Z", "G"],
+  dZfL1[t_, j1_, j2_] :> Sym["\\delta Z", {j1, j2}, {ferm[t], "L"}],
+  dZfR1[t_, j1_, j2_] :> Sym["\\delta Z", {j1, j2}, {ferm[t], "R"}],
+  dCKM1[j1_, j2_] :> Sym["\\delta\\Mvariable{CKM}", {j1, j2}],
+  dTad1 :> Sym["\\delta T"]
 }
-
 
 WidthRules = {
   s:CBA|SBA|CAB|SAB|C2A|S2A|C2B|S2B -> s[1],  (* count as 2 chars *)

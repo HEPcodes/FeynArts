@@ -1,7 +1,7 @@
 (*
 	Topology.m
 		Creation of topologies for Feynman graphs
-		last modified 11 Jan 08 th
+		last modified 21 Nov 08 th
 *)
 
 Begin["`Topology`"]
@@ -334,29 +334,31 @@ Attributes[ TopologyList ] = {Flat}
 
 (* some shortcuts *)
 
-TadpolesOnly = ExcludeTopologies ->
-  {SelfEnergies, Triangles, AllBoxes}
+If[ $VersionNumber < 5.1, Except[patt_] = _?(!MatchQ[#, patt] &) ]
 
-SelfEnergiesOnly = ExcludeTopologies ->
-  {Tadpoles, WFCorrections, Triangles, AllBoxes}
+TadpolesOnly = ExcludeTopologies -> Loops[Except[1]]
 
-TrianglesOnly = ExcludeTopologies ->
-  {Tadpoles, SelfEnergies, AllBoxes}
+TadpoleCTsOnly = ExcludeTopologies -> CTs[Except[1]]
 
-BoxesOnly = ExcludeTopologies ->
-  {Tadpoles, SelfEnergies, Triangles}
+SelfEnergiesOnly = ExcludeTopologies -> {Loops[Except[2]], WFCorrections}
 
-TadpoleCTsOnly = ExcludeTopologies ->
-  {SelfEnergyCTs, TriangleCTs, AllBoxCTs}
+SelfEnergyCTsOnly = ExcludeTopologies -> {CTs[Except[2]], WFCorrectionCTs}
 
-SelfEnergyCTsOnly = ExcludeTopologies ->
-  {TadpoleCTs, WFCorrectionCTs, TriangleCTs, AllBoxCTs}
+TrianglesOnly = ExcludeTopologies -> Loops[Except[3]]
 
-TriangleCTsOnly = ExcludeTopologies ->
-  {TadpoleCTs, SelfEnergyCTs, AllBoxCTs}
+TriangleCTsOnly = ExcludeTopologies -> CTs[Except[3]]
 
-BoxCTsOnly = ExcludeTopologies ->
-  {TadpoleCTs, SelfEnergyCTs, TriangleCTs}
+BoxesOnly = ExcludeTopologies -> Loops[Except[4]]
+
+BoxCTsOnly = ExcludeTopologies -> CTs[Except[4]]
+
+PentagonsOnly = ExcludeTopologies -> Loops[Except[5]]
+
+PentagonCTsOnly = ExcludeTopologies -> CTs[Except[5]]
+
+HexagonsOnly = ExcludeTopologies -> Loops[Except[6]]
+
+HexagonCTsOnly = ExcludeTopologies -> CTs[Except[6]]
 
 
 Options[ CreateTopologies ] = {
@@ -443,11 +445,11 @@ opt = ActualOptions[CreateTopologies, options]},
 ]
 
 
-Attributes[AndFunction] = {HoldAll}
+Attributes[ AndFunction ] = {HoldAll}
 
-AndFunction[f_] := f &
+AndFunction[ f_ ] := f &
 
-AndFunction[f__] := And[f] &
+AndFunction[ f__ ] := And[f] &
 
 
 CreateCTTopologies::cterr =
@@ -663,32 +665,48 @@ ChooseProp[ pr_, {n_} ] :=
    with the loops shrunk to a point named Centre[adj][n] where adj is
    the adjacency of loop n. *)
 
-$ExcludeTopologies[ Tadpoles ] = FreeQ[ToTree[#], Centre[1]] &
+$ExcludeTopologies[ Loops[n_] ] = FreeQ[ToTree[#], Centre[n]] &
 
-$ExcludeTopologies[ TadpoleCTs ] = FreeQ[#, Vertex[1, _]] &
+$ExcludeTopologies[ CTs[n_] ] = FreeQ[#, Vertex[n, _]] &
 
-$ExcludeTopologies[ SelfEnergies ] = FreeQ[ToTree[#], Centre[2]] &
+$ExcludeTopologies[ Tadpoles ] = $ExcludeTopologies[ Loops[1] ]
 
-$ExcludeTopologies[ SelfEnergyCTs ] = FreeQ[#, Vertex[2, _]] &
+$ExcludeTopologies[ TadpoleCTs ] = $ExcludeTopologies[ CTs[1] ]
 
-$ExcludeTopologies[ Triangles ] = FreeQ[ToTree[#], Centre[3]] &
+$ExcludeTopologies[ SelfEnergies ] = $ExcludeTopologies[ Loops[2] ]
 
-$ExcludeTopologies[ TriangleCTs ] = FreeQ[#, Vertex[3, _]] &
+$ExcludeTopologies[ SelfEnergyCTs ] = $ExcludeTopologies[ CTs[2] ]
 
-$ExcludeTopologies[ Boxes[m_] ]= FreeQ[ToTree[#], Centre[m]] &
+$ExcludeTopologies[ Triangles ] = $ExcludeTopologies[ Loops[3] ]
 
-$ExcludeTopologies[ BoxCTs[m_] ] = FreeQ[#, Vertex[m, _]] &
+$ExcludeTopologies[ TriangleCTs ] = $ExcludeTopologies[ CTs[3] ]
 
-$ExcludeTopologies[ AllBoxes ] = FreeQ[ToTree[#], Centre[n_] /; n >= 4] &
+$ExcludeTopologies[ Boxes ] = $ExcludeTopologies[ Loops[4] ]
 
-$ExcludeTopologies[ AllBoxCTs ] = FreeQ[#, Vertex[n_, _] /; n >= 4] &
+$ExcludeTopologies[ BoxCTs ] = $ExcludeTopologies[ CTs[4] ]
+
+$ExcludeTopologies[ Pentagons ] = $ExcludeTopologies[ Loops[5] ]
+
+$ExcludeTopologies[ PentagonCTs ] = $ExcludeTopologies[ CTs[5] ]
+
+$ExcludeTopologies[ Hexagons ] = $ExcludeTopologies[ Loops[6] ]
+
+$ExcludeTopologies[ HexagonCTs ] = $ExcludeTopologies[ CTs[6] ]
+
+$ExcludeTopologies[ Boxes[n_] ] = $ExcludeTopologies[ Loops[n] ]
+
+$ExcludeTopologies[ BoxCTs[n_] ] = $ExcludeTopologies[ CTs[n] ]
+
+$ExcludeTopologies[ AllBoxes ] = $ExcludeTopologies[ Loops[n_ /; n >= 4] ]
+
+$ExcludeTopologies[ AllBoxCTs ] = $ExcludeTopologies[ CTs[n_ /; n >= 4] ]
 
 $ExcludeTopologies[ WFCorrections ] =
   FreeWFQ[ToTree[#], Centre[1], Centre[2]] &
 
 $ExcludeTopologies[ WFCorrections[patt_] ] =
   $ExcludeTopologies[ WFCorrections ] /.
-    t_ToTree :> Select[t, FreeQ[#, Vertex[1][_?(!MatchQ[#, patt]&)]] &]
+    t_ToTree :> Select[t, FreeQ[#, Vertex[1][Except[patt]]] &]
 
 $ExcludeTopologies[ WFCorrectionCTs ] =
   FreeWFQ[#, Vertex[1, _], Vertex[2, _]] &
@@ -720,11 +738,17 @@ FreeWFQ[ top:P$Topology, patt1_, patt2_ ] :=
   Catch[ MapWF[Throw[False]&, top, patt1, patt2]; True ]
 
 
-WFCorrectionFields[ fields_:{}, top:P$Topology ] :=
-  WFFields[ ToTree[AddFieldNo[top] /. fields], Centre[1], Centre[2] ]
+LoopFields[ gr_:{}, top:P$Topology, ___ ] :=
+  Cases[AddFieldNo[top] /. List@@ gr, _[_Loop][_, _, f_] -> f]
 
-WFCorrectionCTFields[ fields_:{}, top:P$Topology ] :=
-  WFFields[ AddFieldNo[top] /. fields, Vertex[1, _], Vertex[2, _] ]
+
+WFCorrectionFields[ gr_:{}, top:P$Topology, ___ ] :=
+  WFFields[ ToTree[AddFieldNo[top] /. List@@ gr],
+    Centre[1], Centre[2] ]
+
+WFCorrectionCTFields[ gr_:{}, top:P$Topology, ___ ] :=
+  WFFields[ AddFieldNo[top] /. List@@ gr,
+    Vertex[1, _], Vertex[2, _] ]
 
 WFFields[ args__ ] := Flatten[ MapWF[Apply[#3 &, #, 1]&, args] ]
 

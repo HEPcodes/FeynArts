@@ -1,7 +1,7 @@
 (*
 	Graphics.m
 		Graphics routines for FeynArts
-		last modified 4 Sep 07 th
+		last modified 26 Mar 09 th
 *)
 
 Begin["`Graphics`"]
@@ -73,9 +73,9 @@ Options[ Paint ] = {
   SheetHeader -> Automatic,
   Numbering -> Full,
   FieldNumbers -> False,
-  If[ $VersionNumber < 6,
-    DisplayFunction :> $DisplayFunction,
-    DisplayFunction :> (Print/@ Render[#]&) ]
+  If[ $VersionNumber >= 6 && $Notebooks,
+    DisplayFunction :> (Print/@ Render[#] &),
+    DisplayFunction :> $DisplayFunction ]
 }
 
 Paint::nolevel =
@@ -84,13 +84,13 @@ Paint::nolevel =
 Paint::colrows =
 "ColumnsXRows is not an integer or a pair of integers."
 
-Paint[ top:P$Topology, opt___Rule ] :=
+Paint[ top:P$Topology, opt___?OptionQ ] :=
   Paint[ TopologyList[top], opt ]
 
-Paint[ top:(P$Topology -> _), opt___Rule ] :=
+Paint[ top:(P$Topology -> _), opt___?OptionQ ] :=
   Paint[ TopologyList[][top], opt ]
 
-Paint[ tops_TopologyList, options___Rule ] :=
+Paint[ tops_TopologyList, options___?OptionQ ] :=
 Block[ {fnum, ghead, opt = ActualOptions[Paint, options]},
   fnum = FieldNumbers /. opt;
   ghead = Switch[ ghead = SheetHeader /. opt,
@@ -107,7 +107,7 @@ Block[ {fnum, ghead, opt = ActualOptions[Paint, options]},
   PaintSheet[tops]
 ]
 
-Paint[ tops:TopologyList[info___][__], options___Rule ] :=
+Paint[ tops:TopologyList[info___][___], options___?OptionQ ] :=
 Block[ {plevel, ins, ghead,
 fnum = False, opt = ActualOptions[Paint, options]},
   If[ (plevel = ResolveLevel[PaintLevel /. opt /. {info} /.
@@ -310,7 +310,7 @@ None = 0, Forward = 1, Backward = -1},
   { "\\unitlength=1bp%\n\n" <> TeXRender[Head[g]/@ List@@ g] }
 ]
 
-Render[ g:FeynArtsGraphics[___][___], opt___ ] :=
+Render[ g:FeynArtsGraphics[___][___], ___String, opt___Rule ] :=
 Block[ {imgsize = getsize[opt, {288, 288}],
 None = 0, Forward = 1, Backward = -1},
   MmaRender[Head[g]/@ List@@ g]

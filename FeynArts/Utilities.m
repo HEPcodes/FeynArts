@@ -1,7 +1,7 @@
 (*
 	Utilities.m
 		diverse utility functions for other parts of FA
-		last modified 9 Jan 08 th
+		last modified 12 Dec 08 th
 *)
 
 Begin["`Utilities`"]
@@ -39,8 +39,17 @@ ResolveLevel[ Classes ] = {Generic, Classes}
 
 ResolveLevel[ Particles ] = {Generic, Classes, Particles}
 
-ResolveLevel[ x_ ] :=
-  (Message[ResolveLevel::invalid, x]; $Failed)
+ResolveLevel[ other_ ] :=
+  (Message[ResolveLevel::invalid, other]; $Failed)
+
+
+ResolveType[ Incoming ] = External
+
+ResolveType[ Outgoing ] = External
+
+ResolveType[ _Loop ] = Loop
+
+ResolveType[ other_] = other
 
 
 ContainsQ[ expr_, {} ] = True
@@ -65,34 +74,6 @@ ToClasses[ expr_ ] := expr /. s_. (f:P$Generic)[i_, __] :> s f[i]
 
 
 Seq = Sequence
-
-
-(* extract vertices: *)
-
-Vertices[ top_ ] :=
-  Union[ Cases[top, Vertex[n__][_] /; {n} =!= {1}, {2}] ]
-
-
-(* get the correct Lorentz index *)
-
-IncParticle[ s_. fi_[ind__, fr_ -> _] ] := AntiParticle[s fi[ind, fr]]
-
-IncParticle[ fi_ ] := AntiParticle[fi]
-
-OutParticle[ s_. fi_[ind__, _ -> to_] ] := s fi[ind, to]
-
-OutParticle[ fi_ ] = fi
-
-(* get particle which is incoming in vertex v from propagator pr *)
-
-TakeInc[ v_, _[v_, v_, part_, ___] ] :=
-  Sequence[IncParticle[part], OutParticle[part]]
-
-TakeInc[ v_, _[v_, _, part_, ___] ] := IncParticle[part]
-
-TakeInc[ v_, _[_, v_, part_, ___] ] := OutParticle[part]
-
-TakeInc[ __ ] = Sequence[]
 
 
 TakeGraph[ gr_ -> _ ] = gr
@@ -124,6 +105,10 @@ SortCrit[ a:s_. (f:P$Generic)[t_, i___] ] := {s f[t], {i}, a}
 SortCrit[ a:s_. f:P$Generic ] := {s f[0], {}, a}
 
 VSort[ vert_ ] := Last/@ Sort[SortCrit/@ vert]
+
+
+Vertices[ top_ ] :=
+  Union[ Cases[top, Vertex[n__][_] /; {n} =!= {1}, {2}] ]
 
 
 (* add Field[n] to propagator *)
@@ -165,6 +150,38 @@ Block[ {perm, p},
       Topology[s_][rest__] -> Topology[s/Length[p]][rest] )&/@
     Union[perm]
 ]
+
+
+ProcessName[ FeynAmpList[info__][___] ] := ProcessName@@ (Hold[
+  Map[First, Process, {2}],
+  Model, GenericModel,
+  ExcludeParticles, ExcludeFieldPoints, LastSelections
+] /. {info})
+
+ProcessName[ TopologyList[info__][___] ] := ProcessName@@ (Hold[
+  Process,
+  Model, GenericModel,
+  ExcludeParticles, ExcludeFieldPoints, LastSelections
+] /. {info})
+
+ProcessName[ proc_, opt__ ] :=
+  ProcessName[proc] <> "_" <>
+    FromCharacterCode[IntegerDigits[Hash[{opt}], 26] + 97]
+
+(*
+ProcessName[ proc_, mod_, opt__ ] :=
+  ProcessName[proc, mod] <> "_" <>
+    FromCharacterCode[IntegerDigits[Hash[{opt}], 26] + 97]
+
+ProcessName[ proc_, mod_ ] :=
+  ProcessName[proc] <> "_" <>
+    Delete[{ToString[#], "-"}&/@ Flatten[{mod}], {-1, -1}]
+*)
+
+ProcessName[ proc_ ] := StringJoin[ToString/@ (
+  DeleteCases[
+    Level[proc /. i_Index :> ToString[i], {-1}, Heads -> True],
+    s_Symbol /; Context[s] === "System`" ] /. -1 -> "-" )]
 
 
 Pluralize[ n_, what_ ] :=

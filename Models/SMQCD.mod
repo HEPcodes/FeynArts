@@ -3,7 +3,7 @@
 		Addendum classes model file for SM.mod
 		to include the strong interactions
 		by Christian Schappacher
-		last modified 15 Jan 07 by Thomas Hahn
+		last modified 8 Sep 08 by Thomas Hahn
 
 This file introduces the following symbols in addition to the ones in
 SM.mod:
@@ -87,15 +87,20 @@ M$CouplingMatrices = Join[ M$CouplingMatrices, {
 (*--- quark-quark-gluon ------------------------------------------------*)
 
   C[ -F[3, {j1, o1}], F[3, {j2, o2}], V[5, {g1}] ] == -I GS *
-    IndexDelta[j1, j2] SUNT[g1, o1, o2] *
-    { {1, dZg1 + dZGG1/2 + dZfL1cc[3, j1, j2]}, 
-      {1, dZg1 + dZGG1/2 + dZfR1cc[3, j1, j2]} },
+    SUNT[g1, o1, o2] *
+    { {IndexDelta[j1, j2],
+        (dZg1 + dZGG1/2) IndexDelta[j1, j2] + AddHC[dZfL1[3, j1, j2]]}, 
+      {IndexDelta[j1, j2],
+        (dZg1 + dZGG1/2) IndexDelta[j1, j2] + AddHC[dZfR1[3, j1, j2]]} },
 
   C[ -F[4, {j1, o1}], F[4, {j2, o2}], V[5, {g1}] ] == -I GS *
-    IndexDelta[j1, j2] SUNT[g1, o1, o2] *
-    { {1, dZg1 + dZGG1/2 + dZfL1cc[4, j1, j2]}, 
-      {1, dZg1 + dZGG1/2 + dZfR1cc[4, j1, j2]} }
+    SUNT[g1, o1, o2] *
+    { {IndexDelta[j1, j2],
+         (dZg1 + dZGG1/2) IndexDelta[j1, j2] + AddHC[dZfL1[4, j1, j2]]}, 
+      {IndexDelta[j1, j2],
+         (dZg1 + dZGG1/2) IndexDelta[j1, j2] + AddHC[dZfR1[4, j1, j2]]} }
 
 } ]
 
 (***********************************************************************)
+

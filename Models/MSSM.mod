@@ -337,16 +337,13 @@ TheLabel[ S[14, {sf_, 3, ___}] ] :=
 GaugeXi[ V[1] ] = GaugeXi[A];
 GaugeXi[ V[2] ] = GaugeXi[Z];
 GaugeXi[ V[3] ] = GaugeXi[W];
-GaugeXi[ S[1] ] = 1;
-GaugeXi[ S[2] ] = 1;
-GaugeXi[ S[3] ] = 1;
-GaugeXi[ S[4] ] = GaugeXi[Z];
-GaugeXi[ S[5] ] = 1;
-GaugeXi[ S[6] ] = GaugeXi[W];
 GaugeXi[ U[1] ] = GaugeXi[A];
 GaugeXi[ U[2] ] = GaugeXi[Z];
 GaugeXi[ U[3] ] = GaugeXi[W];
-GaugeXi[ U[4] ] = GaugeXi[W]
+GaugeXi[ U[4] ] = GaugeXi[W];
+GaugeXi[ S[4] ] = GaugeXi[Z];
+GaugeXi[ S[6] ] = GaugeXi[W];
+GaugeXi[ S[_Integer, ___] ] = 1
 
 M$LastModelRules = {}
 
@@ -1639,61 +1636,39 @@ M$CouplingMatrices = {C[S[6], -S[6], V[1]] == {{I*EL}}, C[S[6], -S[6], V[2]] ==
 
 Clear[RenConst]
 
-RenConst[ dMf1[type_, j1_] ] :=
-Block[ {m1 = TheMass[F[type, {j1}]], sff},
-  sff = SelfEnergy[F[type, {j1}] -> F[type, {j1}], m1];
-  ReTilde[ m1/2 (LVectorCoeff[sff] + RVectorCoeff[sff]) +
-    LScalarCoeff[sff] ]
-]
-
-RenConst[ dZfL1[type_, j1_, j1_] ] :=
-Block[ {m1 = TheMass[F[type, {j1}]], sff, dsff},
-  sff = SelfEnergy[F[type, {j1}] -> F[type, {j1}], m1];
-  dsff = DSelfEnergy[F[type, {j1}] -> F[type, {j1}], m1];
-  -ReTilde[ LVectorCoeff[sff] +
-    m1^2 (LVectorCoeff[dsff] + RVectorCoeff[dsff]) +
-    2 m1 LScalarCoeff[dsff] ]
-]
+RenConst[ dMf1[type_, j1_] ] := MassRC[F[type, {j1}]]
 
 RenConst[ dZfL1[type_, j1_, j2_] ] :=
-Block[ {m1 = TheMass[F[type, {j1}]], m2 = TheMass[F[type, {j2}]], sff},
-  sff = SelfEnergy[F[type, {j1}] -> F[type, {j2}], m2];
-  2/(m1^2 - m2^2) ReTilde[
-    m2^2 LVectorCoeff[sff] + m1 m2 RVectorCoeff[sff] +
-    (m1^2 + m2^2)/m1 LScalarCoeff[sff] ]
-]
-
-RenConst[ dZfR1[type_, j1_, j1_] ] :=
-Block[ {m1 = TheMass[F[type, {j1}]], sff, dsff},
-  sff = SelfEnergy[F[type, {j1}] -> F[type, {j1}], m1];
-  dsff = DSelfEnergy[F[type, {j1}] -> F[type, {j1}], m1];
-  -ReTilde[ RVectorCoeff[sff] +
-    m1^2 (LVectorCoeff[dsff] + RVectorCoeff[dsff]) +
-    2 m1 LScalarCoeff[dsff] ]
-]
+  FieldRC[F[type, {j1}], F[type, {j2}]][[1]]
 
 RenConst[ dZfR1[type_, j1_, j2_] ] :=
-Block[ {m1 = TheMass[F[type, {j1}]], m2 = TheMass[F[type, {j2}]], sff},
-  sff = SelfEnergy[F[type, {j1}] -> F[type, {j2}], m2];
-  2 m2/(m1^2 - m2^2) ReTilde[
-    m2 RVectorCoeff[sff] + m1 LVectorCoeff[sff] + 2 LScalarCoeff[sff] ]
-]
+  FieldRC[F[type, {j1}], F[type, {j2}]][[2]]
 
-RenConst[ dMZsq1 ] := ReTilde[SelfEnergy[V[2] -> V[2], MZ]]
+RenConst[ dMZsq1 ] := MassRC[V[2]]
 
-RenConst[ dMWsq1 ] := ReTilde[SelfEnergy[V[3] -> V[3], MW]]
+RenConst[ dMWsq1 ] := MassRC[V[3]]
 
-RenConst[ dZAA1  ] := -ReTilde[DSelfEnergy[V[1] -> V[1], 0]]
+RenConst[ dMHsq1 ] := MassRC[S[1]]
 
-RenConst[ dZAZ1  ] := -2/MZ^2 ReTilde[SelfEnergy[V[1] -> V[2], MZ]]
+RenConst[ dZAA1 ] := FieldRC[V[1]]
 
-RenConst[ dZZA1  ] := 2/MZ^2 ReTilde[SelfEnergy[V[1] -> V[2], 0]]
+RenConst[ dZAZ1 ] := FieldRC[V[1], V[2]]
 
-RenConst[ dZZZ1  ] := -ReTilde[DSelfEnergy[V[2] -> V[2], MZ]]
+RenConst[ dZZA1 ] := FieldRC[V[2], V[1]]
 
-RenConst[ dZW1   ] := -ReTilde[DSelfEnergy[V[3] -> V[3], MW]]
+RenConst[ dZZZ1 ] := FieldRC[V[2]]
 
-RenConst[ dSW1   ] := -$HKSign CW^2/SW/2 (dMZsq1/MZ^2 - dMWsq1/MW^2)
+RenConst[ dZG01 ] := FieldRC[S[2]]
 
-RenConst[ dZe1   ] := -1/2 (dZAA1 - $HKSign SW/CW dZZA1)
+RenConst[ dZW1 ] := FieldRC[V[3]]
+
+RenConst[ dZGp1 ] := FieldRC[S[3]]
+
+RenConst[ dZH1 ] := FieldRC[S[1]]
+
+RenConst[ dTH1 ] := TadpoleRC[S[1]]
+
+RenConst[ dSW1 ] := -$HKSign CW^2/SW/2 (dMZsq1/MZ^2 - dMWsq1/MW^2)
+
+RenConst[ dZe1 ] := -1/2 (dZAA1 - $HKSign SW/CW dZZA1)
 

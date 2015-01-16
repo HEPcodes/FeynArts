@@ -2,7 +2,7 @@
 	Insert.m
 		Insertion of fields into topologies created by 
 		CreateTopologies.
-		last modified 10 Jan 08 th
+		last modified 26 Jun 09 th
 
 The insertion is done in 3 levels: insertion of generic fields (Generic),
 of classes of a certain model (Classes) or of the members of the classes
@@ -18,103 +18,100 @@ not and performs the initialization if needed.
 Begin["`Insert`"]
 
 Options[ InsertFields ] = {
-  Model	-> "SM",
+  Model -> "SM",
   GenericModel -> "Lorentz",
   InsertionLevel -> Classes,
   ExcludeParticles -> {}, 
-  LastSelections -> {},
   ExcludeFieldPoints -> {},
-  Restrictions -> {}
+  Restrictions -> {},
+  LastSelections -> {}
 } 
 
 InsertFields::syntax =
 "The syntax of InsertFields is InsertFields[tops, in -> out, options]."
 
 InsertFields::extnumber = 
-"You cannot fit `1` -> `2` external particles onto a `3` -> `4` leg
+"You cannot fit `` -> `` external particles onto a `` -> `` leg \
 topology."
 			  
 InsertFields::badparticle = 
-"Particle `1` does not live in model `2`."
+"Particle `` does not live in model ``."
 
 InsertFields::badsel =
-"Element `1` of LastSelections is not a proper field specification."
+"Element `` of LastSelections is not a proper field specification."
 
 
 InsertFields[ top:P$Topology, args__ ] :=
   InsertFields[TopologyList[top], args]
 
-InsertFields[ tops:TopologyList[__] | TopologyList[__][__],
+InsertFields[ tops:(TopologyList | _TopologyList)[___],
   initial_ -> final_, options___Rule ] :=
-Block[ {mod, iorule, pp, ninc, nout, pinc, pout, iotops, fields,
-ilevel, level, exclP, res, omit, need, topnr = 0,
+Block[ {proc, ilevel, level, excl, last, omit, need, 
+res, ninc, nout, pinc, pout, fields, topnr = 0, fieldnr = 0,
 opt = ActualOptions[InsertFields, options]},
 
   If[ (ilevel = ResolveLevel[InsertionLevel /. opt]) === $Failed,
     Return[$Failed] ];
 
-  iorule = Flatten[{initial}] -> Flatten[{final}] /.
-    _Integer p_Symbol -> p;
-  ninc = Length[ iorule[[1]] ];
-  nout = Length[ iorule[[2]] ];
-  If[ !FreeQ[First[iotops = tops], External],
-    iotops = tops /.
-      Propagator[External][Vertex[1][j_], v2__] :>
-        Propagator[ If[j > ninc, Outgoing, Incoming] ][Vertex[1][j], v2]
-  ];
-  pinc = Count[iotops[[1]], Incoming, Infinity, Heads -> True];
-  pout = Count[iotops[[1]], Outgoing, Infinity, Heads -> True];
-  If[ ninc =!= pinc || nout =!= pout,
-    Message[InsertFields::extnumber, ninc, nout, pinc, pout];
-    Return[$Failed]
-  ];
-
-  If[ InitializeModel[ mod = Model /. opt,
+  If[ InitializeModel[ Model /. opt,
     GenericModel -> (GenericModel /. opt),
-    Reinitialize -> False ] === $Failed, Return[$Failed] ];
+    Reinitialize -> False ] =!= True, Return[$Failed] ];
+
+  proc = Flatten[{initial}] -> Flatten[{final}] /.
+    _Integer p_Symbol -> p;
 
   If[ Or@@ (If[ InModelQ[#], False,
-    Message[InsertFields::badparticle, #, mod]; True ]&)/@
-      Join@@ iorule,
+    Message[InsertFields::badparticle, #, $Model]; True ]&)/@
+      Join@@ proc,
     Return[$Failed] ];
 
-  exclP = RestrictCurrentModel[ Restrictions /. opt,
-    Cases[opt, _[ExcludeFieldPoints | ExcludeParticles, _]]
-  ][[1, 2]];
+  proc = Map[AppendIndex[Field[++fieldnr] -> #][[2]]&, proc, {2}];
 
-  pp = Union[Flatten[{LastSelections /. opt}, 1]];
-  omit = CheckProperField/@
-    Join[ Cases[pp, !x_ -> x], Cases[exclP, _. P$Generic[_, _]] ];
-  omit = Union[ Join[omit, AntiParticle/@ omit] ] /.
+  excl = RestrictCurrentModel[ Restrictions /. opt,
+    Cases[opt, _[ExcludeFieldPoints | ExcludeParticles, _]] ];
+  last = Union[Flatten[{LastSelections /. opt}, 1]] /.
     (f:P$Generic)[i_, {j__}] -> f[i, {j, ___}];
-  need = CheckProperField/@ Complement[
-    pp /. !x_ -> x /. (f:P$Generic)[i_, {j__}] -> f[i, {j, ___}],
-    omit ];
 
-  AppendTo[opt, Process -> iorule];
+  If[ Length[res = tops] > 0,
+    ninc = Length @ proc[[1]];
+    nout = Length @ proc[[2]];
+    res = res /. Propagator[External][Vertex[1][j_], v2__] :>
+      Propagator[ If[j > ninc, Outgoing, Incoming] ][Vertex[1][j], v2];
 
-  FAPrint[2, ""];
-  FAPrint[2, "inserting at level(s) ", ilevel];
+    pinc = Count[res[[1]], Incoming, Infinity, Heads -> True];
+    pout = Count[res[[1]], Outgoing, Infinity, Heads -> True];
+    If[ ninc =!= pinc || nout =!= pout,
+      Message[InsertFields::extnumber, ninc, nout, pinc, pout];
+      Return[$Failed]
+    ];
 
-  fields = MapIndexed[ Field@@ #2 -> #1 &,
-    Join[ iorule[[1]], AntiParticle/@ iorule[[2]] ] ];
-  ninc = Length[fields];
-  level = Last[ilevel];
-  res = PickLevel[ilevel][
-    (TopologyList@@ opt)@@ TopologyInsert/@ iotops ];
+    omit = Union[ CheckProperField/@ Flatten[{
+      Cases[last, !p_ :> {p, Antiparticle[p]}],
+      Cases[ExcludeParticles /. excl, _. P$Generic[_, _]] }] ];
+    need = CheckProperField/@ Complement[last /. !p_ -> p, omit];
+
+    FAPrint[2, ""];
+    FAPrint[2, "inserting at level(s) ", ilevel];
+
+    fields = MapIndexed[ Field@@ #2 -> #1 &,
+      Join[ proc[[1]], AntiParticle/@ proc[[2]] ] ];
+    ninc = Length[fields];
+    level = Last[ilevel];
+    res = TopologyInsert/@ res
+  ];
+
+  RestrictCurrentModel[];
 
   FAPrint[1, "in total: ", Statistics[res, ilevel, " insertion"]];
 
-  RestrictCurrentModel[];
-  res /. Insertions -> NumberInsertions
+  PickLevel[ilevel][ TopologyList[
+    Process -> proc,
+    Model -> $Model,
+    GenericModel -> $GenericModel,
+    InsertionLevel -> ilevel,
+    Sequence@@ excl,
+    LastSelections -> last ]@@ res ] /. Insertions -> NumberInsertions
 ]
-
-InsertFields[ tops:TopologyList[] | TopologyList[__][],
-  initial_ -> final_, options___Rule ] :=
-  Level[ { ActualOptions[InsertFields, options],
-      {Process -> (Flatten[{initial}] -> Flatten[{final}] /.
-                    _Integer p_Symbol -> p)} },
-    {2}, TopologyList ][]
 
 InsertFields[ ___ ] := (Message[InsertFields::syntax]; $Failed)
 
@@ -191,10 +188,8 @@ TopologyInsert[ top:Topology[_][__] ] :=
 
 TopologyInsert[ top:Topology[_][__] -> ins_ ] :=
 Block[ {vertli, fpoints, res, topol = top},
-  fpoints = Map[
-    Function[ v, FieldPoint[ CTO[v] ]@@ (TakeInc[v, #]&)/@ top ],
-    DeleteCases[Take[#, 2], Vertex[1][_]]&/@ top,
-    {2} ];
+  fpoints = Map[ VertexFields[top],
+    DeleteCases[Take[#, 2], Vertex[1][_]]&/@ top, {2} ];
   vertli = Union[Flatten[ Apply[List, fpoints, {0, 1}] ]];
 
 	(* if the field points exist with the external particles
@@ -211,9 +206,37 @@ Block[ {vertli, fpoints, res, topol = top},
 TopologyInsert[ other_ ] = other
 
 
+(* extract field points *)
+
+VertexFields[ top_ ][ v_ ] := FieldPoint[CTO[v]]@@ TakeInc[v]/@ top
+
 CTO[ Vertex[_, c_][__] ] = c
 
 CTO[ _ ] = 0
+
+
+FieldPoints[ gr_:{}, top:P$Topology, ___ ] := Sort/@
+  (VertexFields[AddFieldNo[top]]/@ Vertices[top] /. List@@ gr)
+
+
+(* get particle which is incoming in vertex v from propagator pr *)
+
+TakeInc[ v_ ][ _[v_, v_, f_, ___] ] := Sequence[IncField[f], OutField[f]]
+
+TakeInc[ v_ ][ _[v_, _, f_, ___] ] := IncField[f]
+
+TakeInc[ v_ ][ _[_, v_, f_, ___] ] := OutField[f]
+
+TakeInc[ _ ][ _ ] = Sequence[]
+
+
+IncField[ s_. fi_[ind__, fr_ -> _] ] := AntiParticle[s fi[ind, fr]]
+
+IncField[ fi_ ] := AntiParticle[fi]
+
+OutField[ s_. fi_[ind__, _ -> to_] ] := s fi[ind, to]
+
+OutField[ fi_ ] = fi
 
 
 RightPartner[ fi_ ] := MixingPartners[fi][[-1]] /; FreeQ[fi, Field]
@@ -249,7 +272,7 @@ CheckFP[ fp:FieldPoint[_?NonNegative][__] ] :=
 
 CheckFP[ fp_ ] :=
   !FreeQ[fp, Field] ||
-  ( MemberQ[FieldPoints[Generic], FieldPoint@@ ToGeneric[fp] /. 0 -> _] &&
+  ( MemberQ[FieldPointList[Generic], FieldPoint@@ ToGeneric[fp] /. 0 -> _] &&
     VFAllowed[fp] )
 
 
@@ -284,7 +307,7 @@ Block[ {vx, p = ru[[i, 2]], leftallowed, rightallowed, allowed, ckfp},
       ckfp[1, #] && ckfp[2, #] & ]
   ];
 
-  If[ TrueQ[Global`$FADebug],
+  If[ TrueQ[$FADebug],
     Print["Ins11: inserting field ", p];
     Print["Ins11: L-vertex  = ", vert12[[1]]];
     Print["Ins11: R-vertex  = ", vert12[[2]]];
@@ -293,24 +316,10 @@ Block[ {vx, p = ru[[i, 2]], leftallowed, rightallowed, allowed, ckfp},
     Print["Ins11: allowed   = ", allowed];
   ];
 
-  p = vert12[[0, 1]];
+  p = ResolveType[ vert12[[0, 1]] ];
   (ru /. (Field[i] -> _) -> (Field[i] -> #))&/@
-    Select[allowed, InsertOK[#, p]&]
+    Select[allowed, MemberQ[InsertOnly[#], p]&]
 ]
-
-
-(* check whether field is allowed on type of propagator *)
-
-InsertOK[ _Integer fi_, p_ ] := InsertOK[fi, p]
-
-InsertOK[ fi_, _ ] := True /; Head[InsertOnly[fi]] === InsertOnly
-
-InsertOK[ fi_, Loop[_] ] := !FreeQ[InsertOnly[fi], Loop]
-
-InsertOK[ fi_, Internal ] := !FreeQ[InsertOnly[fi], Internal]
-
-InsertOK[ fi_, io:Incoming | Outgoing | External ] :=
-  !FreeQ[InsertOnly[fi], io | External]
 
 
 (* insert the ith propagator: *)
@@ -405,13 +414,13 @@ IndexDelta[ ind__ ]^_?Positive ^:= IndexDelta[ind]
 ext/: IndexDelta[ ext[_], ext[_] ] = 1
 
 
-AppendIndex[ Field[ind_] -> s_. fi:_[_] ] :=
-  (Field[ind] -> s Append[ fi, Append[#, ind]&/@ Indices[fi] ]) /;
+AppendIndex[ Field[n_] -> s_. fi:_[_] ] :=
+  (Field[n] -> s Append[ fi, Append[#, n]&/@ Indices[fi] ]) /;
   Indices[fi] =!= {}
 
-AppendIndex[ Field[ind_] -> s_. fi_[i_, j_List] ] :=
-  (Field[ind] -> s fi[i, Join[ j,
-    Append[#, ind]&/@ Drop[Indices[fi[i]], Length[j]] ]]) /;
+AppendIndex[ Field[n_] -> s_. fi_[i_, j_List] ] :=
+  (Field[n] -> s fi[i, Join[ j,
+    Append[#, n]&/@ Drop[Indices[fi[i]], Length[j]] ]]) /;
   Length[j] < Length[Indices[fi[i]]]
 
 AppendIndex[ ru_ ] = ru
@@ -434,9 +443,9 @@ Block[ {indexru, extind, deltas},
 
 EvaluateDelta[ expr_, {} ] :=
 Block[ {c},
-  c[ _ ] = 0;
+  c[ _ ] = ninc;
   c[ t_, n_ ] := c[t, n] = ++c[t];
-  expr /. Index[t_, n_] :> Index[t, c[t, n]]
+  expr /. Index[t_, n_] :> Index[t, c[t, n]] /; n > ninc
 ]
 
 	(* For unequal integers: *)

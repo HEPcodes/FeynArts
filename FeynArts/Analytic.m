@@ -2,7 +2,7 @@
 	Analytic.m
 		Translation of InsertFields output into
 		analytic expressions
-		last modified 10 Jan 08 th
+		last modified 19 Jun 09 th
 *)
 
 Begin["`Analytic`"]
@@ -23,16 +23,17 @@ CreateFeynAmp::nolevel =
 "Warning: Level `1` is not contained in this insertion."
 
 CreateFeynAmp::mtrace =
-"Different MatrixTraceFactors inside one loop.  Involved fields are `1`.
+"Different MatrixTraceFactors inside one loop.  \
+Involved fields are `1`.  \
 Please check the classes model and try again."
 
 CreateFeynAmp::noprop =
 "Cannot resolve propagator of field `1`."
 
 CreateFeynAmp::ambig =
-"Warning: `1` contains more than two noncommuting fields, hence the
-application of the flipping rules is not unambiguous and may give wrong
-results."
+"Warning: `1` contains more than two noncommuting fields, hence the \
+application of the flipping rules is not unambiguous and may give \
+wrong results."
 
 CreateFeynAmp::nocoupl =
 "Cannot resolve coupling `1` for kinematical object `2`."
@@ -85,7 +86,7 @@ topnr = 1, opt = ActualOptions[CreateFeynAmp, options]},
 
   head = FeynAmpList[info] /.
     (Process -> iorule_) :> (Process ->
-      MapIndexed[{#1, iomom@@ #2, TheMass[#1]}&, iorule, {2}]) /.
+      MapIndexed[{#1, iomom@@ #2, TheMass[#1, External]}&, iorule, {2}]) /.
     (InsertionLevel -> _) :> (AmplitudeLevel -> alevel);
 
   amps = head@@ amps /. _MTF -> 1 /. gaugeru //. M$LastModelRules;
@@ -221,7 +222,7 @@ Block[ {amp, gm, rawgm, orig, anti},
   amp = CreateAmpGraph[ top,
     gr /. (n_ -> x_. fi_[i__]) :> (n -> x fi[i, orig[x, n]]) ];
   gm = Append[
-    Union[ Cases[amp[[3]], P$InsertionObjects, Infinity] ],
+    Union[ Cases[amp[[3]], P$InsertionObjects, Infinity, Heads -> True] ],
     RelativeCF ];
   rawgm = gm /.
     s1_. _[__, orig[s2_, fi_], k___] :>
@@ -247,7 +248,7 @@ scalars = {RelativeCF, toppref, 1/s}},
 
 	(* insert the vertices in fermion chains first.  Note that
 	   MidVertex and ToChain modify vert *)
-  res = res /. c:_dot | _tr :> ResolveChain[c];
+  res = res /. ch:_dot | _tr :> ResolveChain[ch];
 
 	(* now the remaining vertices *)
   vert = ResolveGeneric/@ vert;
@@ -364,9 +365,17 @@ MTF[ {} ] = 1
 MTF[ fi_List ] :=
 Block[ {res},
   res = Union[MatrixTraceFactor/@ fi];
-  If[ Length[res] === 1, res[[1]],
+  If[ Length[res] === 1,
+    res[[1]] /. i_Index :> MTFIndex[i, fi],
+  (* else *)
     Message[CreateFeynAmp::mtrace, fi]; 1 ]
 ] /; FreeQ[fi, Field]
+
+
+Attributes[ MTFIndex ] = {Listable}
+
+MTFIndex[ i_, _. fi_[n_, ind_] ] :=
+  i /. Thread[Indices[fi[n]] -> ind]
 
 
 	(* useful for Truncated -> True *)
@@ -382,7 +391,7 @@ SignedMixers[ fi_[x__] ] := MixingPartners[fi][[-1]][x]
 
 ResolveGeneric[ vert:Vertex[_, cto_:0][_], chainprops___ ] :=
 Block[ {v, perm},
-  v = SignedMixers/@ (TakeInc[vert, #]&)/@ Flatten[{chainprops, props}];
+  v = SignedMixers/@ TakeInc[vert]/@ Flatten[{chainprops, props}];
   perm = FindVertex[ToGeneric[v], Generic];
   If[ perm === $Failed, Return[{}] ];
   v = v[[perm]];
@@ -444,11 +453,13 @@ FermionChain[] = MatrixTrace[] = 1	(* e.g. for ghosts *)
 	   the head or else the kinematical information is altered. *)
 ResolvePropagator[type_][ _, _, part_ ] :=
 Block[ {res},
-  If[ Head[ res = MapAt[
-        # /. {Loop[_] -> Internal, Incoming | Outgoing -> External} &,
-        AnalyticalPropagator[type][part],
-        0 ] ] === PV,
-    res,
+  res = MapAt[
+    # /. {_Loop -> Internal, Incoming | Outgoing -> External} &,
+    AnalyticalPropagator[type][part],
+    0 ];
+  If[ Head[res] === PV,
+    res /. Mass[fi_] -> Mass[fi, ResolveType[type]],
+  (* else *)
     Message[CreateFeynAmp::noprop, part]; Propagator[part] ]
 ]
 
@@ -472,14 +483,15 @@ LoopPD[ p_Plus ] := LoopPD/@ p
 
 LoopPD[ p_Times ] :=
   Select[p, FreeQ[#, PropagatorDenominator]&] *
-    LoopPD@@ Cases[p, PropagatorDenominator[__]]
+    LoopPD@@ Cases[p, _PropagatorDenominator]
 
 LoopPD[ p__PropagatorDenominator ] :=
-  Times@@ Select[{p}, FreeQ[#, Internal]&] *
-    FeynAmpDenominator@@ SortPD/@ Select[{p}, !FreeQ[#, Internal]&]
+  Times@@ Select[{p}, FreeQ[#, FourMomentum[Internal, _]]&] *
+    FeynAmpDenominator@@ SortPD/@
+      Select[{p}, !FreeQ[#, FourMomentum[Internal, _]]&]
 
 
-SortPD[ PropagatorDenominator[mom_, mass_] ] :=
+SortPD[ PropagatorDenominator[mom_, mass__] ] :=
   PropagatorDenominator[ Expand[-mom], mass ] /;
   !FreeQ[mom, -FourMomentum[Internal, _]]
 
@@ -576,7 +588,7 @@ FindVertex[ v_, Classes ] := Range[Length[v]] /;
 
 FindVertex[ v_, lev_ ] :=
 Block[ {pos, fp},
-  pos = Position[FieldPoints[lev], FieldPoint@@ v, 1, 1];
+  pos = Position[FieldPointList[lev], FieldPoint@@ v, 1, 1];
   If[ Length[pos] === 0,
     Message[FindVertex::novert, v];
     Return[$Failed] ];
@@ -599,8 +611,8 @@ Format[ MatrixTrace ] = "tr"
 
 Format[ FermionChain[a__] ] := Dot[a]
 
-Format[ PropagatorDenominator[a_, b_] ] :=
-  Block[ {x = a^2 - b^2}, 1/x /; x =!= 0 ]
+Format[ PropagatorDenominator[p_, m_, d___] ] :=
+  Block[ {x = p^2 - m^2}, 1/x^d /; x =!= 0 ]
 
 Format[ FourMomentum[Incoming, i_Integer] ] := SequenceForm["p", i]
 
@@ -618,7 +630,7 @@ PickLevel[ _ ][ tops_TopologyList ] = tops
 
 PickLevel[ lev_ ][ tops:TopologyList[___][___] ] :=
 Block[ {Rule, levels, res},
-  _ -> Insertions[_][ ] = Sequence[];
+  _ -> Insertions[_][] = Sequence[];
 	(* Generic is always kept *)
   res = Switch[ {FreeQ[lev, Classes], FreeQ[lev, Particles]},
     {True, True},
@@ -638,8 +650,8 @@ Block[ {Rule, levels, res},
 ]
 
 PickLevel::nolevel =
-"Warning: FeynAmps have already been picked at a different level, `1`
-level cannot be extracted."
+"Warning: FeynAmps have already been picked at a different level, \
+`1` level cannot be extracted."
 
 PickLevel[ lev_ ][ amps:FeynAmpList[___][___] ] :=
 Block[ {n = 0, c = 0, warn = True},
@@ -708,29 +720,39 @@ Discard[ amp_, diags__ ] :=
       Range@@ Sort[Floor[{b, a}]] ]] ]
 
 
-(*
-DiagramSelect[ tops:TopologyList[info__][__], crit_ ] :=
+DiagramMap[ foo_, tops:(h_TopologyList)[__] ] :=
 Block[ {lev, Rule},
-  lev = ResolveLevel[InsertionLevel /. {info}][[-1]];
+  lev = ResolveLevel[InsertionLevel /. List@@ h][[-1]];
   Rule[_] := Sequence[];
-  tops /.
-    Graph[__, lev == _][fi__] :> Seq[] /; crit[{fi}] =!= True /.
-    (Graph[__][__] -> _[]) :> Seq[] /.
-    (Topology[__][__] -> _[]) :> Seq[]
-]
-*)
-
-DiagramSelect[ tops:TopologyList[info__][__], crit_ ] :=
-Block[ {lev, Rule},
-  lev = ResolveLevel[InsertionLevel /. {info}][[-1]];
-  Rule[_] := Sequence[];
-  Apply[ #1 -> (#2 /. Graph[__, lev == _][fi__] :> Seq[] /;
-      crit[{fi}, #1] =!= True)&, tops, 1 ] /.
+  Apply[ #1 -> (#2 /. gr:Graph[__, lev == _][__] :> foo[gr, #1, h])&,
+      tops, 1 ] /.
     (Graph[__][__] -> _[]) :> Seq[] /.
     (Topology[__][__] -> _[]) :> Seq[]
 ]
 
-DiagramSelect[ amp_, crit_ ] := Select[amp, crit]
+DiagramMap[ foo_, other_ ] := foo/@ other
+
+
+DiagramSelect[ tops:TopologyList[___][__], crit_ ] :=
+Block[ {sel},
+  sel[g_, r__] := g /; crit[g, r];
+  _sel = Sequence[];
+  DiagramMap[sel, tops]
+]
+
+DiagramSelect[ other_, crit_ ] := Select[other, crit]
+
+
+DiagramGrouping[ tops:TopologyList[___][___], foo_ ] :=
+Block[ {Rule, tag, group, res, c = 0},
+  Rule[_] := Sequence[];
+  tag[new_] := tag[new] = group[++c];
+  res = DiagramMap[tag[foo[##]][#1]&, tops];
+  Cases[ DownValues[tag], _[_[_[obj_]], g_group] :>
+    obj -> (res /. {g[gr_] :> gr, group[_][_] :> Seq[]}) ] /.
+    (Graph[__][__] -> _[]) :> Seq[] /.
+    (Topology[__][__] -> _[]) :> Seq[]
+]
 
 
 Attributes[prop] = {Orderless}
@@ -739,10 +761,43 @@ Attributes[merge] = {Flat, Orderless}
 
 merge[ prop[i_, j_], prop[j_, k_] ] := prop[i, k]
 
-FermionRouting[ fields_:{}, top:P$Topology ] := Level[
+FermionRouting[ gr_:{}, top:P$Topology, ___ ] := Level[
   merge@@ Apply[ prop[ #1[[1]], #2[[1]] ]&,
-    Select[AddFieldNo[top] /. fields, !FreeQ[#, P$NonCommuting]&], 1 ],
+    Select[AddFieldNo[top] /. List@@ gr, !FreeQ[#, P$NonCommuting]&],
+    1 ],
   {-1} ]
+
+
+toins[ Generic, gr_ ] := Insertions[Generic][gr]
+
+toins[ lev_, gr_ ] := Insertions[Generic][gr -> Insertions[lev][gr]]
+
+_FeynAmpCases[ _[], ___ ] = {}
+
+(fac_FeynAmpCases)[ gr:Graph[__, lev_ == _][__], top:P$Topology, h_ ] :=
+  fac @ FeynAmpExpr[gr, top, h]
+
+FeynAmpCases[ patt_, lev_:Infinity ][ amp_ ] := Cases[amp, patt, lev]
+
+
+FeynAmpExpr[ gr:Graph[__, lev_ == _][__], top:P$Topology, h_ ] :=
+Block[ {$Verbose = 0},
+  CreateFeynAmp[ h[top -> toins[lev, gr]],
+    AmplitudeLevel -> {lev} ]
+]
+
+
+Unprotect[Exponent]
+
+Exponent[ FeynAmp[_, _, amp_], sym_ ] :=
+  Exponent[amp /. FermionChain | MatrixTrace -> Times, sym]
+
+Exponent[ FeynAmp[_, _, amp_, gm_ -> ins_], sym_ ] :=
+Block[ {tamp = amp /. FermionChain | MatrixTrace -> Times},
+  Exponent[tamp /. gm -> #, sym]&/@ ins
+]
+
+Protect[Exponent]
 
 
 DiagramComplement[ tops:TopologyList[info__][___],

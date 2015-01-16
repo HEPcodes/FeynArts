@@ -1,7 +1,7 @@
 (*
 	Setup.m
 		FeynArts startup file
-		last modified 2 Feb 00 th
+		last modified 23 Jan 03 th
 
 Here you can set up your own changes and enhancements to FeynArts,
 e.g. some particular options you always want set, or $SVMixing = True.
@@ -17,7 +17,7 @@ $ModelPath = { Directory[],
   ToFileName[{Directory[], "Models"}],
   ToFileName[{$FeynArtsDir, "Models"}] }
 
-$TopologyDataDir = ToFileName[{$FeynArtsDir, "GraphInfo"}]
+$ShapeDataDir = ToFileName[{$FeynArtsDir, "ShapeData"}]
 
 $SVMixing = False
 

@@ -19,5 +19,5 @@ psripper: psripper.c
 	$(CC) -o psripper psripper.c
 
 clean:
-	rm -f psripper FeynArts.texpro
+	$(RM) psripper FeynArts.texpro
 

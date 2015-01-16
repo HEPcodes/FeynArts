@@ -1,7 +1,7 @@
 (*
 	Graphics.m
 		Graphics routines for FeynArts
-		last modified 19 Aug 01 th
+		last modified 23 Jan 03 th
 *)
 
 Begin["`Graphics`"]
@@ -25,11 +25,11 @@ LabelFontSize = 2 (* units of the diagram coordinate system *)
 LabelFont = "Helvetica"
 
 	(* for ordinary vertices and counter terms: *)
-PropagatorThickness = Thickness[.11 / DiagramSize]
+PropagatorThickness = Thickness[.11/DiagramSize]
 
-VertexThickness = PointSize[8 .11 / DiagramSize]
+VertexThickness = PointSize[8 .11/DiagramSize]
 
-CounterThickness = Thickness[3 .11 / DiagramSize]
+CounterThickness = Thickness[3 .11/DiagramSize]
 
 	(* for counter terms: *)
 CrossWidth = 1
@@ -41,9 +41,9 @@ ArrowHeight = .4
 
 DampingConst = (.65 ArrowLength)^4
 
-ScalarDashing = Dashing[{.66, .66} / DiagramSize]
+ScalarDashing = Dashing[{.66, .66}/DiagramSize]
 
-GhostDashing = Dashing[{.11, .66} / DiagramSize]
+GhostDashing = Dashing[{.11, .66}/DiagramSize]
 
 	(* # of points per unit arc length used in drawing Sine and
 	   Cycles lines *)
@@ -177,13 +177,13 @@ Block[ {auto, disp, cols, rows, dhead, g, topnr = 0, runnr = 0},
 
 
 TopologyGraphics[ top_ -> gr_ ] :=
-Block[ {ginfo, gtop, vertexplot},
-  ginfo = Shape[gtop = top /. Vertex[e_, _] -> Vertex[e], auto];
+Block[ {shapedata, gtop, vertexplot},
+  shapedata = Shape[gtop = top /. Vertex[e_, _] -> Vertex[e], auto];
   gtop = Transpose[{
-    List@@ gtop /. ginfo[[1]],
-    ginfo[[2]],
-    ginfo[[3]] }];
-  vertexplot = VGraphics/@ Vertices[top] /. ginfo[[1]];
+    List@@ gtop /. shapedata[[1]],
+    shapedata[[2]],
+    shapedata[[3]] }];
+  vertexplot = VGraphics/@ Vertices[top] /. shapedata[[1]];
   ++topnr;
   FAPrint[2, "> Top. ", topnr, ": ", Pluralize[{Length[gr]}, " diagram"]];
   dhead[#]@@ Flatten[{
@@ -269,7 +269,7 @@ getsize[ opt___, def_ ] :=
     Round[ImageSize /. ActualOptions[Render, opt] /. Automatic -> def]
 
 prologue := prologue =
-  ReadList[ToFileName[{$FeynArtsDir, "FeynArts"}, "FeynArts.pro"],
+  ReadList[ToFileName[$FeynArtsProgramDir, "FeynArts.pro"],
     Record, RecordSeparators -> ""][[1]]
 
 epsf = ""
@@ -380,7 +380,7 @@ LabelFontSize = 1.26 LabelFontSize},
   {rows, cols} = Dimensions[sheet];
   g = MapIndexed[DiagramBox, sheet, {2}];
   title = MmaRender[Title[h]];
-  fsize = LabelFontSize Min[imgsize / {cols, rows}] / DiagramSize;
+  fsize = LabelFontSize Min[imgsize/{cols, rows}]/DiagramSize;
   Graphics[ Flatten[{g, title}],
     PlotRange -> {{0, cols}, {0, rows}} DiagramSize,
     AspectRatio -> rows/cols]
@@ -479,12 +479,12 @@ Block[ {dir, ommc, cs, ctr, rad, mid, dphi, line, phi, damping, h, v},
   CalcPropData[from, to, height];
   If[ arrow =!= 0,
     damping[phi_] :=
-      Block[ {x = (rad Abs[phi - ommc])^4}, x / (x + DampingConst) ],
+      Block[ {x = (rad Abs[phi - ommc])^4}, x/(x + DampingConst) ],
   (* else *)
     damping[phi_] = 1 ];
   phi = Mod[ommc - dphi, 2 NPi];
   h = Flatten[{type}];
-  dphi *= 2. / Length[h];
+  dphi *= 2./Length[h];
   line = HalfLine[#, phi += dphi, dphi]&/@ h;
 
   If[ arrow =!= 0,
@@ -527,13 +527,13 @@ Block[ {lab, h},
   ctr = mid = .5 (from + to);
   If[ height != 0,
     dphi = 2. ArcTan[h = Abs[height]];
-    rad = lab / Sin[dphi];
+    rad = lab/Sin[dphi];
     dphi *= Sign[height];
     mid += h lab cs;
     h = If[h > 1., -1, 1],
   (* else *)
     rad = 20000.;
-    dphi = ArcSin[lab / rad];
+    dphi = ArcSin[lab/rad];
     h = 1
   ];
   ctr -= h Sqrt[rad^2 - lab^2] cs
@@ -547,12 +547,12 @@ Block[ {arc, w, n},
   Line[
     Table[ arc = phi - n dphi;
       ctr + (rad - damping[arc] SineAmp Sin[n w]) {Cos[arc], Sin[arc]},
-      {n, 0, 1, 1. / Floor[NPoints arc]} ] ]
+      {n, 0, 1, 1./Floor[NPoints arc]} ] ]
 ]
 
 rshift = CyclesAmp - SineAmp
 
-phadj = ArcCos[rshift / CyclesAmp]
+phadj = ArcCos[rshift/CyclesAmp]
 
 sphadj = Sin[phadj]
 
@@ -560,13 +560,13 @@ HalfLine[ Cycles, phi_, dphi_ ] :=
 Block[ {arc, w, n, phamp},
   arc = rad Abs[dphi];
   w = 2. (phadj + NPi Max[1, Round[NCrestsCycles arc]]);
-  phamp = CyclesBreadth NPi Sign[dphi] / rad;
+  phamp = CyclesBreadth NPi Sign[dphi]/rad;
   Line[
     Table[ arc = n w - phadj;
       ctr + (rad + CyclesAmp Cos[arc] - rshift) *
         Through[{Cos, Sin}[
           phi - n dphi - phamp (Sin[arc] - (2 n - 1) sphadj)]],
-      {n, 0, 1, 1. / Floor[2 NPoints arc]} ] ]
+      {n, 0, 1, 1./Floor[2 NPoints arc]} ] ]
 ]
 
 HalfLine[ Straight, phi_, dphi_ ] :=
@@ -705,9 +705,8 @@ pr[ type_ ][ from_, to_, ___ ] := (
   AppendTo[props[type], {from, to}] )
 
 AutoShape[ top_ ] :=
-Block[ {ginfo, props, ext, l, tree, mesh, mesh2, tadbr, vars, vert,
+Block[ {shapedata, props, ext, l, tree, mesh, mesh2, tadbr, vars, vert,
 tad, min, ok, c, ct, pt, shrink = {}, rev = {}, loops = {}},
-
   props[ _ ] = {};
   top /. Propagator -> pr;
   loops = Union[loops];
@@ -717,14 +716,14 @@ tad, min, ok, c, ct, pt, shrink = {}, rev = {}, loops = {}},
 
 	(* a) fix the incoming and outgoing propagators on the left and
 	      right side, respectively *)
-  ginfo = Join[
-    l = Length[props[Incoming]] / 20.;
+  shapedata = Join[
+    l = Length[props[Incoming]]/20.;
     MapIndexed[
-      #1[[1]] -> {0, 20 - Round[(#2[[1]] - .5) / l]}&,
+      #1[[1]] -> {0, 20 - Round[(#2[[1]] - .5)/l]}&,
       props[Incoming] ],
-    l = Length[props[Outgoing]] / 20.;
+    l = Length[props[Outgoing]]/20.;
     MapIndexed[
-      #1[[1]] -> {20, 20 - Round[(#2[[1]] - .5) / l]}&,
+      #1[[1]] -> {20, 20 - Round[(#2[[1]] - .5)/l]}&,
       props[Outgoing] ] ];
 
 	(* b) shrink loops to 1 point which is the center of an imaginary
@@ -740,7 +739,7 @@ tad, min, ok, c, ct, pt, shrink = {}, rev = {}, loops = {}},
 
 	(* c) cut tadpole-like parts and minimize the length of the
 	      remaining mesh of propagators *)
-  mesh2 = Leaves@@ Apply[twig, tree /. ginfo, 1] /. twig -> List;
+  mesh2 = Leaves@@ Apply[twig, tree /. shapedata, 1] /. twig -> List;
   tadbr[ _ ] = {};
   Cases[mesh2, branch[ctr:center[_][_], v_, ___] :>
     (tadbr[ctr] = Flatten[{tadbr[ctr], v /. rev}]), Infinity];
@@ -769,11 +768,11 @@ tad, min, ok, c, ct, pt, shrink = {}, rev = {}, loops = {}},
     vert = vert /.
       If[ ok, MapAt[Round, #, 2]&/@ c[[2]], (# -> RandInt)&/@ vars ]
   ];
-  ginfo = Join[ginfo, vert];
-  ginfo = Flatten[ {ginfo,
-    (l = (#[[-1]] - (c = #[[1]])) / (Length[#] - 1);
+  shapedata = Join[shapedata, vert];
+  shapedata = Flatten[ {shapedata,
+    (l = (#[[-1]] - (c = #[[1]]))/(Length[#] - 1);
      MapIndexed[#1 -> c + l #2[[1]] &, Take[#, {2, -2}]])&/@
-      (Select[mesh, Length[#] > 2 &] /. ginfo)} ];
+      (Select[mesh, Length[#] > 2 &] /. shapedata)} ];
 
 	(* d) minimizing the straight distance of a tadpole to its
 	      nearest vertex v would make the tadpole stick to v.
@@ -781,7 +780,7 @@ tad, min, ok, c, ct, pt, shrink = {}, rev = {}, loops = {}},
 	      fixed radius and we try to construct the ideal angle with
 	      respect to the lines joining at v by maximizing. *)
   mesh2 = (List@@ mesh2) /.
-    leaf[br__] :> Sequence@@ Cases[{br}, branch[__]] /. ginfo;
+    leaf[br__] :> Sequence@@ Cases[{br}, branch[__]] /. shapedata;
   While[ Length[ tad = Cases[mesh2, branch[{_, _}, __]] ] =!= 0,
     mesh2 = Fold[FixTad, mesh2, tad] ];
 
@@ -789,35 +788,35 @@ tad, min, ok, c, ct, pt, shrink = {}, rev = {}, loops = {}},
 	      at the middle of the line from the center to the external
 	      vertex and distribute the remaining points of the loop
 	      on the imaginary circle around the center. *)
-  ok = ginfo;
+  ok = shapedata;
   Scan[
     Function[rul,
       If[ Length[ vert = Union[ext[ rul[[1, 1]] ]] ] === 1,
         c = SetTadpole[vert[[1]], rul],
         SetMiddle[#, rul]&/@ vert; c = rul[[2]] ];
-      SetLoop[props[ rul[[1, 1]] ] /. ginfo, c] ],
-    Select[ginfo, !FreeQ[#, center]&] ];
+      SetLoop[props[ rul[[1, 1]] ] /. shapedata, c] ],
+    Select[shapedata, !FreeQ[#, center]&] ];
 
 	(* f) last resort: randomize any remaining vertex *)
-  ginfo = Join[ MapAt[Clip, #, 2]&/@ ginfo,
+  shapedata = Join[ MapAt[Clip, #, 2]&/@ shapedata,
     (# -> {RandInt, RandInt})&/@
-      Union[Cases[top /. ginfo, Vertex[__][_], Infinity]] ];
+      Union[Cases[top /. shapedata, Vertex[__][_], Infinity]] ];
 
 	(* g) give tadpoles and identical propagators curvature so that
 	      they do not fall on top of each other *)
   pt[ _[Loop[n_]][v_, v_], _ ] :=
-    center[ Length[ext[n]] ][n] /. ginfo /. center[_][_] :>
-      Clip[ (v /. ginfo) + 4 Through[{Cos, Sin}[2. NPi Random[]]] ];
+    center[ Length[ext[n]] ][n] /. shapedata /. center[_][_] :>
+      Clip[ (v /. shapedata) + 4 Through[{Cos, Sin}[2. NPi Random[]]] ];
   pt[ _, 0 ] = 0;
-  ct[ p_ ] := If[ (c = (Count[top, p] - 1) / 2) === 0, 0,
-    pt[ p, n_ ] = .8 n / c;
+  ct[ p_ ] := If[ (c = (Count[top, p] - 1)/2) === 0, 0,
+    pt[ p, n_ ] = .8 n/c;
     ct[ p ] = c
   ];
 
   On[FindMinimum::fmmp, FindMinimum::fmcv, FindMinimum::precw,
     FindMinimum::fmgz];
 
-  { Select[ginfo, FreeQ[#, center]&],
+  { Select[shapedata, FreeQ[#, center]&],
     pt[#, ct[#]--]&/@ List@@ top,
     Table[1, {Length[top]}] }
 ]
@@ -852,7 +851,9 @@ Distance[ p1_, p2_ ] := Block[ {d = p2 - p1}, Sqrt[d . d] ]
 
 Distance2[ p1_, ___, p2_ ] := Block[ {d = p2 - p1}, d . d ]
 
-Orientation[ p1_, p2_ ] := N[ArcTan@@ (p2 - p1)]
+Orientation[ p1_, p2_ ] := N[ArcTan@@ (p2 - p1)] /; p1 != p2
+
+Orientation[ __ ] = 0
 
 
 CartesianVar[ n_ ] := CartesianVar[n] = {Unique["X"], Unique["Y"]}
@@ -878,7 +879,7 @@ Block[ {stem, root, c, phi, dphi, vert, min, dist},
   If[ Min[c] < 0 || Max[c] > 20, c = {RandInt, RandInt} ];
   c = (c - root)/(Length[stem] - 1);
   vert = MapIndexed[#1 -> root + #2[[1]] c &, Rest[stem]];
-  ginfo = Join[ginfo, vert];
+  shapedata = Join[shapedata, vert];
   mesh /. br -> cutbranch@@ br /. vert
 ]
 
@@ -889,18 +890,18 @@ Block[ {vert, vars, rad, angle, off, min, c = 0},
   If[ Length[vert] =!= 0,
     rad = Union[ Cases[loop, _List, {2}] ];
     rad = If[ Length[rad] === 0, 5,
-      Plus@@ (Distance[#, ctr]&/@ rad) / Length[rad] ];
-    angle = 2. NPi / Length[vert];
+      Plus@@ (Distance[#, ctr]&/@ rad)/Length[rad] ];
+    angle = 2. NPi/Length[vert];
     vars = (# ->
       ctr + rad Through[{Cos, Sin}[++c angle + off]])&/@ vert;
     min = FindMinimum@@ {
       -Plus@@ Apply[Distance, loop /. vars, {1}],
       {off, 2. NPi Random[]} };
-    ginfo = Join[ ginfo,
+    shapedata = Join[ shapedata,
       If[ Head[min] === FindMinimum, vars /. off -> 2. NPi Random[],
         c = vars /. min[[2]];
         If[ Length[Intersection[
-          Round[Last/@ c], Round[Last/@ ginfo] ]] === 0,
+          Round[Last/@ c], Round[Last/@ shapedata] ]] === 0,
           c,
           # -> ctr + Random[] rad Through[{Sin, Cos}[2. NPi Random[]]]&/@
             vert ] ]
@@ -911,15 +912,14 @@ Block[ {vert, vars, rad, angle, off, min, c = 0},
 
 SetMiddle[ vert_, ctr_ -> xy_ ] :=
 Block[ {ex, mid},
-  ex = DeleteCases[
-    Flatten[Select[props[Tree], !FreeQ[#, vert]&]], vert ];
+  ex = DeleteCases[ Flatten[Select[props[Tree], !FreeQ[#, vert]&]], vert ];
   If[ Length[ex] =!= 0,
     If[ Length[ mid = Complement[ex, tadbr[ctr]] ] =!= 0, ex = mid ];
-    ex = ex /. shrink /. ginfo;
-    While[ Length[ex] =!= 0 && (mid = Plus@@ ex / Length[ex]) == xy,
+    ex = ex /. shrink /. shapedata;
+    While[ Length[ex] =!= 0 && (mid = Plus@@ ex/Length[ex]) == xy,
       ex = Rest[ex] ];
     If[ Length[ex] === 0, mid = {RandInt, RandInt} ];
-    AppendTo[ginfo, vert -> .6 xy + .4 mid]
+    AppendTo[shapedata, vert -> .6 xy + .4 mid]
   ]
 ]
 
@@ -927,7 +927,7 @@ Block[ {ex, mid},
 SetTadpole[ vert_, ctr_ -> xy_ ] :=
 Block[ {adj, max, new, a1, a2},
   adj = Select[tree, !FreeQ[#, ctr]&] /. ok;
-  ginfo = ginfo /. ctr -> vert;
+  shapedata = shapedata /. ctr -> vert;
   If[ Length[adj] === 1,
     new = 2.6 xy - .8 Plus@@ adj[[1]],
   (* else *)
@@ -938,9 +938,29 @@ Block[ {adj, max, new, a1, a2},
       adj, adj ];
     new = xy + 4 Through[{Cos, Sin}[.5 (a1 + a2)]] ];
   If[ Distance2[xy, max = Clip[new]] < 2.8,
-    ginfo = ginfo /. xy -> xy - .7 (new - max) ];
-  AppendTo[ginfo, ctr -> max];
+    shapedata = shapedata /. xy -> xy - .7 (new - max) ];
+  AppendTo[shapedata, ctr -> max];
   max
+]
+
+
+vcode = Characters["\
+abcdefghijklmnopqrstuvwxyz\
+ABCDEFGHIJKLMNOPQRSTUVWXYZ\
+0987654321"]
+
+pcode[ Incoming | External ] = "+"
+
+pcode[ Outgoing ] = "-"
+
+pcode[ _ ] = {}
+
+TopologyCode[ top:P$Topology ] :=
+Block[ {once},
+  once[x_] := (once[x] = {}; x);
+  StringJoin@@
+    ({ once[ pcode@@ #[[0]] ],
+       vcode[[ {#[[1, 1]], #[[2, 1]]} ]] }&)/@ Reverse[top]
 ]
 
 
@@ -956,10 +976,10 @@ ToJava[ _[from_, to_], height_, {xl_, yl_} ] :=
 (* call the topology editor *)
 
 Shape::wait =
-"Starting Java and the topology editor. This may take a moment."
+"Starting Java and the topology editor.  This may take a moment."
 
 Shape::notopedit =
-"Could not load the topology editor. Make sure you have J/Link and Java
+"Could not load the topology editor.  Make sure you have J/Link and Java
 installed."
 
 Shape::javaerror =
@@ -975,88 +995,66 @@ Block[ {remaining = Length[tops]},
 Shape[ top:P$Topology -> _ ] := Shape[top]
 
 Shape[ top:P$Topology, auto_:0 ] :=
-Block[ {edittop, gname, ghead, ginfo, arg1, arg2, exitcode},
+Block[ {edittop, topcode, shapefile, shapedata, arg1, arg2, exitcode},
   edittop = Take[#, 2]&/@ Topology@@ top /.
     External -> Incoming /. Vertex[e_, _] -> Vertex[e];
-  ghead = ShortHand[ #[[0, 1]] ]&/@ edittop;
-  gname = StringJoin[
-    # <> ToString[Count[ghead, #]] &/@ {"Inc", "Out", "Int", "Loop"} ];
-  ghead = ToExpression[gname];
+  topcode = TopologyCode[edittop];
+  shapefile = ToFileName[$ShapeDataDir, topcode <> ".m"];
   res = auto;
-  If[ Head[ginfo = ghead[edittop]] =!= List,
-	(* attempt to load GraphInfo *)
-    If[ !MemberQ[$LoadedGraphInfos, gname],
-      Off[Get::noopen];
-      Get[ ToFileName[$TopologyDataDir, gname <> ".m"] ];
-      On[Get::noopen];
-      AppendTo[$LoadedGraphInfos, gname];
-    ];
-    If[ Head[ginfo] =!= List,
-      --res; Set@@ {ginfo, AutoShape[edittop]} ];
+  If[ Head[shapedata = ShapeData[topcode]] =!= List,
+    ShapeData[topcode] = shapedata = If[ FileType[shapefile] === File,
+      Get[shapefile],
+      --res; AutoShape[edittop] ]
   ];
-  If[ res > 0, Return[ginfo] ];
+  If[ res > 0, Return[shapedata] ];
 
   If[ editorclass === False,
     Message[Shape::wait];
     Needs["JLink`"];
-    JLink`InstallJava[ JLink`ClassPath ->
-      ToFileName[{$FeynArtsDir, "FeynArts"}, "TopologyEditor.jar"] ];
+    JLink`InstallJava[];
+    AppendTo[ JLink`$ExtraClassPath,
+      ToFileName[$FeynArtsProgramDir, "TopologyEditor.jar"] ];
     editorclass = JLink`LoadClass["de.FeynArts.TopologyEditor"];
     If[ Head[editorclass] =!= JLink`JavaClass, Message[Shape::notopedit] ]
   ];
-  If[ Head[editorclass] =!= JLink`JavaClass, Return[ginfo] ];
+  If[ Head[editorclass] =!= JLink`JavaClass, Return[shapedata] ];
 
   If[ !JLink`JavaObjectQ[editor],
     editor = JLink`JavaNew[editorclass];
     If[ !JLink`JavaObjectQ[editor],
       Message[Shape::javaerror];
-      Return[ginfo] ];
+      Return[shapedata] ];
   ];
 
-  arg1 = Last/@ ginfo[[1]];
+  arg1 = Last/@ shapedata[[1]];
   arg2 = MapThread[ ToJava,
-    { List@@ edittop /. MapIndexed[ First/@ Rule[##]&, ginfo[[1]] ],
-      ginfo[[2]],
-      ginfo[[3]] } ];
-  editor@putGraphInfo[ N[Flatten[arg1]], N[Flatten[arg2]] ];
+    { List@@ edittop /. MapIndexed[ First/@ Rule[##]&, shapedata[[1]] ],
+      shapedata[[2]],
+      shapedata[[3]] } ];
+  editor@putShapeData[ N[Flatten[arg1]], N[Flatten[arg2]] ];
 
   exitcode = JLink`DoModal[];
   If[ exitcode === 0,
-    ginfo = MapAt[ MapThread[Rule, {First/@ ginfo[[1]], #}]&,
-      editor@getGraphInfo[], 1 ];
-    (#1[#2] = #3)&[ghead, edittop, ginfo];
-    $LoadedGraphInfos = Union[Append[$LoadedGraphInfos, gname]];
-    $ModifiedGraphInfos =
-      Union[Append[$ModifiedGraphInfos, gname]];
-    System`$Epilog := SaveGraphInfos[] ];
+    ShapeData[topcode] = shapedata = MapAt[
+      MapThread[Rule, {First/@ shapedata[[1]], #}]&,
+      editor@getShapeData[], 1 ];
+    Put[shapedata, shapefile]
+  ];
 
   If[ remaining === 0 || exitcode === 2,
     editor@closeWindow[];
     JLink`ReleaseObject[editor];
     editor = False;
-    If[exitcode === 2, Abort[]];
+    If[ exitcode === 2, Abort[] ];
   ];
 
-  ginfo
+  shapedata
 ]
 
 
 editorclass = editor = False
 
 remaining = 0
-
-
-$LoadedGraphInfos = $ModifiedGraphInfos = {}
-
-SaveGraphInfos[ ] := (
-  Put[ Definition[#], ToFileName[$TopologyDataDir, # <> ".m"] ]&/@
-    $ModifiedGraphInfos;
-  $ModifiedGraphInfos = {} )
-
-
-ShortHand[ Loop[_] ] = "Loop"
-
-ShortHand[ type_ ] := StringTake[ ToString[type], 3 ]
 
 
 ToPS[ "\\alpha" ] = SymbolChar["a"];

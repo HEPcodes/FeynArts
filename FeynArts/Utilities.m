@@ -1,7 +1,7 @@
 (*
 	Utilities.m
 		diverse utility functions for other parts of FA
-		last modified 19 Sep 01 th
+		last modified 23 Jan 03 th
 *)
 
 Begin["`Utilities`"]
@@ -153,7 +153,7 @@ Block[ {perm, p},
   perm = TopPermute/@ tops;
   ( p = Position[perm, #, 1];
     tops[[ p[[1, 1]] ]] /.
-      Topology[s_][rest__] -> Topology[s / Length[p]][rest] )&/@
+      Topology[s_][rest__] -> Topology[s/Length[p]][rest] )&/@
     Union[perm]
 ]
 

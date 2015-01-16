@@ -1,18 +1,16 @@
 (*
 	Initialize.m
 		Functions for the initialization of models
-		last modified 20 Sep 01 th
+		last modified 23 Jan 03 th
 *)
 
 Begin["`Initialize`"]
 
-(* InitializeModel.
-
-   The functions defined for a certain model are:
+(* The functions defined for a certain model are:
 	F$AllGeneric:		all generic fields
 	F$AllClasses:		all classes of the model
 	F$AllParticles:		all particles of the model
-   These lists are static for the initialized model. For InsertFields
+   These lists are static for the initialized model.  For InsertFields
    the following lists are also used; they might be changed by the
    function RestrictCurrentModel:
 	F$Generic:		currently used generic fields
@@ -31,13 +29,10 @@ Begin["`Initialize`"]
    properties of the fields like
 	AntiParticle, Indices, SelfConjugate, TheMass, TheLabel, etc.
 
-   There are two restrictions on entering the model file:
-   a) the coupling definitions in the classes model file have to be made
-      with classes couplings of the same ordering as in the generic
-      coupling definition.
-   b) the FermionFlipRules have to match the field positions of the
-      fermionic fields of the generic coupling (it is thus safest to
-      keep the fermions in front for this).
+   There is one restriction on entering the model file:
+   the coupling definitions in the classes model file have to be made
+   with classes couplings of the same ordering as in the generic
+   coupling definition.
 *)
 
 
@@ -57,10 +52,10 @@ InitializeModel::norange =
 
 InitializeModel::incomp1 =
 "Coupling definition in model file for `1` is incompatible to generic
-coupling structure. Coupling is not a vector of length `2`."
+coupling structure.  Coupling is not a vector of length `2`."
 
 InitializeModel::incomp2 =
-"Incompatible index structure in classes coupling `1`. Field `2`
+"Incompatible index structure in classes coupling `1`.  Field `2`
 needs `3` indices, not `4`."
 
 InitializeModel::nogeneric =
@@ -78,7 +73,7 @@ InitializeModel::badrestr =
 "Warning: `1` is not a valid model restriction."
 
 InitializeModel::nosymb =
-"Cannot properly analyze the field specification `1`. Either the
+"Cannot properly analyze the field specification `1`.  Either the
 overall format is wrong, or it contains symbols that were already
 assigned values somewhere in your model file (most often \"i\" or \"j\").
 Please check your generic model file and try again."
@@ -122,9 +117,9 @@ file = FullFileName[genmod <> ".gen", $ModelPath]},
   FAPrint[2, "initializing generic model file ", file];
   Clear[AnalyticalPropagator, AnalyticalCoupling, KinematicVector,
     PossibleFields, CheckFieldPoint, Combinations,
-    Compatibles, MixingPartners, M$FermionFlipRule];
+    Compatibles, MixingPartners];
   $ExcludedFPs = $ExcludedParticleFPs = {};
-  M$TruncationRules = M$LastGenericRules = {};
+  M$FlippingRules = M$TruncationRules = M$LastGenericRules = {};
   Off[Syntax::newl, Syntax::com]; 
   Check[Get[file], Abort[]];
   On[Syntax::newl, Syntax::com];
@@ -156,8 +151,6 @@ file = FullFileName[genmod <> ".gen", $ModelPath]},
   CheckFieldPoint[ fp_ ] :=
     MemberQ[fp, 0] || !FreeQ[fp, Field] ||
       Length[Union[AtomQ/@ fp]] =!= 1;
-
-  M$FermionFlipRule[ __ ] = {};
 
   PossibleFields[_][ __ ] = {};
   SetPossibleFields[_, Table[0, {Length[#]}]&, FieldPoints[Generic]];
@@ -191,20 +184,20 @@ Block[ {f, h, i, v},
     { Combinations[Pattern[#, _]&/@ f, Pattern[#, _]&/@ h],
       Flatten[ Table[
         (v = f; Scan[(v[[#]] = h[[#]])&, #];
-          { {h[[#]], FieldPoint@@ v}, f[[#]] }&/@ #)&/@ TakeOut[i, n],
+          { {h[[#]], FieldPoint@@ v}, f[[#]] }&/@ #)&/@ Tuples[n, i],
         {i, n} ], 2 ] }
 ]
 
 
-(* TakeOut[m, n] returns all possible m-tuples that can be constructed 
+(* Tuples[n, m] returns all possible m-tuples that can be constructed 
    from an n-tuple *)
 
-TakeOut[ 1, n_ ] := Array[List, n]
+Tuples[ n_, 1 ] := Array[List, n]
 
-TakeOut[ m_, n_ ] := TakeOut[m, n] =
+Tuples[ n_, m_ ] := Tuples[n, m] =
   Flatten[
     Function[z, Flatten[{z, #}]&/@ Range[Last[z] + 1, n]]/@
-      TakeOut[m - 1, n],
+      Tuples[n, m - 1],
     1 ]
 
 
@@ -241,11 +234,10 @@ InitGenericCoupling[
 InitGenericCoupling[
   AnalyticalCoupling[f__] == G[n_][g__] . kinvec_List ] :=
 Block[ {lhs, cpl, Global`cto, x},
-
   lhs = CoupFieldPattern/@ {f};
   Evaluate[cpl@@ lhs] = kinvec;
 
-	(* put Mom and KI dummies in the fields on the rhs. These dummies 
+	(* put Mom and KI dummies in the fields on the rhs.  These dummies 
 	   will appear as part of the Lorentz term indexing of the G's. *)
   x = Evaluate[KinematicVector@@ ToGeneric[{f}]] =
     cpl@@ MapIndexed[KinDummies, {f}];
@@ -268,7 +260,7 @@ KinDummies[ s_. (f:P$Generic)[i__, _], {n_} ] := s f[i, Mom[n]]
 Off[RuleDelayed::rhs]
 
 
-(* Change field representation to patterns. Coupling patterns include
+(* Change field representation to patterns.  Coupling patterns include
    ___ so that they match also in mixing cases. *)
 
 PropFieldPattern[ fi_[i_Symbol, m_Symbol] ] := fi[i__, m_]
@@ -408,7 +400,7 @@ ConjugateCoupling[fi__][ coup:(_Plus | _List) ] :=
 ConjugateCoupling[__][ n:(_Integer | _Rational | _IndexDelta) ] := n
 
 
-(* Assigning the mixing propagators. There are in general 4 cases which
+(* Assigning the mixing propagators.  There are in general 4 cases which
    are distinguished by the following factors multiplying the fields:
 	-->--~~>~~	SV = {S, V}
 	--<--~~<~~	-SV = {-S, -V} 
@@ -423,7 +415,7 @@ Block[ {comp, i, ppart, pleft, pright},
   comp = If[ Head[part] === SV, SVCompatibles, Compatibles ];
   Unionize[comp, right, part];
   Unionize[comp, left, 2 part];
-  MixingPartners[part] = .;
+  MixingPartners[part] =.;
   MixingPartners[ppart] = {pleft, pright};
   MixingPartners[2 ppart] = {pright, pleft};
   If[ !SelfConjugate[part],
@@ -436,14 +428,14 @@ Block[ {comp, i, ppart, pleft, pright},
 Unionize[ n_, arg_, new_ ] := n[arg] = Union[Flatten[{n[arg], new}]]
 
 
-(* InitClassesCoupling converts a single classes coupling definition 
-   (Equal) to a function definition (SetDelayed). It checks for 
-   compatibility of the generic and the classes coupling structure and 
+(* InitClassesCoupling converts a single classes coupling definition
+   (Equal) to a function definition (SetDelayed).  It checks for
+   compatibility of the generic and the classes coupling structure and
    sets the Diagonal function for the field point.
    The structure of the classes coupling is
 	{ {a[0], a[1], ...}, {b[0], b[1], ...}, ... }
-   where a, b, etc. refer to the kinematic vector G = {Ga, Gb, ..} and the 
-   inner lists stand for increasing order of the vertices. For a 
+   where a, b, etc. refer to the kinematic vector G = {Ga, Gb, ..} and
+   the inner lists stand for increasing order of the vertices.  For a
    one-dimensional generic coupling we need only {c[0], c[1], ...}. *)
 
 InitClassesCoupling[ vert_ == coup_ ] :=
@@ -548,7 +540,7 @@ SelfConjugate[ _ ] = False
 (* There are no direct definitions for the masses of the particles since
    we want to keep track of the field contents of a propagator and the
    mass replacement rules (e.g. Mass[particle] = Mass[antiparticle])
-   destroy this information. All those definitions are given for the
+   destroy this information.  All those definitions are given for the
    function TheMass. *)
 
 TheMass[ _Integer fi_ ] := TheMass[fi]
@@ -575,7 +567,7 @@ AntiParticle[ VS ] = SV
 AntiParticle[ AntiParticle[fi_] ] = fi
 
 AntiParticle[ (s:2 | -2) part:(fi:P$Generic)[i_, ___] ] :=
-  s / 2 If[SelfConjugate[fi[i]], part, -part] /.
+  s/2 If[SelfConjugate[fi[i]], part, -part] /.
   mom_FourMomentum -> -mom
 
 AntiParticle[ s_. part:(fi:P$Generic)[i_, ___] ] :=
@@ -724,7 +716,7 @@ Block[ {ex, exclFP, exclP, lG, lC, lP, fps},
     exclFP = Union[Flatten[
       Function[fi, Select[fps, FieldPointMatchQ[#, fi]&]]/@
         Complement[exclFP, ex] ]];
-    Scan[ (CheckFieldPoint[#] = .)&, exclFP ];
+    Scan[ (CheckFieldPoint[#] =.)&, exclFP ];
     $ExcludedFPs = Union[ Join[$ExcludedFPs, exclFP] ];
     FAPrint[2, ""];
     FAPrint[2, "Excluding ", Length[exclFP] + Length[ex],

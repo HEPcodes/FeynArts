@@ -1,6 +1,6 @@
 % FeynArts.prologue
 % PostScript prologue for FeynArts-generated Feynman diagrams
-% last modified 9 Apr 01 th
+% last modified 23 Jan 03 th
 
 #ifndef TEX
 
@@ -381,7 +381,7 @@ FeynArtsDict begin
 #ifdef TEX
 
 % These are hooks from TeX into the FeynArtsDict.
-% They work "as is" for dvips. See also feynarts.sty.
+% They work "as is" for dvips.  See also feynarts.sty.
 
 /ctm matrix def
 

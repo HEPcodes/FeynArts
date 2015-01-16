@@ -2,7 +2,7 @@
 	Analytic.m
 		Translation of InsertFields output into
 		analytic expressions
-		last modified 19 Oct 01 th
+		last modified 7 Apr 03 th
 *)
 
 Begin["`Analytic`"]
@@ -17,17 +17,22 @@ Options[ CreateFeynAmp ] = {
 }
 
 (* for D dimensions use
-   PreFactor -> -I (Global`Mu^(4 - $D) / (2 Pi)^$D)^LoopNumber *)
+   PreFactor -> -I (Global`Mu^(4 - $D)/(2 Pi)^$D)^LoopNumber *)
 
 CreateFeynAmp::nolevel =
 "Warning: Level `1` is not contained in this insertion."
 
 CreateFeynAmp::mtrace =
-"Different MatrixTraceFactors inside one loop. Involved fields are `1`.
+"Different MatrixTraceFactors inside one loop.  Involved fields are `1`.
 Please check the classes model and try again."
 
 CreateFeynAmp::noprop =
 "Cannot resolve propagator of field `1`."
+
+CreateFeynAmp::ambig =
+"Warning: `1` contains more than two noncommuting fields, hence the
+application of the flipping rules is not unambiguous and may give wrong
+results."
 
 CreateFeynAmp::nocoupl =
 "Cannot resolve coupling `1` for kinematical object `2`."
@@ -49,7 +54,7 @@ CreateFeynAmp[ TopologyList[tops__], opt___Rule ] :=
   CreateFeynAmp[ TopologyList[][tops], opt ]
 
 CreateFeynAmp[ tops:TopologyList[info___][___], options___Rule ] :=
-Block[ {alevel, pref, next, gaugeru, truncru, momcons,
+Block[ {alevel, pref, next, gaugeru, truncru, momcons, amps, head,
 topnr = 1, opt = ActualOptions[CreateFeynAmp, options]},
 
   If[ (alevel = ResolveLevel[AmplitudeLevel /. opt /. {info} /.
@@ -78,10 +83,12 @@ topnr = 1, opt = ActualOptions[CreateFeynAmp, options]},
   FAPrint[1, "in total: ",
     Statistics[{Insertions[Generic]@@ amps}, alevel, " amplitude"]];
 
-  amps = (FeynAmpList[info] /.
+  head = FeynAmpList[info] /.
     (Process -> iorule_) :> (Process ->
-      MapIndexed[{#1, iomom@@ #2, TheMass[#1]}&, iorule, {2}]))@@ amps /.
-    _MTF -> 1 /. gaugeru //. M$LastModelRules;
+      MapIndexed[{#1, iomom@@ #2, TheMass[#1]}&, iorule, {2}]) /.
+    (InsertionLevel -> _) :> (AmplitudeLevel -> alevel);
+
+  amps = head@@ amps /. _MTF -> 1 /. gaugeru //. M$LastModelRules;
 
   If[ Length[alevel] === 1, PickLevel[ alevel[[1]] ][amps], amps ]
 ]
@@ -98,10 +105,10 @@ CreateAmpTop[ top:P$Topology -> ins_ ] :=
 Block[ {momtop, imom, oldmom, amp, c, toppref, mtf, mc = 0, gennr = 0},
 
 	(* append momenta and enforce momentum conservation for
-	   every vertex. For economical reasons, external momentum
+	   every vertex.  For economical reasons, external momentum
 	   conservation (i.e. elimination of one momentum) is not
 	   carried out. *)
-  c[ _ ] = 0;
+  c[_] = 0;
   momtop = AppendMomentum/@ top;
   If[ momcons,
 	(* since we don't touch the external momenta, it's
@@ -112,9 +119,8 @@ Block[ {momtop, imom, oldmom, amp, c, toppref, mtf, mc = 0, gennr = 0},
       Fold[
         MomConservation,
         momtop,
-        Reverse[
-          Cases[top, Vertex[n__][_] /; {n} =!= {1}, {2}] //.
-            {a___, x_, b___, x_, c___} :> {a, x, b, c} ] ] ]
+        Reverse[RemoveDups[
+          Cases[top, Vertex[n__][_] /; {n} =!= {1}, {2}]] ]] ]
   ];
 	(* renumber the internal momenta *)
   oldmom = Union[ Cases[momtop, FourMomentum[_ZZZ, _], Infinity] ];
@@ -130,13 +136,20 @@ Block[ {momtop, imom, oldmom, amp, c, toppref, mtf, mc = 0, gennr = 0},
 ]
 
 
+RemoveDups[ li_ ] :=
+Block[ {f},
+  f[x_] := (f[x] = Sequence[]; x);
+  f/@ li
+]
+
+
 (* loop number using Euler's relation: *)
 
 Genus[ top_ ] := 
 Block[ {c, vn = {}},
-  c[ n_ ] := (AppendTo[vn, n]; 0);
+  c[n_] := (AppendTo[vn, n]; 0);
   ++c[ #[[0, 1]] ]&/@ Union[Cases[top, Vertex[__][_], {2}]];
-  (Plus@@ ((# - 2) c[#] &)/@ vn) / 2 + 1
+  (Plus@@ ((# - 2) c[#] &)/@ vn)/2 + 1
 ]
 
 
@@ -223,9 +236,9 @@ Block[ {amp, gm, rawgm, orig, anti},
 
 CreateAmpGraph[ top_, Graph[s_, ___][ru__] ] :=
 Block[ {c, res, props, vert, faden, prden = {},
-scalars = {RelativeCF, toppref, 1 / s}},
+scalars = {RelativeCF, toppref, 1/s}},
 
-  c[ _ ] = 0;
+  c[_] = 0;
   res = AddKinematicIndices/@ (List@@ top /. {ru});
   mtf = 1;
   If[ $FermionLines, res = MakeFermionChains[res] ];
@@ -234,18 +247,14 @@ scalars = {RelativeCF, toppref, 1 / s}},
   props = Cases[res, Propagator[_][__]];
   vert = Vertices[props];
 
-	(* insert the vertices in fermion chains first. Note that
-	   VertexInChain modifies vert *)
-  res = res /. {
-    dot[c__] :> dot[VertexInChain[c]],
-    tr[c__] :> tr[VertexAtEnds[VertexInChain[c]]] };
+	(* insert the vertices in fermion chains first.  Note that
+	   MidVertex and ToChain modify vert *)
+  res = res /. c:_dot | _tr :> ResolveChain[c];
 
 	(* now the remaining vertices *)
-  vert = Function[ v,
-    ResolveGeneric[
-      Append[Head[v], 0][[2]], v, Select[props, !FreeQ[#, v]&] ] ]/@ vert;
+  vert = ResolveGeneric/@ vert;
 
-	(* TakeNC does the multiplication business. It also updates
+	(* TakeNC does the multiplication business.  It also updates
 	   scalars and prden *)
   res = Join[vert, res /. Propagator -> ResolvePropagator /. gaugeru] /.
     PV -> TakeNC;
@@ -256,7 +265,6 @@ scalars = {RelativeCF, toppref, 1 / s}},
     Times@@ DeleteCases[Flatten[scalars], 1] *
       LoopPD[Expand[Times@@ Flatten[prden], PropagatorDenominator]] *
       Times@@ res /.
-      {dot -> FermionChain, tr -> MatrixTrace} /.
       truncru //. M$LastGenericRules /. Mass -> TheMass ]
 ]
 
@@ -275,33 +283,29 @@ Block[ {ki = KinematicIndices[fi], kin},
 
 
 (* Building fermion chains.
-   An unsolved problem lies in the construction of multiple fermion
-   chains that touch. This is possible only in non-renormalizable
-   theories, for instance the Fermi model. To my knowledge the only 100%
-   reliable method of determining how the fermion chains are to be
-   concatenated comes from the Lagrangian. This information is, however,
-   not available here.
-   In such a case $FermionLines = False must be set and the fermion fields
-   must carry a Dirac index with which it is possible to find the correct
-   fermion chains. *)
+   Fermionic (noncommuting) objects need to be organized into chains
+   if they don't carry explicit spinor indices (which is the default).
+   This works unambiguously (i.e. correctly) only if fermion chains
+   never "touch", i.e. if there are at most two fermions at each vertex.
+   This is always the case in renormalizable theories.  Effective theories
+   may however contain 4- or more fermion vertices, typically as a result
+   of integrating out heavy bosons, such as in the Fermi model.  In such a
+   case one must set $FermionLines = False and give the fermion fields an
+   explicit spinor index with which it is possible (outside of FeynArts)
+   to find the correct ordering of the fermionic objects. *)
 
 ReverseProp[ pr_[from_, to_, part_] ] :=
   pr[to, from, AntiParticle[part]]
 
 Attributes[BuildChain] = {Flat, Orderless}
 
-BuildChain[
-  c1:gmc[___, _[_, v_, _. fi_[__]]],
-  c2:gmc[_[v_, _, _. fi_[__]], ___] ] := Join[c1, c2]
+BuildChain[ c1:_[___, _[_, v_, _]], c2:_[_[v_, __], ___] ] :=
+  Join[c1, c2]
 
-BuildChain[
-  c1:gmc[___, _[_, v_, _. fi_[__]]],
-  c2:gmc[___, _[_, v_, _. fi_[__]]] ] :=
+BuildChain[ c1:_[___, _[_, v_, _]], c2:_[___, _[_, v_, _]] ] :=
   Join[c1, Reverse[ReverseProp/@ c2]]
 
-BuildChain[
-  c1:gmc[_[v_, _, _. fi_[__]], ___],
-  c2:gmc[_[v_, _, _. fi_[__]], ___] ] :=
+BuildChain[ c1:_[_[v_, __], ___], c2:_[_[v_, __], ___] ] :=
   Join[Reverse[ReverseProp/@ c1], c2]
 
 
@@ -313,44 +317,48 @@ Fixgmc[ c:_[__, -_], r___ ] := dot[c, r]
 	(* assuming that the front end must be a Majorana fermion, then *)
 Fixgmc[ r___, c:_[__, -_] ] := dot[r, c]
 
-	(* in principle there is no convention how to order Majorana
-	   lines; this is just an attempt to get some order for
-	   calculational convenience ;-) *)
-Fixgmc[ c1:_[__, _?SelfConjugate], r___, c2:_[__, f_?SelfConjugate] ] :=
-  dot[c1, r, c2] /; FreeQ[f, Outgoing]
+	(* in principle there is no convention how to order Majorana 
+	   lines; whenever Truncated -> True is used, however, the 
+	   ordering, i.e. the type of spinor, does become important,
+	   e.g. when computing counter terms from the self energies *)
+Fixgmc[ c1:_[__, _?SelfConjugate], r___, c2:_[__, _?SelfConjugate] ] :=
+  dot[c1, r, c2] /;
+  OrderedQ[{c2[[0, 1]][ c2[[2, 1]] ], c1[[0, 1]][ c1[[1, 1]] ]}]
 
-	(* could still be two Majorana fermions, but reversing the chain
-	   makes no difference in that case *)
 Fixgmc[ c__ ] := Reverse[ ReverseProp/@ dot[c] ]
 
 
-MakeFermionChains[ top_ ] := top /; FreeQ[top, F | U]
+MakeFermionChains[ top_ ] := top /; FreeQ[top, P$NonCommuting]
 
 MakeFermionChains[ top_ ] :=
 Block[ {res, ext},
-  res = Select[top, !FreeQ[#[[3]], F | U]&];
-  res = Append[ Complement[top, res],
-    BuildChain@@ gmc/@ res /. gmc -> Fixgmc ] /.
-      BuildChain -> Sequence;
+  res = Append[
+    Select[top, FreeQ[#[[3]], P$NonCommuting]&],
+    BuildChain@@ gmc/@ Select[top, !FreeQ[#[[3]], P$NonCommuting]&] /.
+      gmc -> Fixgmc
+  ] /. BuildChain -> Sequence;
 
 	(* Since fermion chains are always traversed opposite to the
 	   fermion flow, we need the sign of the permutation that gets
 	   the list of external fermions into _descending_ order.
-	   However, Signature gives the sign for _ascending_ order,
-	   so we need another (-1)^(Length[ext] / 2).
-	   (Actually, the factor is (-1)^(len (len - 1) / 2), but since
-	   the number of external fermions is always even, (-1)^(len / 2)
+	   Since Signature gives the sign for _ascending_ order, we
+	   need another (-1)^(Length[ext]/2).
+	   (Actually, the factor is (-1)^(len (len - 1)/2), but since
+	   the number of external fermions is always even, (-1)^(len/2)
 	   gives the same result.) *)
-  ext = Cases[res, d_dot :> Seq[ d[[1, 1, 1]], d[[-1, 2, 1]] ] ];
+  ext = Flatten[ Cases[res, d_dot :> Extract[d, {{1, 1}, {-1, 2}}, Leg]] ];
   AppendTo[ scalars,
-    Signature[ext] (-1)^(Count[res, tr[__]] + Length[ext] / 2) ];
+    Signature[ext] (-1)^(Count[res, _tr] + Length[ext]/2) ];
 
-  mtf = Times@@
-    Cases[ res, tr[pr__] :> MTF[ Union[Cases[{pr}, Field[_], {-2}]] ] ];
+  mtf = Times@@ Cases[res, t_tr :> MTF[ Union[Cases[t, Field[_], {-2}]] ]];
 
-	(* ghost chains are needed only for the sign *)
-  res /. (tr | dot)[args__] :> Seq[args] /; !FreeQ[{args}, U]
+  res
 ]
+
+
+Leg[ Vertex[1][n_] ] = n
+
+Leg[ _ ] = {}
 
 
 MTF[ {} ] = 1
@@ -374,51 +382,67 @@ SignedMixers[ -fi_[x__] ] := -MixingPartners[AntiParticle[fi]][[-1]][x]
 SignedMixers[ fi_[x__] ] := MixingPartners[fi][[-1]][x]
 
 
-ResolveGeneric[ cto_, vert_, props_ ] :=
+ResolveGeneric[ vert:Vertex[_, cto_:0][_], chainprops___ ] :=
 Block[ {v, perm},
-  v = SignedMixers/@ (TakeInc[vert, #]&)/@ props;
+  v = SignedMixers/@ (TakeInc[vert, #]&)/@ Flatten[{chainprops, props}];
   perm = FindVertex[ToGeneric[v], Generic];
   If[ perm === $Failed, Return[{}] ];
   v = v[[perm]];
   If[ cto < 0,
-    I PV[ If[FreeQ[v, F | U], Identity, NonCommutative][
+    I PV[ If[FreeQ[v, P$NonCommuting], Identity, NonCommutative][
             VertexFunction[-cto]@@ v ] ],
   (* else *)
     AnalyticalCoupling[cto]@@ v ]
 ]
 
 
-Attributes[ VertexInChain ] = {Flat}
+ResolveChain[ c_[props__] ] := ToChain[c]@@ MidVertex[props]
 
-VertexInChain[ p1:Propagator[_][__],
-  p2:Propagator[_][v:Vertex[_, cto_:0][_], __] ] := (
+
+Attributes[ MidVertex ] = {Flat}
+
+MidVertex[ p1:Propagator[_][__], p2:Propagator[_][v_, __] ] := (
   vert = DeleteCases[vert, v];
-  Seq[ p1,
-    ResolveGeneric[ cto, v,
-      Join[{p1, p2}, Select[props, !FreeQ[#, v]&]] ], p2 ]
+  MidVertex[p1, ResolveGeneric[v, p1, p2], p2]
 )
 
-VertexInChain[ args__ ] = args
 
-VertexAtEnds[ p1:Propagator[_][v:Vertex[_, cto_:0][_], __],
-  pr___, p2_ ] := (
+LeftVertex[ p1:_[Vertex[1][_], __] ] = p1
+
+LeftVertex[ p1:_[v_, __] ] := (
   vert = DeleteCases[vert, v];
-  Seq[ p1, pr, p2,
-    ResolveGeneric[ cto, v,
-      Join[{p2, p1}, Select[props, !FreeQ[#, v]&]] ] ]
+  Seq[ResolveGeneric[v, p1], p1]
+)
+
+
+RightVertex[ p2:_[_, Vertex[1][_], ___] ] = p2
+
+RightVertex[ p2:_[_, v_, ___] ] := (
+  vert = DeleteCases[vert, v];
+  Seq[p2, ResolveGeneric[v, p2]]
+)
+
+
+ToChain[dot][ p1_, pr___, p2_ ] :=
+  FermionChain[LeftVertex[p1], pr, RightVertex[p2]]
+
+ToChain[tr][ p1:_[v_, __], pr___, p2_ ] := (
+  vert = DeleteCases[vert, v];
+  MatrixTrace[p1, pr, p2, ResolveGeneric[v, p2, p1]]
 )
 
 	(* the single-propagator version applies to tadpoles: *)
-VertexAtEnds[ p1:Propagator[_][v:Vertex[_, cto_:0][_], __] ] := (
+ToChain[tr][ p1:_[v_, __] ] := (
   vert = DeleteCases[vert, v];
-  Seq[ p1,
-    ResolveGeneric[ cto, v,
-      Prepend[Select[props, !FreeQ[#, v]&], p1] ] ]
+  MatrixTrace[p1, ResolveGeneric[v, p1]]
 )
 
 
+FermionChain[] = MatrixTrace[] = 1	(* e.g. for ghosts *)
+
+
 	(* if AnalyticalPropagator with the exact type is not defined
-	   use a more generic type. The replacement must be limited to
+	   use a more generic type.  The replacement must be limited to
 	   the head or else the kinematical information is altered. *)
 ResolvePropagator[type_][ _, _, part_ ] :=
 Block[ {res},
@@ -482,7 +506,7 @@ CreateAmpIns[ gm_, sgen_, gr_ -> ins_ ] :=
 
 CreateAmpIns[ gm_, sgen_, gr:Graph[s_, ___][ru__] ] :=
 Block[ {ext, int, ins, deltas},
-  ins = ReplacePart[gm, sgen / s, -1] /. {ru} /.
+  ins = ReplacePart[gm, sgen/s, -1] /. {ru} /.
     anti -> AntiParticle /.
     app[ x_. (fi:P$Generic)[n__], k__ ] :> x fi[n, k];
   deltas = DeleteCases[ Union@@ Diagonal/@
@@ -503,26 +527,22 @@ Block[ {ext, int, ins, deltas},
 (* about G -> C replacement: 
    GtoC tries to replace the head "G" by "TheC" (the classes permutation
    is first resolved by applying the appropriate mapping of kinematical
-   indices to all G-expressions). Failing that, it will try the negative
-   kinematical expression (for a G[-]). If neither method resolves TheC,
+   indices to all G-expressions).  Failing that, it will try the negative
+   kinematical expression (for a G[-]).  If neither method resolves TheC,
    it will issue a warning and return C[cto][fields][kinpart]. *) 
 
 GtoC[ sym_ ][ cto_ ][ fi__ ][ kin__ ] :=
-Block[ {vert, cv, perm, kinpart},
-
+Block[ {vert, cv, perm, kinpart, nc},
   vert = MixingPartners[#][[-1]]&/@ {fi};
   perm = FindVertex[ToClasses[vert], Classes];
   If[ perm === $Failed, Return[(C[cto]@@ vert)@@ kin] ];
   cv = vert[[perm]];
+  kinpart = {kin} /. MapIndexed[KinRule, perm];
 
-	(* to apply the FermionFlipRules we need a list of position
-	   replacement rules describing how the given vertex is
-	   permuted into the template vertex, i.e. a list of the form
-	   {1 -> 3, 2 -> 1, 3 -> 2} *)
-  perm = Sort[Thread[ perm -> Range[Length[perm]] ]];
-  kinpart =
-    If[ FreeQ[vert, F], {kin}, {kin} /. M$FermionFlipRule@@ perm ] /.
-      Flatten[ Thread/@ Map[Through[kinobjs[#]]&, perm, {2}] ];
+  nc = Cases[vert, _. P$NonCommuting[__]];
+  If[ nc =!= Cases[cv, _. P$NonCommuting[__]],
+    If[ Length[nc] > 2, Message[CreateFeynAmp::ambig, vert] ];
+    kinpart = kinpart /. M$FlippingRules ];
 
 	(* try to resolve coupling *)
   If[ Head[cv = (TheC@@ kinpart)@@ cv] =!= List && sym === -1,
@@ -540,7 +560,10 @@ Block[ {vert, cv, perm, kinpart},
   cv[[cto + 1]]
 ]
 
-kinobjs = Flatten[{Mom, KIs}]
+
+KinRule[i_, {i_}] = Sequence[]
+
+KinRule[i_, {j_}] = (obj:Alternatives@@ Prepend[KIs, Mom])[i] -> obj[j]
 
 
 FindVertex::novert =
@@ -579,7 +602,7 @@ Format[ MatrixTrace ] = "tr"
 Format[ FermionChain[a__] ] := Dot[a]
 
 Format[ PropagatorDenominator[a_, b_] ] :=
-  Block[ {x = a^2 - b^2}, 1 / x /; x =!= 0 ]
+  Block[ {x = a^2 - b^2}, 1/x /; x =!= 0 ]
 
 Format[ FourMomentum[Incoming, i_Integer] ] := SequenceForm["p", i]
 
@@ -616,18 +639,20 @@ Block[ {Rule, levels, res},
   res
 ]
 
-PickLevel::nocontain =
+PickLevel::nolevel =
 "Warning: FeynAmps have already been picked at a different level, `1`
 level cannot be extracted."
 
 PickLevel[ lev_ ][ amps:FeynAmpList[___][___] ] :=
 Block[ {n = 0, c = 0, warn = True},
-  LevelPick[lev]/@ (amps /. Number == _ :> Seq[])
+  LevelPick[lev]/@ (amps /. Number == _ :> Seq[]) /.
+    (AmplitudeLevel -> _) -> (AmplitudeLevel -> {lev})
 ]
 
 PickLevel[ lev_ ][ amp_FeynAmp ] :=
 Block[ {n = 0, c = 0, warn = True},
-  FeynAmpList[][ LevelPick[lev][amp /. Number == _ :> Seq[]] ]
+  FeynAmpList[AmplitudeLevel -> {lev}][
+    LevelPick[lev][amp /. Number == _ :> Seq[]] ]
 ]
 
 
@@ -636,7 +661,7 @@ Block[ {RelativeCF = 1},
   If[ Length[amp] =!= 3 || MatchQ[amp[[1]], GraphID[__, Generic == _]],
     Insert[ Take[amp, 3], Number == ++n, {1, -1} ],
   (* else *)
-    If[warn, Message[PickLevel::nocontain, Generic]; warn = False];
+    If[warn, Message[PickLevel::nolevel, Generic]; warn = False];
       Seq[] ]
 ]
 
@@ -644,7 +669,7 @@ LevelPick[ lev:Classes | Particles ][ amp_ ] := (
   Sequence@@ (Insert[#, Number == ++n, {1, -1}]&)/@
     If[ Length[amp] === 3,
       If[ MatchQ[amp[[1]], GraphID[__, lev == _]], amp,
-        If[warn, Message[PickLevel::nocontain, lev]; warn = False]; {}],
+        If[warn, Message[PickLevel::nolevel, lev]; warn = False]; {} ],
     (* else *)
       ApplyGMRules[Take[amp, 3], amp[[-1]], lev] ]
 )

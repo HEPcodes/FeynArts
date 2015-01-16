@@ -2,14 +2,14 @@
 	Insert.m
 		Insertion of fields into topologies created by 
 		CreateTopologies.
-		last modified 3 May 01 th
+		last modified 23 Jan 03 th
 
 The insertion is done in 3 levels: insertion of generic fields (Generic),
 of classes of a certain model (Classes) or of the members of the classes
 (Particles).
 
-Models are described in model files which are supposed to exist in the
-directory ../Models. At the beginning of an insertion InsertFields calls
+Models are described in model files which are supposed to exist somewhere
+on the $ModelPath.  At the beginning of an insertion InsertFields calls
 Initialize`InitializeModel that checks whether the model is initialized or
 not and performs the initialization if needed.
 
@@ -170,18 +170,18 @@ TopologyInsert[ top_ -> Insertions[_][ins_, ___] ] :=
 
 (* add Field[n] to propagator and append Insertions template: *)
 
+AddFieldNo[ p_[from_, to_, ___], fn_ ] := p[from, to, Field@@ fn]
+
 TopologyInsert[ top:Topology[_][__] ] :=
-  TopologyInsert[
-    MapIndexed[ Append[#1, Field@@ #2]&, top ] ->
-      { Graph@@ Join[fields,
-          Array[Field[#] -> 0 &, Length[top] - ninc, ninc + 1]] } ]
+  TopologyInsert[ MapIndexed[AddFieldNo, top] ->
+    { Graph@@ Join[fields,
+      Array[Field[#] -> 0 &, Length[top] - ninc, ninc + 1]] } ]
 
 TopologyInsert[ top:Topology[_][__] -> ins_ ] :=
 Block[ {vertli, fpoints, res, topol = top},
   fpoints = Map[
-    Function[ v,
-      FieldPoint[ Append[Head[v], 0][[2]] ]@@ (TakeInc[v, #]&)/@ top ],
-    DeleteCases[Take[#, 2], Vertex[1, ___][_]]&/@ top,
+    Function[ v, FieldPoint[ CTO[v] ]@@ (TakeInc[v, #]&)/@ top ],
+    DeleteCases[Take[#, 2], Vertex[1][_]]&/@ top,
     {2} ];
   vertli = Union[Flatten[ Apply[List, fpoints, {0, 1}] ]];
 
@@ -196,7 +196,12 @@ Block[ {vertli, fpoints, res, topol = top},
   top -> res
 ]
 
-TopologyInsert[ x_ ] = x
+TopologyInsert[ other_ ] = other
+
+
+CTO[ Vertex[_, c_][__] ] = c
+
+CTO[ _ ] = 0
 
 
 RightPartner[ fi_ ] := MixingPartners[fi][[-1]] /; FreeQ[fi, Field]
@@ -204,15 +209,15 @@ RightPartner[ fi_ ] := MixingPartners[fi][[-1]] /; FreeQ[fi, Field]
 
 ParticleLookup[ fp_, SV ] :=
   Flatten[ SVCompatibles/@
-    Lookup[ fp[[0, 1]] ][V, FieldPoint@@ (fp /. Field[_] -> V)] ]
+    Lookup[ fp[[0, 1]] ][V, FieldPoint@@ (fp /. _Field -> V)] ]
 
 ParticleLookup[ fp_, VS ] :=
   Flatten[ SVCompatibles/@
-    Lookup[ fp[[0, 1]] ][S, FieldPoint@@ (fp /. Field[_] -> S)] ]
+    Lookup[ fp[[0, 1]] ][S, FieldPoint@@ (fp /. _Field -> S)] ]
 
 ParticleLookup[ fp_, p_ ] :=
   Flatten[ Compatibles/@
-    Lookup[ fp[[0, 1]] ][p, FieldPoint@@ (fp /. Field[_] -> p)] ]
+    Lookup[ fp[[0, 1]] ][p, FieldPoint@@ (fp /. _Field -> p)] ]
 
 
 Lookup[ cto_?NonNegative ] = PossibleFields[cto]
@@ -248,7 +253,7 @@ Ins11[ vert12_, ru_, i_ ] :=
 Block[ {vx, leftpart, p = ru[[i, 2]], ckfp},
 
   vx = Map[ RightPartner,
-    If[ SameQ@@ vert12,			(* tadpole or ct-tadpole *)
+    If[ SameQ@@ vert12,		(* tadpole *)
       Take[vert12, 1],
       vert12 ] /. Delete[List@@ ru, i],
     {2} ];
@@ -257,7 +262,7 @@ Block[ {vx, leftpart, p = ru[[i, 2]], ckfp},
 
   ckfp[ n_, fi_ ] := CheckFP[ vx[[n]] /. Field[i] -> fi ];
 
-  leftpart = If[ Length[vx] === 1,		(* tadpoles *)
+  leftpart = If[ Length[vx] === 1,	(* tadpole *)
     Select[ Intersection[leftpart, F$AllowedFields], ckfp[1, #]& ],
   (* else *)
     Select[

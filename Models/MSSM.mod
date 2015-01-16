@@ -364,11 +364,11 @@ NoLightFHCoupling =
   ExcludeFieldPoints -> {
     FieldPoint[_][-F[2], F[2], S],
     FieldPoint[_][-F[2], F[1], S],
-    FieldPoint[_][-F[3, {1}], F[3, {1}], S],
-    FieldPoint[_][-F[3, {2}], F[3, {2}], S],
+    FieldPoint[_][-F[3, {1, ___}], F[3, {1, ___}], S],
+    FieldPoint[_][-F[3, {2, ___}], F[3, {2, ___}], S],
     FieldPoint[_][-F[4], F[4], S],
-    FieldPoint[_][-F[4], F[3, {1}], S],
-    FieldPoint[_][-F[4], F[3, {2}], S] }
+    FieldPoint[_][-F[4], F[3, {1, ___}], S],
+    FieldPoint[_][-F[4], F[3, {2, ___}], S] }
 
 M$CouplingMatrices = {C[S[6], -S[6], V[1]] == {{I*EL}}, C[S[6], -S[6], V[2]] == 
 
@@ -1668,27 +1668,27 @@ j2]*VCha[c1, 1])/
 
    C[S[1], S[1], S[12, {s2, j2}], -S[12, {s1, j1}]] == 
 
-    {{((I/4)*EL^2*IndexDelta[j1, j2]*(Conjugate[USf[2, j1][s1, 1]]*
+    {{((I/4)*EL^2*IndexDelta[j1, j2]*(Conjugate[USf[2, j1][s2, 1]]*
 
           (C2A*CB^2*MW^2*(-1 + 2*SW^2) - 2*CW^2*SA^2*Mass[F[2, {j1}]]^2)*
 
-          USf[2, j1][s2, 1] - 2*Conjugate[USf[2, j1][s1, 2]]*
+          USf[2, j1][s1, 1] - 2*Conjugate[USf[2, j1][s2, 2]]*
 
           (C2A*CB^2*MW^2*SW^2 + CW^2*SA^2*Mass[F[2, {j1}]]^2)*
 
-          USf[2, j1][s2, 2]))/(CB^2*CW^2*MW^2*SW^2)}}, 
+          USf[2, j1][s1, 2]))/(CB^2*CW^2*MW^2*SW^2)}}, 
 
    C[S[1], S[1], S[13, {s2, j2, o1}], -S[13, {s1, j1, o2}]] == 
 
     {{((-I/12)*EL^2*IndexDelta[j1, j2]*IndexDelta[o1, o2]*
 
-        (Conjugate[USf[3, j1][s1, 1]]*(C2A*MW^2*SB^2*(-3 + 4*SW^2) + 
+        (Conjugate[USf[3, j1][s2, 1]]*(C2A*MW^2*SB^2*(-3 + 4*SW^2) + 
 
-           6*CA^2*CW^2*Mass[F[3, {j1}]]^2)*USf[3, j1][s2, 1] + 
+           6*CA^2*CW^2*Mass[F[3, {j1}]]^2)*USf[3, j1][s1, 1] + 
 
-         2*Conjugate[USf[3, j1][s1, 2]]*(-2*C2A*MW^2*SB^2*SW^2 + 
+         2*Conjugate[USf[3, j1][s2, 2]]*(-2*C2A*MW^2*SB^2*SW^2 + 
 
-           3*CA^2*CW^2*Mass[F[3, {j1}]]^2)*USf[3, j1][s2, 2]))/
+           3*CA^2*CW^2*Mass[F[3, {j1}]]^2)*USf[3, j1][s1, 2]))/
 
        (CW^2*MW^2*SB^2*SW^2)}}, C[S[1], S[1], S[14, {s2, j2, o1}], 
 
@@ -1696,13 +1696,13 @@ j2]*VCha[c1, 1])/
 
     {{((I/12)*EL^2*IndexDelta[j1, j2]*IndexDelta[o1, o2]*
 
-        (Conjugate[USf[4, j1][s1, 1]]*(C2A*CB^2*MW^2*(-3 + 2*SW^2) - 
+        (Conjugate[USf[4, j1][s2, 1]]*(C2A*CB^2*MW^2*(-3 + 2*SW^2) - 
 
-           6*CW^2*SA^2*Mass[F[4, {j1}]]^2)*USf[4, j1][s2, 1] - 
+           6*CW^2*SA^2*Mass[F[4, {j1}]]^2)*USf[4, j1][s1, 1] - 
 
-         2*Conjugate[USf[4, j1][s1, 2]]*(C2A*CB^2*MW^2*SW^2 + 
+         2*Conjugate[USf[4, j1][s2, 2]]*(C2A*CB^2*MW^2*SW^2 + 
 
-           3*CW^2*SA^2*Mass[F[4, {j1}]]^2)*USf[4, j1][s2, 2]))/
+           3*CW^2*SA^2*Mass[F[4, {j1}]]^2)*USf[4, j1][s1, 2]))/
 
        (CB^2*CW^2*MW^2*SW^2)}}, C[S[2], S[2], S[11, {j2}], -S[11, {j1}]] == 
 
@@ -1710,27 +1710,27 @@ j2]*VCha[c1, 1])/
 
    C[S[2], S[2], S[12, {s2, j2}], -S[12, {s1, j1}]] == 
 
-    {{((-I/4)*EL^2*IndexDelta[j1, j2]*(Conjugate[USf[2, j1][s1, 1]]*
+    {{((-I/4)*EL^2*IndexDelta[j1, j2]*(Conjugate[USf[2, j1][s2, 1]]*
 
           (C2A*CB^2*MW^2*(-1 + 2*SW^2) + 2*CA^2*CW^2*Mass[F[2, {j1}]]^2)*
 
-          USf[2, j1][s2, 1] + 2*Conjugate[USf[2, j1][s1, 2]]*
+          USf[2, j1][s1, 1] + 2*Conjugate[USf[2, j1][s2, 2]]*
 
           (-(C2A*CB^2*MW^2*SW^2) + CA^2*CW^2*Mass[F[2, {j1}]]^2)*
 
-          USf[2, j1][s2, 2]))/(CB^2*CW^2*MW^2*SW^2)}}, 
+          USf[2, j1][s1, 2]))/(CB^2*CW^2*MW^2*SW^2)}}, 
 
    C[S[2], S[2], S[13, {s2, j2, o1}], -S[13, {s1, j1, o2}]] == 
 
     {{((-I/12)*EL^2*IndexDelta[j1, j2]*IndexDelta[o1, o2]*
 
-        (Conjugate[USf[3, j1][s1, 1]]*(C2A*MW^2*SB^2*(3 - 4*SW^2) + 
+        (Conjugate[USf[3, j1][s2, 1]]*(C2A*MW^2*SB^2*(3 - 4*SW^2) + 
 
-           6*CW^2*SA^2*Mass[F[3, {j1}]]^2)*USf[3, j1][s2, 1] + 
+           6*CW^2*SA^2*Mass[F[3, {j1}]]^2)*USf[3, j1][s1, 1] + 
 
-         2*Conjugate[USf[3, j1][s1, 2]]*(2*C2A*MW^2*SB^2*SW^2 + 
+         2*Conjugate[USf[3, j1][s2, 2]]*(2*C2A*MW^2*SB^2*SW^2 + 
 
-           3*CW^2*SA^2*Mass[F[3, {j1}]]^2)*USf[3, j1][s2, 2]))/
+           3*CW^2*SA^2*Mass[F[3, {j1}]]^2)*USf[3, j1][s1, 2]))/
 
        (CW^2*MW^2*SB^2*SW^2)}}, C[S[2], S[2], S[14, {s2, j2, o1}], 
 
@@ -1738,13 +1738,13 @@ j2]*VCha[c1, 1])/
 
     {{((-I/12)*EL^2*IndexDelta[j1, j2]*IndexDelta[o1, o2]*
 
-        (Conjugate[USf[4, j1][s1, 1]]*(C2A*CB^2*MW^2*(-3 + 2*SW^2) + 
+        (Conjugate[USf[4, j1][s2, 1]]*(C2A*CB^2*MW^2*(-3 + 2*SW^2) + 
 
-           6*CA^2*CW^2*Mass[F[4, {j1}]]^2)*USf[4, j1][s2, 1] - 
+           6*CA^2*CW^2*Mass[F[4, {j1}]]^2)*USf[4, j1][s1, 1] - 
 
-         2*Conjugate[USf[4, j1][s1, 2]]*(C2A*CB^2*MW^2*SW^2 - 
+         2*Conjugate[USf[4, j1][s2, 2]]*(C2A*CB^2*MW^2*SW^2 - 
 
-           3*CA^2*CW^2*Mass[F[4, {j1}]]^2)*USf[4, j1][s2, 2]))/
+           3*CA^2*CW^2*Mass[F[4, {j1}]]^2)*USf[4, j1][s1, 2]))/
 
        (CB^2*CW^2*MW^2*SW^2)}}, C[S[3], S[3], S[11, {j2}], -S[11, {j1}]] == 
 
@@ -1752,13 +1752,13 @@ j2]*VCha[c1, 1])/
 
    C[S[3], S[3], S[12, {s2, j2}], -S[12, {s1, j1}]] == 
 
-    {{((-I/4)*EL^2*IndexDelta[j1, j2]*(Conjugate[USf[2, j1][s1, 1]]*
+    {{((-I/4)*EL^2*IndexDelta[j1, j2]*(Conjugate[USf[2, j1][s2, 1]]*
 
           (C2B*MW^2*(1 - 2*SW^2) + 2*CW^2*TB^2*Mass[F[2, {j1}]]^2)*
 
-          USf[2, j1][s2, 1] + 2*Conjugate[USf[2, j1][s1, 2]]*
+          USf[2, j1][s1, 1] + 2*Conjugate[USf[2, j1][s2, 2]]*
 
-          (C2B*MW^2*SW^2 + CW^2*TB^2*Mass[F[2, {j1}]]^2)*USf[2, j1][s2, 2]))/
+          (C2B*MW^2*SW^2 + CW^2*TB^2*Mass[F[2, {j1}]]^2)*USf[2, j1][s1, 2]))/
 
        (CW^2*MW^2*SW^2)}}, C[S[3], S[3], S[13, {s2, j2, o1}], 
 
@@ -1766,13 +1766,13 @@ j2]*VCha[c1, 1])/
 
     {{((-I/12)*EL^2*IndexDelta[j1, j2]*IndexDelta[o1, o2]*
 
-        (Conjugate[USf[3, j1][s1, 1]]*(C2B*MW^2*(-3 + 4*SW^2)*TB^2 + 
+        (Conjugate[USf[3, j1][s2, 1]]*(C2B*MW^2*(-3 + 4*SW^2)*TB^2 + 
 
-           6*CW^2*Mass[F[3, {j1}]]^2)*USf[3, j1][s2, 1] + 
+           6*CW^2*Mass[F[3, {j1}]]^2)*USf[3, j1][s1, 1] + 
 
-         2*Conjugate[USf[3, j1][s1, 2]]*(-2*C2B*MW^2*SW^2*TB^2 + 
+         2*Conjugate[USf[3, j1][s2, 2]]*(-2*C2B*MW^2*SW^2*TB^2 + 
 
-           3*CW^2*Mass[F[3, {j1}]]^2)*USf[3, j1][s2, 2]))/
+           3*CW^2*Mass[F[3, {j1}]]^2)*USf[3, j1][s1, 2]))/
 
        (CW^2*MW^2*SW^2*TB^2)}}, C[S[3], S[3], S[14, {s2, j2, o1}], 
 
@@ -1780,13 +1780,13 @@ j2]*VCha[c1, 1])/
 
     {{((-I/12)*EL^2*IndexDelta[j1, j2]*IndexDelta[o1, o2]*
 
-        (Conjugate[USf[4, j1][s1, 1]]*(C2B*MW^2*(3 - 2*SW^2) + 
+        (Conjugate[USf[4, j1][s2, 1]]*(C2B*MW^2*(3 - 2*SW^2) + 
 
-           6*CW^2*TB^2*Mass[F[4, {j1}]]^2)*USf[4, j1][s2, 1] + 
+           6*CW^2*TB^2*Mass[F[4, {j1}]]^2)*USf[4, j1][s1, 1] + 
 
-         2*Conjugate[USf[4, j1][s1, 2]]*(C2B*MW^2*SW^2 + 
+         2*Conjugate[USf[4, j1][s2, 2]]*(C2B*MW^2*SW^2 + 
 
-           3*CW^2*TB^2*Mass[F[4, {j1}]]^2)*USf[4, j1][s2, 2]))/
+           3*CW^2*TB^2*Mass[F[4, {j1}]]^2)*USf[4, j1][s1, 2]))/
 
        (CW^2*MW^2*SW^2)}}, C[S[4], S[4], S[11, {j2}], -S[11, {j1}]] == 
 
@@ -1794,13 +1794,13 @@ j2]*VCha[c1, 1])/
 
    C[S[4], S[4], S[12, {s2, j2}], -S[12, {s1, j1}]] == 
 
-    {{((-I/4)*EL^2*IndexDelta[j1, j2]*(Conjugate[USf[2, j1][s1, 1]]*
+    {{((-I/4)*EL^2*IndexDelta[j1, j2]*(Conjugate[USf[2, j1][s2, 1]]*
 
           (C2B*MW^2*(-1 + 2*SW^2) + 2*CW^2*Mass[F[2, {j1}]]^2)*
 
-          USf[2, j1][s2, 1] + 2*Conjugate[USf[2, j1][s1, 2]]*
+          USf[2, j1][s1, 1] + 2*Conjugate[USf[2, j1][s2, 2]]*
 
-          (-(C2B*MW^2*SW^2) + CW^2*Mass[F[2, {j1}]]^2)*USf[2, j1][s2, 2]))/
+          (-(C2B*MW^2*SW^2) + CW^2*Mass[F[2, {j1}]]^2)*USf[2, j1][s1, 2]))/
 
        (CW^2*MW^2*SW^2)}}, C[S[4], S[4], S[13, {s2, j2, o1}], 
 
@@ -1808,25 +1808,25 @@ j2]*VCha[c1, 1])/
 
     {{((-I/12)*EL^2*IndexDelta[j1, j2]*IndexDelta[o1, o2]*
 
-        (Conjugate[USf[3, j1][s1, 1]]*(C2B*MW^2*(3 - 4*SW^2) + 
+        (Conjugate[USf[3, j1][s2, 1]]*(C2B*MW^2*(3 - 4*SW^2) + 
 
-           6*CW^2*Mass[F[3, {j1}]]^2)*USf[3, j1][s2, 1] + 
+           6*CW^2*Mass[F[3, {j1}]]^2)*USf[3, j1][s1, 1] + 
 
-         2*Conjugate[USf[3, j1][s1, 2]]*(2*C2B*MW^2*SW^2 + 
+         2*Conjugate[USf[3, j1][s2, 2]]*(2*C2B*MW^2*SW^2 + 
 
-           3*CW^2*Mass[F[3, {j1}]]^2)*USf[3, j1][s2, 2]))/(CW^2*MW^2*SW^2)}}, \
+           3*CW^2*Mass[F[3, {j1}]]^2)*USf[3, j1][s1, 2]))/(CW^2*MW^2*SW^2)}}, \
 
  C[S[4], S[4], S[14, {s2, j2, o1}], -S[14, {s1, j1, o2}]] == 
 
     {{((-I/12)*EL^2*IndexDelta[j1, j2]*IndexDelta[o1, o2]*
 
-        (Conjugate[USf[4, j1][s1, 1]]*(C2B*MW^2*(-3 + 2*SW^2) + 
+        (Conjugate[USf[4, j1][s2, 1]]*(C2B*MW^2*(-3 + 2*SW^2) + 
 
-           6*CW^2*Mass[F[4, {j1}]]^2)*USf[4, j1][s2, 1] - 
+           6*CW^2*Mass[F[4, {j1}]]^2)*USf[4, j1][s1, 1] - 
 
-         2*Conjugate[USf[4, j1][s1, 2]]*(C2B*MW^2*SW^2 - 
+         2*Conjugate[USf[4, j1][s2, 2]]*(C2B*MW^2*SW^2 - 
 
-           3*CW^2*Mass[F[4, {j1}]]^2)*USf[4, j1][s2, 2]))/(CW^2*MW^2*SW^2)}}, \
+           3*CW^2*Mass[F[4, {j1}]]^2)*USf[4, j1][s1, 2]))/(CW^2*MW^2*SW^2)}}, \
 
  C[S[1], S[2], S[11, {j2}], -S[11, {j1}]] == 
 
@@ -1834,13 +1834,13 @@ j2]*VCha[c1, 1])/
 
    C[S[1], S[2], S[12, {s2, j2}], -S[12, {s1, j1}]] == 
 
-    {{((I/4)*EL^2*S2A*IndexDelta[j1, j2]*(Conjugate[USf[2, j1][s1, 1]]*
+    {{((I/4)*EL^2*S2A*IndexDelta[j1, j2]*(Conjugate[USf[2, j1][s2, 1]]*
 
           (CB^2*MW^2*(-1 + 2*SW^2) + CW^2*Mass[F[2, {j1}]]^2)*
 
-          USf[2, j1][s2, 1] + Conjugate[USf[2, j1][s1, 2]]*
+          USf[2, j1][s1, 1] + Conjugate[USf[2, j1][s2, 2]]*
 
-          (-2*CB^2*MW^2*SW^2 + CW^2*Mass[F[2, {j1}]]^2)*USf[2, j1][s2, 2]))/
+          (-2*CB^2*MW^2*SW^2 + CW^2*Mass[F[2, {j1}]]^2)*USf[2, j1][s1, 2]))/
 
        (CB^2*CW^2*MW^2*SW^2)}}, C[S[3], S[4], S[11, {j2}], -S[11, {j1}]] == 
 
@@ -1848,13 +1848,13 @@ j2]*VCha[c1, 1])/
 
    C[S[3], S[4], S[12, {s2, j2}], -S[12, {s1, j1}]] == 
 
-    {{((I/4)*EL^2*S2B*IndexDelta[j1, j2]*(Conjugate[USf[2, j1][s1, 1]]*
+    {{((I/4)*EL^2*S2B*IndexDelta[j1, j2]*(Conjugate[USf[2, j1][s2, 1]]*
 
           (CB^2*MW^2*(-1 + 2*SW^2) + CW^2*Mass[F[2, {j1}]]^2)*
 
-          USf[2, j1][s2, 1] + Conjugate[USf[2, j1][s1, 2]]*
+          USf[2, j1][s1, 1] + Conjugate[USf[2, j1][s2, 2]]*
 
-          (-2*CB^2*MW^2*SW^2 + CW^2*Mass[F[2, {j1}]]^2)*USf[2, j1][s2, 2]))/
+          (-2*CB^2*MW^2*SW^2 + CW^2*Mass[F[2, {j1}]]^2)*USf[2, j1][s1, 2]))/
 
        (CB^2*CW^2*MW^2*SW^2)}}, C[S[1], S[2], S[13, {s2, j2, o1}], 
 
@@ -1862,13 +1862,13 @@ j2]*VCha[c1, 1])/
 
     {{((-I/12)*EL^2*S2A*IndexDelta[j1, j2]*IndexDelta[o1, o2]*
 
-        (Conjugate[USf[3, j1][s1, 1]]*(MW^2*SB^2*(-3 + 4*SW^2) + 
+        (Conjugate[USf[3, j1][s2, 1]]*(MW^2*SB^2*(-3 + 4*SW^2) + 
 
-           3*CW^2*Mass[F[3, {j1}]]^2)*USf[3, j1][s2, 1] + 
+           3*CW^2*Mass[F[3, {j1}]]^2)*USf[3, j1][s1, 1] + 
 
-         Conjugate[USf[3, j1][s1, 2]]*(-4*MW^2*SB^2*SW^2 + 
+         Conjugate[USf[3, j1][s2, 2]]*(-4*MW^2*SB^2*SW^2 + 
 
-           3*CW^2*Mass[F[3, {j1}]]^2)*USf[3, j1][s2, 2]))/
+           3*CW^2*Mass[F[3, {j1}]]^2)*USf[3, j1][s1, 2]))/
 
        (CW^2*MW^2*SB^2*SW^2)}}, C[S[1], S[2], S[14, {s2, j2, o1}], 
 
@@ -1876,13 +1876,13 @@ j2]*VCha[c1, 1])/
 
     {{((I/12)*EL^2*S2A*IndexDelta[j1, j2]*IndexDelta[o1, o2]*
 
-        (Conjugate[USf[4, j1][s1, 1]]*(CB^2*MW^2*(-3 + 2*SW^2) + 
+        (Conjugate[USf[4, j1][s2, 1]]*(CB^2*MW^2*(-3 + 2*SW^2) + 
 
-           3*CW^2*Mass[F[4, {j1}]]^2)*USf[4, j1][s2, 1] + 
+           3*CW^2*Mass[F[4, {j1}]]^2)*USf[4, j1][s1, 1] + 
 
-         Conjugate[USf[4, j1][s1, 2]]*(-2*CB^2*MW^2*SW^2 + 
+         Conjugate[USf[4, j1][s2, 2]]*(-2*CB^2*MW^2*SW^2 + 
 
-           3*CW^2*Mass[F[4, {j1}]]^2)*USf[4, j1][s2, 2]))/
+           3*CW^2*Mass[F[4, {j1}]]^2)*USf[4, j1][s1, 2]))/
 
        (CB^2*CW^2*MW^2*SW^2)}}, C[S[3], S[4], S[13, {s2, j2, o1}], 
 
@@ -1890,13 +1890,13 @@ j2]*VCha[c1, 1])/
 
     {{((-I/12)*EL^2*S2B*IndexDelta[j1, j2]*IndexDelta[o1, o2]*
 
-        (Conjugate[USf[3, j1][s1, 1]]*(MW^2*SB^2*(-3 + 4*SW^2) + 
+        (Conjugate[USf[3, j1][s2, 1]]*(MW^2*SB^2*(-3 + 4*SW^2) + 
 
-           3*CW^2*Mass[F[3, {j1}]]^2)*USf[3, j1][s2, 1] + 
+           3*CW^2*Mass[F[3, {j1}]]^2)*USf[3, j1][s1, 1] + 
 
-         Conjugate[USf[3, j1][s1, 2]]*(-4*MW^2*SB^2*SW^2 + 
+         Conjugate[USf[3, j1][s2, 2]]*(-4*MW^2*SB^2*SW^2 + 
 
-           3*CW^2*Mass[F[3, {j1}]]^2)*USf[3, j1][s2, 2]))/
+           3*CW^2*Mass[F[3, {j1}]]^2)*USf[3, j1][s1, 2]))/
 
        (CW^2*MW^2*SB^2*SW^2)}}, C[S[3], S[4], S[14, {s2, j2, o1}], 
 
@@ -1904,13 +1904,13 @@ j2]*VCha[c1, 1])/
 
     {{((I/12)*EL^2*S2B*IndexDelta[j1, j2]*IndexDelta[o1, o2]*
 
-        (Conjugate[USf[4, j1][s1, 1]]*(CB^2*MW^2*(-3 + 2*SW^2) + 
+        (Conjugate[USf[4, j1][s2, 1]]*(CB^2*MW^2*(-3 + 2*SW^2) + 
 
-           3*CW^2*Mass[F[4, {j1}]]^2)*USf[4, j1][s2, 1] + 
+           3*CW^2*Mass[F[4, {j1}]]^2)*USf[4, j1][s1, 1] + 
 
-         Conjugate[USf[4, j1][s1, 2]]*(-2*CB^2*MW^2*SW^2 + 
+         Conjugate[USf[4, j1][s2, 2]]*(-2*CB^2*MW^2*SW^2 + 
 
-           3*CW^2*Mass[F[4, {j1}]]^2)*USf[4, j1][s2, 2]))/
+           3*CW^2*Mass[F[4, {j1}]]^2)*USf[4, j1][s1, 2]))/
 
        (CB^2*CW^2*MW^2*SW^2)}}, C[S[1], S[5], S[13, {s1, j1, o1}], 
 
@@ -1988,7 +1988,7 @@ o2]*
 
         (S2B*Conjugate[USf[3, j1][s1, 1]]*(-Mass[F[3, {j1}]]^2 + 
 
-           TB*(MW^2*S2B - TB*Mass[F[4, {j2}]]^2))*USf[4, j2][s2, 1] + 
+           TB*(MW^2*S2B - TB*Mass[F[4, {j2}]]^2))*USf[4, j2][s2, 1] - 
 
          2*TB*Conjugate[USf[3, j1][s1, 2]]*Mass[F[3, {j1}]]*Mass[F[4, {j2}]]*
 
@@ -2000,7 +2000,7 @@ o2]*
 1]]*
          (-Mass[F[3, {j1}]]^2 + TB*(MW^2*S2B - TB*Mass[F[4, {j2}]]^2))*
 
-           USf[3, j1][s1, 1] + 2*TB*Conjugate[USf[4, j2][s2, 2]]*
+           USf[3, j1][s1, 1] - 2*TB*Conjugate[USf[4, j2][s2, 2]]*
 
            Mass[F[3, {j1}]]*Mass[F[4, {j2}]]*USf[3, j1][s1, 2]))/
 
@@ -2644,7 +2644,7 @@ o3]*
 
          (CB^2*Conjugate[USf[3, j3][s3, 2]]*Conjugate[USf[4, j1][s1, 1]]*
 
-           MQU[j1]*MQU[j2]*USf[3, j4][s4, 2]*USf[4, j2][s2, 1] + 
+           MQU[j3]*MQU[j4]*USf[3, j4][s4, 2]*USf[4, j2][s2, 1] + 
 
           SB^2*Conjugate[USf[3, j3][s3, 1]]*USf[3, j4][s4, 1]*
 

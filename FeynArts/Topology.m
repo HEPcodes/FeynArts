@@ -1,7 +1,7 @@
 (*
 	Topology.m
 		Creation of topologies for Feynman graphs
-		last modified 19 Sep 00 th
+		last modified 23 Jan 03 th
 *)
 
 Begin["`Topology`"]
@@ -12,10 +12,10 @@ Begin["`Topology`"]
 
    The sets of starting topologies are classified according to their
    loop number "l" and counter-term order "c" by definition of 
-   StartTop[l, c]. Usually its setting is a list of topologies
+   StartTop[l, c].  Usually its setting is a list of topologies
    that contains statements of the form "define[name] = starttop".
    The identifier "name" can then be used with StartingTopologies
-   to select a subset from the set of starting topologies. Note that
+   to select a subset from the set of starting topologies.  Note that
    this identifier must either be declared in FeynArts.m via usage or
    else live in the Global` context ("define[Global`foo] = ...").
    If there is only one starting topology, or one always wants to
@@ -26,22 +26,22 @@ Begin["`Topology`"]
    faster algorithms:
 
    1) There is an important distinction between positive and negative
-      vertex identifiers (i.e. the v in Vertex[e][v]). Vertices with
-      negative identifiers are so-called permutable vertices. They are
+      vertex identifiers (i.e. the v in Vertex[e][v]).  Vertices with
+      negative identifiers are so-called permutable vertices.  They are
       used for weeding out topologically equivalent topologies in Compare.
       The algorithm is roughly the following:
       The topologies are sorted into some canonical order, and then
-      compared. This simple method, however, fails whenever a graph has
-      a symmetry. In that case, the indices of the symmetrical vertices
+      compared.  This simple method, however, fails whenever a graph has
+      a symmetry.  In that case, the indices of the symmetrical vertices
       have to be permuted to give all topologically equivalent versions.
       It is this ``power set'' of each topology that is actually compared.
       If you're not sure which vertices should be permutables, make them
-      ALL permutables. This will be slower, but safer.
+      ALL permutables.  This will be slower, but safer.
 
    2) For the correct functioning of the ExcludeTopologies -> ... option 
       it is essential that the propagators on a irreducible conglomerate 
       of loops have the SAME loop number (the n in Loop[n]), no matter how 
-      many loops there actually are. For example, the two-loop starting 
+      many loops there actually are.  For example, the two-loop starting 
       topology `Theta' has only Loop[1] propagators.
 
    3) Vertex identifiers must always be unique, e.g. having both a 
@@ -332,6 +332,33 @@ StartTop[3, 0] = TopologyList[
 Attributes[ TopologyList ] = {Flat}
 
 
+(* some shortcuts *)
+
+TadpolesOnly = ExcludeTopologies ->
+  {SelfEnergies, Triangles, AllBoxes}
+
+SelfEnergiesOnly = ExcludeTopologies ->
+  {Tadpoles, WFCorrections, Triangles, AllBoxes}
+
+TrianglesOnly = ExcludeTopologies ->
+  {Tadpoles, SelfEnergies, AllBoxes}
+
+BoxesOnly = ExcludeTopologies ->
+  {Tadpoles, SelfEnergies, Triangles}
+
+TadpoleCTsOnly = ExcludeTopologies ->
+  {SelfEnergyCTs, TriangleCTs, AllBoxCTs}
+
+SelfEnergyCTsOnly = ExcludeTopologies ->
+  {TadpoleCTs, WFCorrectionCTs, TriangleCTs, AllBoxCTs}
+
+TriangleCTsOnly = ExcludeTopologies ->
+  {TadpoleCTs, SelfEnergyCTs, AllBoxCTs}
+
+BoxCTsOnly = ExcludeTopologies ->
+  {TadpoleCTs, SelfEnergyCTs, TriangleCTs}
+
+
 Options[ CreateTopologies ] = {
   Adjacencies -> {3, 4},
   ExcludeTopologies -> {},
@@ -435,12 +462,12 @@ CreateVFTopologies[ vf_Integer,
     Vertex[e_, c_] -> Vertex[e, -c]
 
 
-(* Recursive creation of topologies. The internal function that does
-   all the work is ConstructTopologies. It saves all values once found. 
+(* Recursive creation of topologies.  The internal function that does
+   all the work is ConstructTopologies.  It saves all values once found.
    To stop the recursion CreateTopologies defines ConstructTopologies
    with the minimum number of legs.
    ConstructTopologies always generates ALL topologies with up to emax
-   edges on any vertex. Those edge numbers that are to be omitted
+   edges on any vertex.  Those edge numbers that are to be omitted
    (e.g. Adjacencies -> {4, 6}) are sorted out by CreateTopologies. *)
 
 (* if the recursion failed to stop: *)
@@ -561,10 +588,10 @@ Block[ {comp},
 
 (* Finding the symmetry factor: start with symfac = 1, append new
    propagators to loop propagators until all loop propagators have two
-   additional vertices. After each step do a TopologiesCompare and choose
+   additional vertices.  After each step do a TopologiesCompare and choose
    the topology with the smallest symmetry factor (counting downwards,
    since we start with symfac = 1), then proceed to add the next
-   propagator. The inverse of the last symfac is then the s in
+   propagator.  The inverse of the last symfac is then the s in
    Topology[s]. *)
 
 SymmetryFactor[ top:P$Topology ] :=
@@ -579,7 +606,7 @@ Block[ {ext, p, t = Topology[1]@@ top},
     p = #[[0, 1]]&/@ t;
     t = t[[ Position[p, Min[p], 1, 1][[1, 1]] ]];
   ];
-  1 / t[[0, 1]]
+  1/t[[0, 1]]
 ]
 
 
@@ -602,7 +629,7 @@ ChooseProp[ pr_, {n_} ] :=
    ExcludeTopologies -> ... option of CreateTopologies.
 
    When programming own filters you must make sure that the filter
-   is always defined as a pure function, i.e. func[#]&. In the filter
+   is always defined as a pure function, i.e. func[#]&.  In the filter
    function ToTree may be used which returns its argument (a topology)
    with the loops shrunk to a point named Centre[adj][n] where adj is
    the adjacency of loop n. *)

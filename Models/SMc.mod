@@ -2,7 +2,7 @@
 	SMc.mod
 		Classes model file for the Standard Model
 		by Hagen Eck and Sepp Kueblbeck 1995
-		last modified 22 Jun 01 by Thomas Hahn
+		last modified 21 May 03 by Thomas Hahn
 
 Note: this file uses colour indices for the quarks, as does SMQCD.mod.
 
@@ -929,7 +929,7 @@ M$CouplingMatrices = {
     -I EL Mass[F[2, {j1}]]/(Sqrt[2] SW MW) IndexDelta[j1, j2] *
     { {1, dZe1 - dSW1/SW + dMf1[2, j1]/Mass[F[2, {j1}]] -
             dMWsq1/(2 MW^2) + dZGp1/2 +
-            dZfL1[1, j1, j1] + Conjugate[dZfR1[2, j1, j1]]},
+            dZfL1[1, j1, j1]/2 + Conjugate[dZfR1[2, j1, j1]]/2},
       {0, 0} },
 
 	(* U-U-V:  G(+) . { p1_mu3, p2_mu3 } *)
@@ -987,46 +987,40 @@ M$CouplingMatrices = {
 
 	(* S-U-U:  G(+) . 1 *)
 
-(* Attention: these are still not in R_xi gauge and do not contain the CTs
-   arising from renomalization of the gauge parameters! *)
+  C[ S[1], -U[2], U[2] ] == -I EL MZ Sqrt[GaugeXi[Z]]/(2 SW CW) *
+    { {1, dZe1 + (SW^2 - CW^2)/(CW^2 SW) dSW1 + dZH1/2 - dZchi1/2 + dUZZ1} },
 
-  C[ S[1], -U[2], U[2] ] == -I EL MW GaugeXi[Z]/(2 CW^2 SW) *
-    { {1, dZe1 + (2 SW^2 - CW^2)/(CW^2 SW) dSW1 + dMWsq1/(2 MW^2) +
-            dZH1/2} }, 
+  C[ S[1], -U[3], U[3] ] == -I EL MW Sqrt[GaugeXi[W]]/(2 SW) *
+    { {1, dZe1 - dSW1/SW + dZH1/2 - dZphi1/2 + dUW1} },
 
-  C[ S[1], -U[3], U[3] ] == -I EL MW GaugeXi[W]/(2 SW) *
-    { {1, dZe1 - dSW1/SW + dMWsq1/(2 MW^2) + dZH1/2} },
+  C[ S[1], -U[4], U[4] ] == -I EL MW Sqrt[GaugeXi[W]]/(2 SW) *
+    { {1, dZe1 - dSW1/SW + dZH1/2 - dZphi1/2 + dUW1} },
 
-  C[ S[1], -U[4], U[4] ] == -I EL MW GaugeXi[W]/(2 SW) *
-    { {1, dZe1 - dSW1/SW + dMWsq1/(2 MW^2) + dZH1/2} },
+  C[ S[2], -U[4], U[4] ] == EL MW Sqrt[GaugeXi[W]]/(2 SW) *
+    { {1, dZe1 - dSW1/SW + dZchi1/2 - dZphi1/2 + dUW1} },
 
-  C[ S[2], -U[4], U[4] ] == EL MW GaugeXi[W]/(2 SW) *
-    { {1, dZe1 - dSW1/SW + dMWsq1/(2 MW^2) + dZG01/2} },
+  C[ S[2], -U[3], U[3] ] == -EL MW Sqrt[GaugeXi[W]]/(2 SW) *
+    { {1, dZe1 - dSW1/SW + dZchi1/2 - dZphi1/2 + dUW1} },
 
-  C[ S[2], -U[3], U[3] ] == -EL MW GaugeXi[W]/(2 SW) *
-    { {1, dZe1 - dSW1/SW + dMWsq1/(2 MW^2) + dZG01/2} },
+  C[ -S[3], -U[2], U[3] ] == I EL MZ Sqrt[GaugeXi[Z]]/(2 SW) *
+    { {1, dZe1 - dSW1/SW + dZphi1/2 - dZchi1/2 + dUW1} },
 
-  C[ -S[3], -U[2], U[3] ] == I EL MW GaugeXi[Z]/(2 CW SW) *
-    { {1, dZe1 + (SW^2 - CW^2)/(CW^2 SW) dSW1 + dMWsq1/(2 MW^2) +
-            dZGp1/2} },
+  C[ S[3], -U[2], U[4] ] == I EL MZ Sqrt[GaugeXi[Z]]/(2 SW) *
+    { {1, dZe1 + dSW1/SW + dZphi1/2 - dZchi1/2 + dUW1} },
 
-  C[ S[3], -U[2], U[4] ] == I EL MW GaugeXi[Z]/(2 CW SW) *
-    { {1, dZe1 + (SW^2 - CW^2)/(CW^2 SW) dSW1 + dMWsq1/(2 MW^2) +
-            dZGp1/2} },
+  C[ -S[3], -U[4], U[2] ] == I EL (SW^2 - CW^2) MW Sqrt[GaugeXi[W]]/(2 CW SW) *
+    { {1, dZe1 + dSW1/((SW^2 - CW^2) CW^2 SW) + dUZZ1 +
+        (2 SW CW)/(SW^2 - CW^2) dUAZ1} },
 
-  C[ -S[3], -U[4], U[2] ] == I EL (SW^2 - CW^2) MW GaugeXi[W]/(2 CW SW) *
-    { {1, dZe1 + dSW1/((SW^2 - CW^2) CW^2 SW) + dMWsq1/(2 MW^2) +
-            dZGp1/2} },
+  C[ S[3], -U[3], U[2] ] == I EL (SW^2 - CW^2) MW Sqrt[GaugeXi[W]]/(2 CW SW) *
+    { {1, dZe1 + dSW1/((SW^2 - CW^2) CW^2 SW) + dUZZ1 +
+        (2 SW CW)/(SW^2 - CW^2) dUAZ1} },
 
-  C[ S[3], -U[3], U[2] ] == I EL (SW^2 - CW^2) MW GaugeXi[W]/(2 CW SW) *
-    { {1, dZe1 + dSW1/((SW^2 - CW^2) CW^2 SW) + dMWsq1/(2 MW^2) +
-            dZGp1/2} },
+  C[ -S[3], -U[4], U[1] ] == I EL MW Sqrt[GaugeXi[W]] *
+    { {1, dZe1 + dUAA1 + (SW^2 - CW^2)/(2 SW CW) dUZA1} },
 
-  C[ -S[3], -U[4], U[1] ] == I EL MW GaugeXi[W] *
-    { {1, dZe1 + dMWsq1/(2 MW^2) + dZGp1/2} },
-
-  C[ S[3], -U[3], U[1]] == I EL MW GaugeXi[W] *
-    { {1, dZe1 + dMWsq1/(2 MW^2) + dZGp1/2} }
+  C[ S[3], -U[3], U[1] ] == I EL MW Sqrt[GaugeXi[W]] *
+    { {1, dZe1 + dUAA1 + (SW^2 - CW^2)/(2 SW CW) dUZA1} }
 }
 
 

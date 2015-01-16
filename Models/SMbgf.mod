@@ -433,29 +433,29 @@ SW^2))/(CW*SW)}},
 
    C[-U[1], U[4], V[3]] == {{((-I)*EL)/Sqrt[GaugeXi[A]]}, {0}}, 
 
-   C[S[1], -U[2], U[2]] == {{((-I/2)*EL*MW*GaugeXi[Z])/(CW^2*SW)}}, 
+   C[S[1], -U[2], U[2]] == {{((-I/2)*EL*MZ*Sqrt[GaugeXi[Z]])/(CW*SW)}}, 
 
-   C[S[1], -U[3], U[3]] == {{((-I/2)*EL*MW*GaugeXi[W])/SW}}, 
+   C[S[1], -U[3], U[3]] == {{((-I/2)*EL*MW*Sqrt[GaugeXi[W]])/SW}}, 
 
-   C[S[1], -U[4], U[4]] == {{((-I/2)*EL*MW*GaugeXi[W])/SW}}, 
+   C[S[1], -U[4], U[4]] == {{((-I/2)*EL*MW*Sqrt[GaugeXi[W]])/SW}}, 
 
-   C[S[2], -U[4], U[4]] == {{(EL*MW*GaugeXi[W])/(2*SW)}}, 
+   C[S[2], -U[4], U[4]] == {{(EL*MW*Sqrt[GaugeXi[W]])/(2*SW)}}, 
 
-   C[S[2], -U[3], U[3]] == {{-(EL*MW*GaugeXi[W])/(2*SW)}}, 
+   C[S[2], -U[3], U[3]] == {{-(EL*MW*Sqrt[GaugeXi[W]])/(2*SW)}}, 
 
-   C[-S[3], -U[2], U[3]] == {{((I/2)*EL*MW*GaugeXi[Z])/(CW*SW)}}, 
+   C[-S[3], -U[2], U[3]] == {{((I/2)*EL*MZ*Sqrt[GaugeXi[Z]])/SW}}, 
 
-   C[S[3], -U[2], U[4]] == {{((I/2)*EL*MW*GaugeXi[Z])/(CW*SW)}}, 
+   C[S[3], -U[2], U[4]] == {{((I/2)*EL*MZ*Sqrt[GaugeXi[Z]])/SW}}, 
 
-   C[-S[3], -U[4], U[2]] == {{((I/2)*EL*MW*(-CW^2 + SW^2)*GaugeXi[W])/
+   C[-S[3], -U[4], U[2]] == {{((I/2)*EL*MW*(-CW^2 + SW^2)*Sqrt[GaugeXi[W]])/
 
        (CW*SW)}}, C[S[3], -U[3], U[2]] == 
 
-    {{((I/2)*EL*MW*(-CW^2 + SW^2)*GaugeXi[W])/(CW*SW)}}, 
+    {{((I/2)*EL*MW*(-CW^2 + SW^2)*Sqrt[GaugeXi[W]])/(CW*SW)}}, 
 
-   C[-S[3], -U[4], U[1]] == {{I*EL*MW*GaugeXi[W]}}, 
+   C[-S[3], -U[4], U[1]] == {{I*EL*MW*Sqrt[GaugeXi[W]]}}, 
 
-   C[S[3], -U[3], U[1]] == {{I*EL*MW*GaugeXi[W]}}, 
+   C[S[3], -U[3], U[1]] == {{I*EL*MW*Sqrt[GaugeXi[W]]}}, 
 
    C[-F[1, {j1}], F[1, {j2}]] == 
 
@@ -1908,7 +1908,7 @@ j1]]^
 
     {{((-I)*EL*IndexDelta[j1, j2]*Mass[F[2, {j1}]])/(Sqrt[2]*MW*SW), 
 
-      ((-I)*EL*IndexDelta[j1, j2]*(dMf1[2, j1] + 
+      ((-I/2)*EL*IndexDelta[j1, j2]*(2*dMf1[2, j1] + 
 
          (Conjugate[dZfR1[2, j1, j1]] + dZfL1[1, j1, j1])*Mass[F[2, {j1}]]))/
 

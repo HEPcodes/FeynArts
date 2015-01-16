@@ -1,7 +1,7 @@
 /*
 	TopologyEditor.java
 		the topology editor UI, called by Shape
-		last modified 23 Oct 00 th
+		last modified 23 Jan 03 th
 */
 
 package de.FeynArts;
@@ -94,14 +94,14 @@ public class TopologyEditor extends Frame {
     void dragTo(Graphics2D g, double x, double y) {
       double dx = x - this.x;
       double dy = y - this.y;
-      if(dx == 0 && dy == 0) return;
+      if( dx == 0 && dy == 0 ) return;
       g.setColor(bg);
       g.fill(box);
-      for(int i = 0; i < nPropagators; ++i) {
+      for( int i = 0; i < nPropagators; ++i ) {
         Propagator p = propagators[i];
-        if(this == p.from || this == p.to) {
+        if( this == p.from || this == p.to ) {
           p.draw(g, ERASE);
-          if(p.tadpole) {		// a tadpole "follows" its vertex
+          if( p.tadpole ) {		// a tadpole "follows" its vertex
             p.mid.x += dx;
             p.mid.y += dy;
           }
@@ -110,9 +110,9 @@ public class TopologyEditor extends Frame {
       this.x = x;
       this.y = y;
       update();
-      for(int i = 0; i < nPropagators; ++i) {
+      for( int i = 0; i < nPropagators; ++i ) {
         Propagator p = propagators[i];
-        if(this == p.from || this == p.to) {
+        if( this == p.from || this == p.to ) {
           p.update();
           p.draw(g, PAINT);
         }
@@ -140,8 +140,8 @@ public class TopologyEditor extends Frame {
     }
 
     void dragTo(Graphics2D g, double x, double y) {
-      if(x == this.x && y == this.y) return;
-      if(parent.tadpole) parent.draw(g, ERASE);
+      if( x == this.x && y == this.y ) return;
+      if( parent.tadpole ) parent.draw(g, ERASE);
       else {
         double xm = .5*(parent.to.x + parent.from.x);
         double ym = .5*(parent.to.y + parent.from.y);
@@ -149,8 +149,8 @@ public class TopologyEditor extends Frame {
         double dy = parent.to.y - parent.from.y;
 
 	// adjust clicked position to lie on the perpendicular bisector
-        if(dx == 0) y = ym;
-        else if(dy == 0) x = xm;
+        if( dx == 0 ) y = ym;
+        else if( dy == 0 ) x = xm;
         else {
           double h = dy/dx;
           double d = h + dx/dy;
@@ -159,17 +159,17 @@ public class TopologyEditor extends Frame {
         }
 
         double height = hypot(xm - x, ym - y);
-        if(height < .3) height = 0;
+        if( height < .3 ) height = 0;
         else {
           height = 2*height/hypot(dx, dy);
 	    // cross product tells which side of the prop we are on
           double cross = dy*(x - parent.from.x) - dx*(y - parent.from.y);
-          if(height*cross < 0) height = -height;
+          if( height*cross < 0 ) height = -height;
         }
-        if(height == parent.height) return;
+        if( height == parent.height ) return;
         parent.draw(g, ERASE);
-        if((height >= 0 && parent.height < 0) ||
-           (height < 0 && parent.height >= 0))
+        if( (height >= 0 && parent.height < 0) ||
+            (height < 0 && parent.height >= 0) )
           parent.label.angle = -parent.label.angle;
         parent.height = height;
       }
@@ -203,23 +203,21 @@ public class TopologyEditor extends Frame {
     }
 
     void dragTo(Graphics2D g, double x, double y) {
-      if(x == this.x && y == this.y) return;
+      if( x == this.x && y == this.y ) return;
       double dx = x - parent.mid.x;
       double dy = y - parent.mid.y;
       radius = hypot(dx, dy);
       angle = Math.atan2(dy, dx) - parent.arcCenterAngle;
-      if(Math.abs(angle) < .1) angle = 0;
-      else if(Math.abs(angle - Math.PI) < .1) angle = Math.PI;
+      if( Math.abs(angle) < .1 ) angle = 0;
+      else if( Math.abs(angle - Math.PI) < .1 ) angle = Math.PI;
 
       g.setColor(bg);
-      g.drawLine(parent.mid.center.x, parent.mid.center.y,
-        center.x, center.y);
+      g.drawLine(parent.mid.center.x, parent.mid.center.y, center.x, center.y);
       g.fill(box);
       setXY();
       update();
       g.setColor(Color.black);
-      g.drawLine(parent.mid.center.x, parent.mid.center.y,
-        center.x, center.y);
+      g.drawLine(parent.mid.center.x, parent.mid.center.y, center.x, center.y);
       g.setColor(Color.green);
       g.fill(box);
     }
@@ -236,7 +234,7 @@ public class TopologyEditor extends Frame {
     private int arcAngleStart, arcAngleExtent;
 
     Propagator(double prop[], int off) {
-      if(tadpole = prop[off] < 0) {
+      if( tadpole = prop[off] < 0 ) {
         from = to = (Vertexbox)vertices[-(int)prop[off] - 1];
         mid = new Propagatorbox(prop[off + 1], prop[off + 2], this);
       }
@@ -251,7 +249,7 @@ public class TopologyEditor extends Frame {
     }
 
     void update() {
-      if(tadpole) {
+      if( tadpole ) {
         arcCenterX = .5*(from.x + mid.x);
         arcCenterY = .5*(from.y + mid.y);
         double dx = arcCenterX - from.x;
@@ -269,31 +267,30 @@ public class TopologyEditor extends Frame {
         double halfAngle, rad;
         arcCenterX = mid.x = .5*(from.x + to.x);
         arcCenterY = mid.y = .5*(from.y + to.y);
-        if(height == 0) {
+        if( height == 0 ) {
           arcRadius = rad = 20000;
           halfAngle = Math.asin(halfLength/rad);
         }
         else {
-          if(height < 0) centerAngle += Math.PI;
+          if( height < 0 ) centerAngle += Math.PI;
           halfAngle = 2*Math.atan(rad = Math.abs(height));
           mid.x += rad*halfLength*Math.cos(centerAngle);
           mid.y += rad*halfLength*Math.sin(centerAngle);
           arcRadius = rad = halfLength/Math.sin(halfAngle);
           rad = Math.sqrt(rad*rad - halfLength*halfLength);
-          if(Math.abs(height) > 1) rad = -rad;
+          if( Math.abs(height) > 1 ) rad = -rad;
         }
         arcCenterX -= rad*Math.cos(centerAngle);
         arcCenterY -= rad*Math.sin(centerAngle);
         arcCenterAngle = centerAngle;
-        arcAngleStart =
-          (int)Math.round(Math.toDegrees(centerAngle - halfAngle));
+        arcAngleStart = (int)Math.round(Math.toDegrees(centerAngle - halfAngle));
         arcAngleExtent = (int)Math.round(Math.toDegrees(2*halfAngle));
       }
       label.setXY();
     }
 
     void draw(Graphics2D g, boolean inColor) {
-      if(inColor) {
+      if( inColor ) {
         g.setStroke(wide);
         g.setColor(Color.black);
       }
@@ -301,7 +298,7 @@ public class TopologyEditor extends Frame {
         g.setStroke(xwide);
         g.setColor(bg);
       }
-      if(arcRadius < 20000)
+      if( arcRadius < 20000 )
         g.drawArc(
           scaleX(arcCenterX - arcRadius),
           scaleY(arcCenterY + arcRadius),
@@ -309,16 +306,14 @@ public class TopologyEditor extends Frame {
           (int)Math.round(2*arcRadius*unitY),
           arcAngleStart, arcAngleExtent);
       else
-        g.drawLine(from.center.x, from.center.y,
-          to.center.x, to.center.y);
+        g.drawLine(from.center.x, from.center.y, to.center.x, to.center.y);
       g.setStroke(narrow);
       mid.update();
       label.update();
-      g.drawLine(mid.center.x, mid.center.y,
-        label.center.x, label.center.y);
-      if(inColor) g.setColor(Color.blue);
+      g.drawLine(mid.center.x, mid.center.y, label.center.x, label.center.y);
+      if( inColor ) g.setColor(Color.blue);
       g.fill(mid.box);
-      if(inColor) g.setColor(Color.green);
+      if( inColor ) g.setColor(Color.green);
       g.fill(label.box);
     }
   }
@@ -347,32 +342,31 @@ public class TopologyEditor extends Frame {
     }
 
     public void paint(Graphics g) {
-      if(nPropagators == 0) return;
-      if(current == null || redraw) {
+      if( nPropagators == 0 ) return;
+      if( current == null || redraw ) {
         Dimension size = getSize();
-        if(current == null) {
+        if( current == null ) {
           current = createImage(size.width, size.height);
-          currentGC = (Graphics2D)(current == null ?
-            g : current.getGraphics());
+          currentGC = (Graphics2D)(current == null ? g : current.getGraphics());
         }
         currentGC.setColor(getBackground());
         currentGC.fillRect(0, 0, size.width, size.height);
         paintCanvas(currentGC);
         redraw = false;
       }
-      if(current != null) g.drawImage(current, 0, 0, null);
+      if( current != null ) g.drawImage(current, 0, 0, null);
     }
 
     private void paintCanvas(Graphics2D g) {
       g.setColor(Color.black);
       double x = BORDER;
-      for(int i = 20; i >= 0; --i) {		// draw grid
+      for( int i = 20; i >= 0; --i ) {		// draw grid
         int i5 = i % 5;
         double y = ybase;
-        for(int j = 20; j >= 0; --j) {
+        for( int j = 20; j >= 0; --j ) {
           int ix = (int)Math.round(x);
           int iy = (int)Math.round(y);
-          if(i5 == 0 && j % 5 == 0) {
+          if( i5 == 0 && j % 5 == 0 ) {
             g.drawLine(ix - 2, iy, ix + 2, iy);
             g.drawLine(ix, iy - 2, ix, iy + 2);
           }
@@ -382,13 +376,13 @@ public class TopologyEditor extends Frame {
         x += unitX;
       }
 
-      for(int i = 0; i < nVertices; ++i) vertices[i].update();
+      for( int i = 0; i < nVertices; ++i ) vertices[i].update();
 
-      for(int i = 0; i < nPropagators; ++i)
+      for( int i = 0; i < nPropagators; ++i )
         propagators[i].draw(g, PAINT);
 
       g.setColor(Color.red);
-      for(int i = 0; i < nVertices; ++i)
+      for( int i = 0; i < nVertices; ++i )
         g.fill(vertices[i].box);
     }
 
@@ -406,10 +400,10 @@ public class TopologyEditor extends Frame {
     public void componentShown(ComponentEvent e) {}
 
     public void mouseDragged(MouseEvent m) {
-      if(selected != null) {
+      if( selected != null ) {
         double x = (m.getX() - BORDER)/unitX;
         double y = (ybase - m.getY())/unitY;
-        if(positioning.getSelectedCheckbox() == gridposCheckbox) {
+        if( positioning.getSelectedCheckbox() == gridposCheckbox ) {
           x = .5*Math.round(2*x);
           y = .5*Math.round(2*y);
         }
@@ -420,9 +414,9 @@ public class TopologyEditor extends Frame {
     }
 
     public void mousePressed(MouseEvent m) {
-      if(SwingUtilities.isLeftMouseButton(m)) {
-        for(int i = 0; i < vertices.length; ++i)
-          if(vertices[i].box.contains(m.getPoint())) {
+      if( SwingUtilities.isLeftMouseButton(m) ) {
+        for( int i = 0; i < vertices.length; ++i )
+          if( vertices[i].box.contains(m.getPoint()) ) {
             selected = vertices[i];
             break;
           }
@@ -430,7 +424,7 @@ public class TopologyEditor extends Frame {
     }
 
     public void mouseReleased(MouseEvent m) {
-      if(selected != null) {
+      if( selected != null ) {
         selected = null;
         redraw = true;
         repaint();
@@ -438,32 +432,32 @@ public class TopologyEditor extends Frame {
     }
 
     public void mouseClicked(MouseEvent m) {
-      if(SwingUtilities.isLeftMouseButton(m)) return;
+      if( SwingUtilities.isLeftMouseButton(m) ) return;
 
       Clickbox sel = null;
-      for(int i = nVertices; i < vertices.length; ++i)
-        if(vertices[i].box.contains(m.getPoint())) {
+      for( int i = nVertices; i < vertices.length; ++i )
+        if( vertices[i].box.contains(m.getPoint()) ) {
           sel = vertices[i];
           break;
         }
       if(sel == null) return;
 
-      if(sel instanceof Propagatorbox) {
+      if( sel instanceof Propagatorbox ) {
         Propagator p = ((Propagatorbox)sel).parent;
-        if(p.tadpole) return;
-        if(SwingUtilities.isRightMouseButton(m)) {
+        if( p.tadpole ) return;
+        if( SwingUtilities.isRightMouseButton(m) ) {
           p.height = -p.height;
           p.label.angle = -p.label.angle;
         }
         else {
-          if(p.height < 0) p.label.angle = -p.label.angle;
+          if( p.height < 0 ) p.label.angle = -p.label.angle;
           p.height = 0;
         }
         p.update();
       }
       else {
         Labelbox l = (Labelbox)sel;
-        if(SwingUtilities.isRightMouseButton(m))
+        if( SwingUtilities.isRightMouseButton(m) )
           l.angle = Math.PI - l.angle;
         else {
           l.radius = DEFAULT_RADIUS;
@@ -489,7 +483,7 @@ public class TopologyEditor extends Frame {
     }
 
     public void paint(Graphics g) {
-      if(mousehelp == null) {
+      if( mousehelp == null ) {
         mousehelp = createImage(WIDTH, HEIGHT);
         Graphics gi = mousehelp.getGraphics();
         gi.setColor(getBackground());
@@ -578,7 +572,7 @@ public class TopologyEditor extends Frame {
     revertButton.addActionListener(
       new ActionListener() {
         public void actionPerformed(ActionEvent e) {
-          for(int i = 0; i < vertices.length; ++i)
+          for( int i = 0; i < vertices.length; ++i )
             vertices[i].revert();
           editor.redraw = true;
           editor.repaint();
@@ -619,26 +613,28 @@ public class TopologyEditor extends Frame {
   }
 
   private void quit(int success) {
-    KernelLink link = Install.getStdLink();
-    if(link == null) return;
+    KernelLink link = StdLink.getLink();
+    if( link == null ) return;
     try {
       link.evaluate("(EndModal[]; " + success + ")");
       link.discardAnswer();
     }
-    catch(MathLinkException e) {}
+    catch( MathLinkException e ) {
+      System.err.println(e.getMessage());
+    }
   }
 
-  public synchronized void putGraphInfo(double vert[], double prop[]) {
+  public void putShapeData(double vert[], double prop[]) {
     vertices = new Clickbox[vert.length/2 + 2*prop.length/5];
     propagators = new Propagator[prop.length/5];
 
     int n = 0;
-    for(int i = 0; i < vert.length; i += 2)
+    for( int i = 0; i < vert.length; i += 2 )
       vertices[n++] = new Vertexbox(vert[i], vert[i + 1]);
     nVertices = n;
 
     nPropagators = 0;
-    for(int i = 0; i < prop.length; i += 5) {
+    for( int i = 0; i < prop.length; i += 5 ) {
       Propagator p = new Propagator(prop, i);
       propagators[nPropagators++] = p;
       vertices[n++] = p.label;
@@ -650,23 +646,23 @@ public class TopologyEditor extends Frame {
     editor.repaint();
   }
 
-  public void getGraphInfo() {
-    KernelLink link = Install.getStdLink();
-    if(link == null) return;
+  public void getShapeData() {
+    KernelLink link = StdLink.getLink();
+    if( link == null ) return;
 
     link.beginManual();
     try {
       link.putFunction("List", 3);
 
       link.putFunction("List", nVertices);
-      for(int i = 0; i < nVertices; ++i) {
+      for( int i = 0; i < nVertices; ++i ) {
         link.putFunction("List", 2);
         link.put(vertices[i].x);
         link.put(vertices[i].y);
       }
 
       link.putFunction("List", nPropagators);
-      for(int i = 0; i < nPropagators; ++i) {
+      for( int i = 0; i < nPropagators; ++i ) {
         Propagator p = propagators[i];
         if(p.tadpole) {
           link.putFunction("List", 2);
@@ -677,11 +673,11 @@ public class TopologyEditor extends Frame {
       }
 
       link.putFunction("List", nPropagators);
-      for(int i = 0; i < nPropagators; ++i) {
+      for( int i = 0; i < nPropagators; ++i ) {
         Labelbox l = propagators[i].label;
-        if(l.angle == 0)
+        if( l.angle == 0 )
           link.put(l.radius/DEFAULT_RADIUS);
-        else if(l.angle == Math.PI)
+        else if( l.angle == Math.PI )
           link.put(-l.radius/DEFAULT_RADIUS);
         else {
           link.putFunction("List", 2);
@@ -689,9 +685,11 @@ public class TopologyEditor extends Frame {
           link.put(l.angle);
         }
       }
-      link.endPacket();
+//      link.endPacket();
     }
-    catch(MathLinkException e) {}
+    catch( MathLinkException e ) {
+      System.err.println(e.getMessage());
+    }
   }
 
 }

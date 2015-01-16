@@ -2,7 +2,7 @@
 	Insert.m
 		Insertion of fields into topologies created by 
 		CreateTopologies.
-		last modified 23 Jan 03 th
+		last modified 18 Jan 07 th
 
 The insertion is done in 3 levels: insertion of generic fields (Generic),
 of classes of a certain model (Classes) or of the members of the classes
@@ -85,8 +85,11 @@ opt = ActualOptions[InsertFields, options]},
   pp = Union[Flatten[{LastSelections /. opt}, 1]];
   omit = CheckProperField/@
     Join[ Cases[pp, !x_ -> x], Cases[exclP, _. P$Generic[_, _]] ];
-  omit = Union[ Join[omit, AntiParticle/@ omit] ];
-  need = CheckProperField/@ Complement[pp /. !x_ -> x, omit];
+  omit = Union[ Join[omit, AntiParticle/@ omit] ] /.
+    (f:P$Generic)[i_, {j__}] -> f[i, {j, ___}];
+  need = CheckProperField/@ Complement[
+    pp /. !x_ -> x /. (f:P$Generic)[i_, {j__}] -> f[i, {j, ___}],
+    omit ];
 
   AppendTo[opt, Process -> iorule];
 
@@ -109,9 +112,11 @@ opt = ActualOptions[InsertFields, options]},
 InsertFields[ ___ ] := (Message[InsertFields::syntax]; $Failed)
 
 
-CheckProperField[ fi_ ] :=
-  If[ MatchQ[fi, P$Generic | _. P$Generic[__]], fi,
-    Message[InsertFields::badsel, fi]; Seq[] ]
+CheckProperField[ fi_Alternatives ] := CheckProperField/@ fi
+
+CheckProperField[ fi:P$Generic | _. P$Generic[__] ] = fi
+
+CheckProperField[ fi_ ] := (Message[InsertFields::badsel, fi]; Seq[])
 
 
 InModelQ[ s_. fi_[i_Integer, j_List] ] :=
@@ -250,7 +255,7 @@ VFAllowed[ fp_ ] :=
 (* Insert compatible particles in 1 propagator for 1 set of rules: *)
 
 Ins11[ vert12_, ru_, i_ ] := 
-Block[ {vx, leftpart, p = ru[[i, 2]], ckfp},
+Block[ {vx, p = ru[[i, 2]], leftallowed, rightallowed, allowed, ckfp},
 
   vx = Map[ RightPartner,
     If[ SameQ@@ vert12,		(* tadpole *)
@@ -258,24 +263,32 @@ Block[ {vx, leftpart, p = ru[[i, 2]], ckfp},
       vert12 ] /. Delete[List@@ ru, i],
     {2} ];
 
-  leftpart = ParticleLookup[vx[[1]], AntiParticle[p]];
+  leftallowed = ParticleLookup[vx[[1]], AntiParticle[p]];
 
   ckfp[ n_, fi_ ] := CheckFP[ vx[[n]] /. Field[i] -> fi ];
 
-  leftpart = If[ Length[vx] === 1,	(* tadpole *)
-    Select[ Intersection[leftpart, F$AllowedFields], ckfp[1, #]& ],
+  allowed = If[ Length[vx] === 1,	(* tadpole *)
+    Select[ Intersection[leftallowed, F$AllowedFields], ckfp[1, #]& ],
   (* else *)
+    leftallowed = AntiParticle/@ leftallowed;
+    rightallowed = ParticleLookup[vx[[2]], p];
     Select[
-      Intersection[
-        AntiParticle/@ leftpart,
-        ParticleLookup[vx[[2]], p],
-        F$AllowedFields ],
+      Intersection[leftallowed, rightallowed, F$AllowedFields],
       ckfp[1, #] && ckfp[2, #] & ]
+  ];
+
+  If[ TrueQ[Global`$FADebug],
+    Print["Ins11: inserting field ", p];
+    Print["Ins11: L-vertex  = ", vert12[[1]]];
+    Print["Ins11: R-vertex  = ", vert12[[2]]];
+    Print["Ins11: L-allowed = ", leftallowed];
+    Print["Ins11: R-allowed = ", rightallowed];
+    Print["Ins11: allowed   = ", allowed];
   ];
 
   p = vert12[[0, 1]];
   (ru /. (Field[i] -> _) -> (Field[i] -> #))&/@
-    Select[leftpart, InsertOK[#, p]&]
+    Select[allowed, InsertOK[#, p]&]
 ]
 
 
@@ -303,21 +316,24 @@ Block[ {ins},
 ]
 
 
+Need[ ] = Sequence[]
+
+Need[ fi__ ] := Select[#, ContainsQ[Drop[#, ninc], {fi}]&]&
+
+Omit[ ] = Sequence[]
+
+Omit[ fi__ ] := Select[#, FreeQ[Drop[#, ninc], Alternatives[fi]]&]&
+
+
 (* insertion at generic level: *)
 
 DoInsert[Generic][ ins_ ] :=
-Block[ {freesites, theins, genneed, genomit, filter},
+Block[ {freesites, theins, filter},
   freesites = Flatten[ Position[ins[[1]], _ -> 0, 1] ];
 
   filter = Composition[
-    If[ Length[ genneed = Cases[need, P$Generic] /.
-          SV :> Seq[SV, VS] ] === 0,
-      Identity,
-      Select[#, ContainsQ[Drop[#, ninc], genneed]&]& ],
-    If[ Length[ genomit = Alternatives@@
-          Cases[omit, P$Generic] /. SV :> Seq[SV, VS] ] === 0,
-      Identity,
-      Select[#, FreeQ[Drop[#, ninc], genomit]&]& ] ];
+    Need@@ (Cases[need, P$Generic | _[P$Generic..]] /. SV :> Seq[SV, VS]),
+    Omit@@ (Cases[omit, P$Generic | _[P$Generic..]] /. SV :> Seq[SV, VS]) ];
 
   theins = Insertions[Generic]@@
     InsertionsCompare[ topol,
@@ -334,7 +350,7 @@ Block[ {freesites, theins, genneed, genomit, filter},
 (* insertion at classes level: *)
 
 DoInsert[Classes][ ins_ ] :=
-Block[ {theins, rul, freesites, claneed, claomit, filter, pfilter},
+Block[ {theins, rul, freesites, filter, pfilter},
   theins = ToClasses[ rul = ins /.
     (x_ -> Insertions[Classes | Particles][___]) -> x ];
 
@@ -345,13 +361,8 @@ Block[ {theins, rul, freesites, claneed, claomit, filter, pfilter},
     theins = DoInsert[Generic][theins] ];
 
   filter = Composition[
-    If[ Length[ claneed = Cases[need, _. P$Generic[_]] ] === 0, 
-      Identity,
-      Select[#, ContainsQ[Drop[#, ninc], claneed]&]& ],
-    If[ Length[ claomit = Alternatives@@
-          Cases[omit, _. P$Generic[_]] ] === 0,
-      Identity,
-      Select[#, FreeQ[Drop[#, ninc], claomit]&]& ] ];
+    Need@@ Cases[need, _. P$Generic[_] | _[(_. P$Generic[_])..]],
+    Omit@@ Cases[omit, _. P$Generic[_] | _[(_. P$Generic[_])..]] ];
   pfilter =
     If[ Length[$ExcludedParticleFPs] === 0,
       Identity,
@@ -382,7 +393,7 @@ IndexDelta[ n_Integer, _Integer ] = 0
 
 Conjugate[ IndexDelta[ind__] ] ^:= IndexDelta[ind]
 
-IndexDelta[ind__]^_ ^:= IndexDelta[ind]
+IndexDelta[ ind__ ]^_?Positive ^:= IndexDelta[ind]
 
 ext/: IndexDelta[ ext[_], ext[_] ] = 1
 
@@ -446,7 +457,7 @@ EvaluateDelta[ expr_, {_, rest___} ] :=
 (* insertion at particles level: *)
 
 DoInsert[Particles][ ins_ ] :=
-Block[ {theins, partneed, partomit, filter},
+Block[ {theins, filter},
   theins = ins /. (x_ -> Insertions[Particles][__]) -> x;
   If[ FreeQ[theins, Insertions[Classes]],
     theins = DoInsert[Classes][theins] ];
@@ -455,13 +466,8 @@ Block[ {theins, partneed, partomit, filter},
     If[ Length[$ExcludedParticleFPs] === 0,
       Identity,
       Select[#, !ExcludedQ[vertli /. List@@ #]&]& ],
-    If[ Length[ partneed = Cases[need, _. P$Generic[_, _]] ] === 0,
-      Identity,
-      Select[#, ContainsQ[Drop[#, ninc], partneed]&]& ],
-    If[ Length[ partomit =
-          Alternatives@@ Cases[omit, _. P$Generic[_, _]] ] === 0,
-      Identity,
-      Select[#, FreeQ[Drop[#, ninc], partomit]&]& ] ];
+    Need@@ Cases[need, _. P$Generic[_, _] | _[(_. P$Generic[_, _])..]],
+    Omit@@ Cases[omit, _. P$Generic[_, _] | _[(_. P$Generic[_, _])..]] ];
 
   theins /. cins:Insertions[Classes][__] :> IndexVariations/@ cins
 ]

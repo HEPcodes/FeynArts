@@ -2,7 +2,7 @@
 	Analytic.m
 		Translation of InsertFields output into
 		analytic expressions
-		last modified 7 Apr 03 th
+		last modified 22 Mar 06 th
 *)
 
 Begin["`Analytic`"]
@@ -221,9 +221,7 @@ Block[ {amp, gm, rawgm, orig, anti},
   amp = CreateAmpGraph[ top,
     gr /. (n_ -> x_. fi_[i__]) :> (n -> x fi[i, orig[x, n]]) ];
   gm = Append[
-    Union[ Cases[amp[[3]],
-      G[_][_][__][__] | Mass[_] | GaugeXi[_] | VertexFunction[_][__],
-      Infinity] ],
+    Union[ Cases[amp[[3]], P$InsertionObjects, Infinity] ],
     RelativeCF ];
   rawgm = gm /.
     s1_. _[__, orig[s2_, fi_], k___] :>
@@ -265,7 +263,7 @@ scalars = {RelativeCF, toppref, 1/s}},
     Times@@ DeleteCases[Flatten[scalars], 1] *
       LoopPD[Expand[Times@@ Flatten[prden], PropagatorDenominator]] *
       Times@@ res /.
-      truncru //. M$LastGenericRules /. Mass -> TheMass ]
+      truncru /. Mass -> TheMass ] //. M$LastGenericRules
 ]
 
 
@@ -690,25 +688,17 @@ Block[ {partru},
 ]
 
 
-DefWeedOut[ lev_ ] := (
-  WeedOut[ g:Graph[_, lev == _][__] -> _[] ] = g;
-  WeedOut[ _ -> _[] ] = Sequence[];
-  WeedOut[ a_ ] = a;
-  Rule[_] := Sequence[]
-)
-
-
 Discard[ tops:TopologyList[info__][__], diags__ ] :=
-Block[ {p, lev, WeedOut, Rule},
-  p = Position[tops, Graph[__][__]];
-  lev = ResolveLevel[InsertionLevel /. {info}];
-  If[ FreeQ[lev, Generic], p = Select[p, Length[#] =!= 4 &] ];
+Block[ {p, lev, Rule},
+  lev = Alternatives@@ ResolveLevel[InsertionLevel /. {info}];
+  p = Position[tops, Graph[_, lev == _][__]];
   p = p[[ Union[ Flatten[
     {diags} /. a_Integer (Repeated | RepeatedNull)[b_] :>
                  Range@@ Sort[Floor[{b, a}]] ] ] ]];
   If[ Head[p] === Part, Return[$Failed] ];
-  DefWeedOut[ lev[[-1]] ];
-  Delete[tops, p] /. ins:Insertions[_][__] :> WeedOut/@ ins /.
+  Rule[_] := Sequence[];
+  Delete[tops, p] /.
+    (Graph[__][__] -> _[]) :> Seq[] /.
     (Topology[__][__] -> _[]) :> Seq[]
 ]
 
@@ -719,16 +709,35 @@ Discard[ amp_, diags__ ] :=
 
 
 DiagramSelect[ tops:TopologyList[info__][__], crit_ ] :=
-Block[ {lev, WeedOut, Rule},
+Block[ {lev, Rule},
   lev = ResolveLevel[InsertionLevel /. {info}][[-1]];
-  DefWeedOut[lev];
+  Rule[_] := Sequence[];
   tops /.
-    Graph[_, lev == _][fi__] :> Seq[] /; crit[{fi}] =!= True /.
-    ins:Insertions[_][__] :> WeedOut/@ ins /.
+    Graph[__, lev == _][fi__] :> Seq[] /; crit[{fi}] =!= True /.
+    (Graph[__][__] -> _[]) :> Seq[] /.
     (Topology[__][__] -> _[]) :> Seq[]
 ]
 
 DiagramSelect[ amp_, crit_ ] := Select[amp, crit]
+
+
+DiagramComplement[ tops:TopologyList[info__][___],
+  more:TopologyList[__][___].. ] :=
+Block[ {lev = ResolveLevel[InsertionLevel /. {info}][[-1]]},
+  Fold[DiagramRemove[#2]/@ #1 &, tops, Level[{more}, {2}]]
+]
+
+DiagramRemove[ top_ -> rem_ ][ top_ -> ins_ ] := top -> (
+Block[ {Rule, Graph},
+  Rule[_] := Sequence[];
+  Cases[rem,
+    Graph[_, lev == _][gr__] :> (Graph[_, lev == _][gr] = Sequence[]),
+    Infinity];
+  ins
+] /. (Graph[__][__] -> _[]) :> Seq[] ) /.
+  (Topology[__][__] -> _[]) :> Seq[]
+
+DiagramRemove[ _ ][ t_ ] = t
 
 
 ToJoin[ h:Topology == _, r__ ] := {h, ToJoin[r]}

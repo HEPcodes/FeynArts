@@ -1,7 +1,7 @@
 (*
 	Graphics.m
 		Graphics routines for FeynArts
-		last modified 23 Jan 03 th
+		last modified 10 Jan 05 th
 *)
 
 Begin["`Graphics`"]
@@ -217,6 +217,8 @@ Format[ FeynArtsGraphics[h___][l__List] ] :=
   FeynArtsGraphics[h]@@ MatrixForm/@ {l}
 
 
+SetOptions[OpenWrite, CharacterEncoding -> {}]
+
 Unprotect[Show, Display, Export]
 
 Show[ g:FeynArtsGraphics[___][___] ] := Show/@ Render[g]
@@ -355,7 +357,7 @@ Block[ {rows, cols, g},
   PSString[cols, rows, "Layout\n" <> g]
 ]
 
-Attributes[ TeXJoin ] = {Flat, OneIdentity}
+Attributes[TeXJoin] = {Flat, OneIdentity}
 
 TeXJoin[ n_Integer ] := ToString[n]
 
@@ -696,18 +698,71 @@ talign = {{0, 0}, {-1, 0}, {-1, 0}, {0, -1}};
 ] (* endif $Notebooks *)
 
 
-pr[ Loop[l_] ][ from_, to_, ___ ] := (
-  AppendTo[loops, l];
-  AppendTo[props[l], {from, to}] )
+FindFlip[ h_, top_, rulz_ ] :=
+Block[ {ntop = top /. rulz, ord, shapedata},
+  ord = TopologyOrdering[ntop];
+  FlipShape[h, ntop, ord,
+    GetShape[TopologyCode[ ord[[1]] ]] /. Reverse/@ rulz]
+]
 
-pr[ type_ ][ from_, to_, ___ ] := (
-  AppendTo[props[Tree], {from, to}];
-  AppendTo[props[type], {from, to}] )
+
+FlipShape[ h_, top_, _[ntop_, map_], {vert_, prop_, labels_} ] :=
+Block[ {ord = Ordering[Abs[map]], vord, vmap},
+  vord = Flatten[(4 Abs[#] - 1 + Sign[#] {-1, 1})/2&/@ map];
+  vmap = Thread[ Level[ntop, {2}] -> Level[top, {2}][[vord]] ];
+  Throw[{
+    Sort[h[1]/@ vert /. vmap],
+    Sequence@@ Transpose[MapThread[h[23], {prop[[ord]], labels[[ord]], map}]]
+  }]
+]
+
+
+TopBottom[1][ v_ -> {x_, y_} ] := v -> {x, DiagramCanvas - y}
+
+TopBottom[23][ {x_, y_}, {r_, fi_}, _ ] := {{x, DiagramCanvas - y}, {r, -fi}}
+
+TopBottom[23][ {x_, y_}, l_, _ ] := {{x, DiagramCanvas - y}, l}
+
+TopBottom[23][ h_, {r_, fi_}, s_ ] := {-Sign[s] h, {r, -Sign[s] fi}} /; h != 0
+
+TopBottom[23][ h_, l_, s_ ] := {-Sign[s] h, l} /; h != 0
+
+TopBottom[23][ _, {r_, fi_}, s_ ] := {0, {r, If[s > 0, Pi - fi, -fi]}}
+
+TopBottom[23][ _, l_, s_ ] := {0, -Sign[s] l}
+
+
+LeftRight[1][ v_ -> {x_, y_} ] := v -> {DiagramCanvas - x, y}
+
+LeftRight[23][ {x_, y_}, {r_, fi_}, _ ] := {{DiagramCanvas - x, y}, {r, -fi}}
+
+LeftRight[23][ {x_, y_}, l_, _ ] := {{DiagramCanvas - x, y}, l}
+
+LeftRight[23][ h_, {r_, fi_}, s_ ] := {-Sign[s] h, {r, -fi}} /; h != 0
+
+LeftRight[23][ h_, l_, s_ ] := {-Sign[s] h, l} /; h != 0
+
+LeftRight[23][ _, {r_, fi_}, s_ ] := {0, {r, If[s > 0, Pi - fi, -fi]}}
+
+LeftRight[23][ _, l_, s_ ] := {0, -Sign[s] l}
+
 
 AutoShape[ top_ ] :=
-Block[ {shapedata, props, ext, l, tree, mesh, mesh2, tadbr, vars, vert,
-tad, min, ok, c, ct, pt, shrink = {}, rev = {}, loops = {}},
-  props[ _ ] = {};
+Block[ {in, out, vert, shapedata, props, ext, l, tree, mesh, mesh2,
+vars, tadbr, tad, min, ok, c, ct, pt, shrink = {}, rev = {}, loops = {}},
+
+	(* before embarking on any serious autoshaping, check if we know
+	   how to paint the vertical or horizontal mirror image of top *)
+  in = Sort[Cases[top, _[Incoming][v_, _] :> v]];
+  out = Sort[Cases[top, _[Outgoing][v_, _] :> v]];
+  vert = Join[out, in];
+
+  FindFlip[ TopBottom, top, Thread[vert -> Reverse[Join[in, out]]] ];
+
+  FindFlip[ LeftRight, top, Flatten[{Thread[vert -> Sort[vert]],
+    Incoming -> Outgoing, Outgoing -> Incoming}] ];
+
+  props[_] = {};
   top /. Propagator -> pr;
   loops = Union[loops];
 
@@ -733,9 +788,10 @@ tad, min, ok, c, ct, pt, shrink = {}, rev = {}, loops = {}},
     ( l = Flatten[props[#2]];
       ext[#2] = l = Select[vert, MemberQ[l, #]&];
       AppendTo[ rev, c = center[Length[l]][#2] -> Union[l] ];
-      shrink = Join[ shrink, c = Thread[Reverse[c]] ];
+      shrink = {shrink, c = Thread[Reverse[c]]};
       #1 /. c )&,
     props[Tree], loops ];
+  shrink = Flatten[shrink];
 
 	(* c) cut tadpole-like parts and minimize the length of the
 	      remaining mesh of propagators *)
@@ -798,7 +854,7 @@ tad, min, ok, c, ct, pt, shrink = {}, rev = {}, loops = {}},
     Select[shapedata, !FreeQ[#, center]&] ];
 
 	(* f) last resort: randomize any remaining vertex *)
-  shapedata = Join[ MapAt[Clip, #, 2]&/@ shapedata,
+  shapedata = Join[ MapAt[Inside, #, 2]&/@ shapedata,
     (# -> {RandInt, RandInt})&/@
       Union[Cases[top /. shapedata, Vertex[__][_], Infinity]] ];
 
@@ -806,7 +862,7 @@ tad, min, ok, c, ct, pt, shrink = {}, rev = {}, loops = {}},
 	      they do not fall on top of each other *)
   pt[ _[Loop[n_]][v_, v_], _ ] :=
     center[ Length[ext[n]] ][n] /. shapedata /. center[_][_] :>
-      Clip[ (v /. shapedata) + 4 Through[{Cos, Sin}[2. NPi Random[]]] ];
+      Inside[ (v /. shapedata) + 4 Through[{Cos, Sin}[2. NPi Random[]]] ];
   pt[ _, 0 ] = 0;
   ct[ p_ ] := If[ (c = (Count[top, p] - 1)/2) === 0, 0,
     pt[ p, n_ ] = .8 n/c;
@@ -820,6 +876,15 @@ tad, min, ok, c, ct, pt, shrink = {}, rev = {}, loops = {}},
     pt[#, ct[#]--]&/@ List@@ top,
     Table[1, {Length[top]}] }
 ]
+
+
+pr[ Loop[l_] ][ from_, to_, ___ ] := (
+  AppendTo[loops, l];
+  AppendTo[props[l], {from, to}] )
+
+pr[ type_ ][ from_, to_, ___ ] := (
+  AppendTo[props[Tree], {from, to}];
+  AppendTo[props[type], {from, to}] )
 
 
 Attributes[twig] = {Orderless}
@@ -842,7 +907,7 @@ cutbranch[ vert__, br___branch ] :=
   Sequence[ br, Drop[{vert}, {2, -2}] ]
 
 
-Clip[ xy_ ] := Max[Min[#, 20], 0]&/@ N[xy]
+Inside[ xy_ ] := Max[Min[#, 20], 0]&/@ N[xy]
 
 RandInt := Plus@@ Table[Random[Integer, 9], {2}] + 1
 
@@ -937,7 +1002,7 @@ Block[ {adj, max, new, a1, a2},
       If[ (new = Abs[#2 - #1]) > max, max = new; a1 = #1; a2 = #2 ]&,
       adj, adj ];
     new = xy + 4 Through[{Cos, Sin}[.5 (a1 + a2)]] ];
-  If[ Distance2[xy, max = Clip[new]] < 2.8,
+  If[ Distance2[xy, max = Inside[new]] < 2.8,
     shapedata = shapedata /. xy -> xy - .7 (new - max) ];
   AppendTo[shapedata, ctr -> max];
   max
@@ -949,19 +1014,42 @@ abcdefghijklmnopqrstuvwxyz\
 ABCDEFGHIJKLMNOPQRSTUVWXYZ\
 0987654321"]
 
-pcode[ Incoming | External ] = "+"
+pcode[ _[Incoming | External][c__] ] := {{c}, {}, {}}
 
-pcode[ Outgoing ] = "-"
+pcode[ _[Outgoing][c__] ] := {{}, {c}, {}}
 
-pcode[ _ ] = {}
+pcode[ _[c__] ] := {{}, {}, {c}}
 
 TopologyCode[ top:P$Topology ] :=
-Block[ {once},
-  once[x_] := (once[x] = {}; x);
-  StringJoin@@
-    ({ once[ pcode@@ #[[0]] ],
-       vcode[[ {#[[1, 1]], #[[2, 1]]} ]] }&)/@ Reverse[top]
+  StringJoin/@ Transpose[pcode/@ Apply[vcode[[#]]&, List@@ top, {2}]] /.
+    "" -> "0"
+
+
+MkDir[ dir_String ] := dir /; FileType[dir] === Directory
+
+MkDir[ dir_String ] := Check[CreateDirectory[dir], Abort[]]
+
+MkDir[ dirs__String ] := Fold[MkDir[ToFileName[##]]&, {}, {dirs}]
+
+
+Attributes[GetShape] = {HoldRest}
+
+GetShape[ {topcode__}, ___ ] :=
+Block[ {shapedata = ShapeData[topcode]},
+  shapedata /; Head[shapedata] === List
 ]
+
+GetShape[ {ext__, int_}, ___ ] :=
+Block[ {file = ToFileName[{$ShapeDataDir, ext}, int <> ".m"]},
+  (ShapeData[ext, int] = Get[file]) /; FileType[file] === File
+]
+
+GetShape[ {topcode__}, alt_ ] := ShapeData[topcode] = alt
+
+
+PutShape[ shapedata_, {ext__, int_} ] :=
+  Put[ShapeData[ext, int] = shapedata,
+    ToFileName[MkDir[$ShapeDataDir, ext], int <> ".m"]]
 
 
 ToJava[ p__, n_?NumberQ ] := ToJava[p, {n DefaultRadius, 0.}]
@@ -995,17 +1083,12 @@ Block[ {remaining = Length[tops]},
 Shape[ top:P$Topology -> _ ] := Shape[top]
 
 Shape[ top:P$Topology, auto_:0 ] :=
-Block[ {edittop, topcode, shapefile, shapedata, arg1, arg2, exitcode},
+Block[ {edittop, topcode, shapedata, arg1, arg2, exitcode},
   edittop = Take[#, 2]&/@ Topology@@ top /.
     External -> Incoming /. Vertex[e_, _] -> Vertex[e];
   topcode = TopologyCode[edittop];
-  shapefile = ToFileName[$ShapeDataDir, topcode <> ".m"];
   res = auto;
-  If[ Head[shapedata = ShapeData[topcode]] =!= List,
-    ShapeData[topcode] = shapedata = If[ FileType[shapefile] === File,
-      Get[shapefile],
-      --res; AutoShape[edittop] ]
-  ];
+  shapedata = GetShape[topcode, --res; Catch[AutoShape[edittop]]];
   If[ res > 0, Return[shapedata] ];
 
   If[ editorclass === False,
@@ -1035,10 +1118,10 @@ Block[ {edittop, topcode, shapefile, shapedata, arg1, arg2, exitcode},
 
   exitcode = JLink`DoModal[];
   If[ exitcode === 0,
-    ShapeData[topcode] = shapedata = MapAt[
+    shapedata = MapAt[
       MapThread[Rule, {First/@ shapedata[[1]], #}]&,
       editor@getShapeData[], 1 ];
-    Put[shapedata, shapefile]
+    PutShape[shapedata, topcode]
   ];
 
   If[ remaining === 0 || exitcode === 2,

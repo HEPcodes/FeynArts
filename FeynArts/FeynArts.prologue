@@ -1,6 +1,6 @@
 % FeynArts.prologue
 % PostScript prologue for FeynArts-generated Feynman diagrams
-% last modified 23 Jan 03 th
+% last modified 8 Jun 05 th
 
 #ifndef TEX
 
@@ -37,13 +37,14 @@ FeynArtsDict begin
 /CounterThickness PropagatorThickness 3 mul def
 
 /CrossWidth 1 def
+/OnePIWidth //CrossWidth def
 
 /ArrowLength 1.2 def
 /ArrowHeight .4 def
 
 /DampingConst ArrowLength .65 mul dup mul dup mul def
 
-/ScalarDashing [ .66 .66 ] def
+/ScalarDashing [ .66 ] def
 /GhostDashing [ .11 .66 ] def
 
 % # of points per unit arc length used in drawing Sine and Cycles lines
@@ -161,7 +162,7 @@ FeynArtsDict begin
     } for
   } {			% 1PI vertex function
     newpath
-    x y //CrossWidth 0 360 arc
+    x y //OnePIWidth 0 360 arc
     gsave
     cto .3 mul 1.1 add
     dup 0 lt { pop 0 } if
@@ -322,22 +323,21 @@ FeynArtsDict begin
   } ifelse
 } bind def
 
-/ScalarDash {
+/Dash {
   currentpoint stroke moveto
-  //ScalarDashing 0 setdash
+  0 setdash
   Straight
   currentpoint stroke moveto
   [ ] 0 setdash
+} bind def
+
+/ScalarDash {
+  //ScalarDashing Dash
 } bind def
 
 /GhostDash {
-  currentpoint stroke moveto
-  //GhostDashing 0 setdash
-  Straight
-  currentpoint stroke moveto
-  [ ] 0 setdash
+  //GhostDashing Dash
 } bind def
-
 
 /Sine {
   /a dphi abs //Degree mul rad mul def

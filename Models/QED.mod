@@ -2,7 +2,7 @@
 	QED.mod
 		Classes model file for leptons-only QED
 		by Hagen Eck and Sepp Kueblbeck
-		last modified 13 Jun 00 by Thomas Hahn
+		last modified 6 Mar 07 by Thomas Hahn
 
 
 This file introduces the following symbols:
@@ -30,7 +30,7 @@ This file introduces the following symbols:
 
 IndexRange[ Index[Generation] ] = {1, 2, 3}
 
-Appearance[ Index[Generation, i_Integer] ] := Alph[i + 8]
+IndexStyle[ Index[Generation, i_Integer] ] := Alph[i + 8]
 
 
 ViolatesQ[ q__ ] := Plus[q] =!= 0

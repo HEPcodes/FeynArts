@@ -1,7 +1,7 @@
 /*
 	TopologyEditor.java
 		the topology editor UI, called by Shape
-		last modified 23 Jan 03 th
+		last modified 11 Jun 03 th
 */
 
 package de.FeynArts;
@@ -440,7 +440,7 @@ public class TopologyEditor extends Frame {
           sel = vertices[i];
           break;
         }
-      if(sel == null) return;
+      if( sel == null ) return;
 
       if( sel instanceof Propagatorbox ) {
         Propagator p = ((Propagatorbox)sel).parent;
@@ -664,7 +664,7 @@ public class TopologyEditor extends Frame {
       link.putFunction("List", nPropagators);
       for( int i = 0; i < nPropagators; ++i ) {
         Propagator p = propagators[i];
-        if(p.tadpole) {
+        if( p.tadpole ) {
           link.putFunction("List", 2);
           link.put(p.mid.x);
           link.put(p.mid.y);

@@ -1,7 +1,7 @@
 (*
 	Initialize.m
 		Functions for the initialization of models
-		last modified 23 Jan 03 th
+		last modified 6 Mar 07 th
 *)
 
 Begin["`Initialize`"]
@@ -37,6 +37,16 @@ Begin["`Initialize`"]
 
 
 Attributes[ FieldPoint ] = {Orderless}
+
+
+ReadModelFile[ mod_, explain_:"including model file " ] :=
+Block[ {$Path = $ModelPath, file},
+  file = System`Private`FindFile[mod];
+  FAPrint[2, explain, file];
+  (*Off[Syntax::newl, Syntax::com];*)
+  Check[ Get[file], Abort[] ];
+  (*On[Syntax::newl, Syntax::com];*)
+]
 
 
 Options[ InitializeModel ] = {
@@ -106,23 +116,19 @@ $GenericModel = $Model = ""
 (* initializing a generic model: *)
 
 InitGenericModel[ genmod_ ] :=
-Block[ {savecp = $ContextPath,
-file = FullFileName[genmod <> ".gen", $ModelPath]},
-
+Block[ {savecp = $ContextPath},
 	(* no Global symbols allowed for these operations *)
   $ContextPath = DeleteCases[$ContextPath, "Global`"];
   $GenericModel = $Model = "";
 
-  FAPrint[2, ""];
-  FAPrint[2, "initializing generic model file ", file];
   Clear[AnalyticalPropagator, AnalyticalCoupling, KinematicVector,
     PossibleFields, CheckFieldPoint, Combinations,
     Compatibles, MixingPartners];
   $ExcludedFPs = $ExcludedParticleFPs = {};
   M$FlippingRules = M$TruncationRules = M$LastGenericRules = {};
-  Off[Syntax::newl, Syntax::com]; 
-  Check[Get[file], Abort[]];
-  On[Syntax::newl, Syntax::com];
+
+  FAPrint[2, ""];
+  ReadModelFile[genmod <> ".gen", "initializing generic model file "];
 
   ReferenceOrder[Generic] =
     Union[ ToGeneric[(List@@ #[[1]])&/@ M$GenericCouplings] ];
@@ -184,20 +190,20 @@ Block[ {f, h, i, v},
     { Combinations[Pattern[#, _]&/@ f, Pattern[#, _]&/@ h],
       Flatten[ Table[
         (v = f; Scan[(v[[#]] = h[[#]])&, #];
-          { {h[[#]], FieldPoint@@ v}, f[[#]] }&/@ #)&/@ Tuples[n, i],
+          { {h[[#]], FieldPoint@@ v}, f[[#]] }&/@ #)&/@ TupleList[n, i],
         {i, n} ], 2 ] }
 ]
 
 
-(* Tuples[n, m] returns all possible m-tuples that can be constructed 
+(* TupleList[n, m] returns all possible m-tuples that can be constructed 
    from an n-tuple *)
 
-Tuples[ n_, 1 ] := Array[List, n]
+TupleList[ n_, 1 ] := Array[List, n]
 
-Tuples[ n_, m_ ] := Tuples[n, m] =
+TupleList[ n_, m_ ] := TupleList[n, m] =
   Flatten[
     Function[z, Flatten[{z, #}]&/@ Range[Last[z] + 1, n]]/@
-      Tuples[n, m - 1],
+      TupleList[n, m - 1],
     1 ]
 
 
@@ -310,23 +316,19 @@ ClearClassesDefs[ defs_ ] :=
 (* Initialization of a classes model: *)
 
 InitClassesModel[ mod_ ] :=
-Block[ {unsortedFP, unsortedCT, savecp = $ContextPath,
-file = FullFileName[mod <> ".mod", $ModelPath]},
-
+Block[ {unsortedFP, unsortedCT, savecp = $ContextPath},
 	(* no Global symbols allowed for these operations *)
   $ContextPath = DeleteCases[$ContextPath, "Global`"];
   $Model = "";
 
-  FAPrint[2, ""];
-  FAPrint[2, "initializing classes model file ", file];
   Clear[SVCompatibles, InsertOnly, Diagonal, TheC, QuantumNumbers];
   ClearClassesDefs[DownValues[CheckFieldPoint]];
   ClearClassesDefs[DownValues[MixingPartners]];
   ClearClassesDefs[SubValues[PossibleFields]];
   M$LastModelRules = {};
-  Off[Syntax::newl, Syntax::com];
-  If[ Get[file] === $Failed, Abort[] ];
-  On[Syntax::newl, Syntax::com];
+
+  FAPrint[2, ""];
+  ReadModelFile[mod <> ".mod", "initializing classes model file "];
 
 	(* initialize particles:
 	   set properties of classes from their description list: *)
@@ -491,11 +493,12 @@ IndexCount[ _ ] = {0, 0}
 
 DeltaSelect[ expr_Times ] := Cases[expr, _IndexDelta]
 
-DeltaSelect[ expr_List ] := Flatten[Intersection[DeltaSelect/@ expr]]
+DeltaSelect[ expr_List ] :=
+  Intersection@@ DeltaSelect/@ DeleteCases[expr, 0]
 
 DeltaSelect[ expr_Plus ] :=
   If[ Head[#] === Plus, {}, DeltaSelect[#] ]& @
-    Collect[ expr, Union[Cases[expr, IndexDelta[__], Infinity]] ] /;
+    Collect[expr, _IndexDelta] /;
   !FreeQ[expr, IndexDelta]
 
 DeltaSelect[ expr_IndexDelta ] = expr
@@ -516,6 +519,13 @@ Indices[ _ ] = {}
 
 
 IndexSum[0, _] = 0
+
+IndexSum[ IndexDelta[i_, j_] r_., {i_, _} ] := r /. (i -> j)
+
+
+AddHC[ h_[type___, i_, j_], weight_:(1&) ] :=
+  weight[i, j] h[type, i, j]/2 +
+  weight[j, i] Conjugate[h[type, j, i]]/2
 
 
 KinematicIndices[ VS ] := KinematicIndices[SV]
@@ -633,15 +643,15 @@ TheLabel[ -fi_ ] := TheLabel[fi]
 
 TheLabel[ fi_[i_Integer, ndx_List] ] :=
   TheLabel[fi[i]] /. Thread[ Indices[fi[i]] ->
-    Join[Appearance/@ ndx,
+    Join[IndexStyle/@ ndx,
       Table[Null, {Length[Indices[fi[i]]] - Length[ndx]}]] ]
 
 TheLabel[ fi_ ] := (Message[TheLabel::undef, fi]; ToString[fi])
 
 
-Appearance[ Index[_, i_] ] := Alph[i]
+IndexStyle[ Index[_, i_] ] := Alph[i]
 
-Appearance[ expr_ ] = expr
+IndexStyle[ expr_ ] = expr
 
 
 GaugeXi[ _Integer fi_ ] := GaugeXi[fi]

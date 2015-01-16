@@ -1,7 +1,7 @@
 (*
 	Topology.m
 		Creation of topologies for Feynman graphs
-		last modified 23 Jan 03 th
+		last modified 26 Jun 03 th
 *)
 
 Begin["`Topology`"]
@@ -433,14 +433,21 @@ opt = ActualOptions[CreateTopologies, options]},
   excl = $ExcludeTopologies/@
     Union[Flatten[{ExcludeTopologies /. opt}]];
   If[ Length[excl] =!= 0,
-    If[ Head[ excl = And@@ excl ] === And,
-      excl = FlattenAt[Evaluate[excl]&, Array[{1, #}&, Length[excl]]] ];
+    excl = Level[excl, {2}, AndFunction];
+	(* use ToTree only once: *)
     If[ Length[ forb = Position[excl, ToTree] ] > 1,
       excl = ReplacePart[excl, tree, Drop[#, -1]&/@ Rest[forb]] ];
     tops = Select[tops, excl] ];
 
-  Sort[CanonicalOrder/@ tops]
+  Sort[TopologySort/@ tops]
 ]
+
+
+Attributes[AndFunction] = {HoldAll}
+
+AndFunction[f_] := f&
+
+AndFunction[f__] := And[f]&
 
 
 CreateCTTopologies::cterr =
@@ -493,7 +500,7 @@ AddToPropagator[ Propagator[h_][from_, to_], n_ ] :=
     Propagator[External][Vertex[1][n], Vertex[3][n + 99]] ]
 
 AddPropagator[ top_, n_ ] :=
-  TopologiesCompare[
+  TopologyCompare[
     TopologyList@@
       Array[ MapAt[AddToPropagator[#, n]&, top, #]&, Length[top] ] /.
         Topology[s_][p1___, Topology[snew_][pnew__], p2___] :> 
@@ -515,7 +522,7 @@ Block[ {vert},
   vert = Union[Cases[ top,
     Vertex[e_, c___][_] /; e < emax && {e, c} =!= {1}, {2} ]];
   TopologyList@@
-    (TopologiesCompare[
+    (TopologyCompare[
       TopologyList@@ Cases[vert, v:#[__] :> AddToVertex[top, v, n]] ]&)/@
     Union[Head/@ vert]
 ]
@@ -527,27 +534,28 @@ AddOne[ top_, n_, emax_ ] :=
 
 (* Order topologies canonically (sort of) *)
 
-tosort[ Vertex[1][n_] ] := (vc = Max[vc, n]; vert[1][n, 0])
+Incoming2 = Outgoing
 
-tosort[ Vertex[e_, c_:0][n_] ] := vert[e][1000 + n, c]
+topSort[ top_ ] :=
+Block[ {vert, Loop, lc = 0, vc = 0, pc = 0, Incoming2, Outgoing},
+  Outgoing = Incoming2;
+  Flatten[plist@@ MapIndexed[toSort, top, 2]]
+]
 
-tosort[ Propagator[Loop[n_]][v__] ] :=
-  prop[Loop, psort[v], {Loop[1000 + n]}]
 
-tosort[ Propagator[type_][v__] ] := prop[type, psort[v]]
+toSort[ Vertex[1][n_], _ ] := (vc = Max[vc, n]; vert[1][n, 0])
 
-fromv[ vert[e_][n_, 0] ] := Vertex[e][n]
+toSort[ Vertex[e_, c_:0][n_], _ ] := vert[e][1000 + n, c]
 
-fromv[ vert[e_][n_, c_] ] := Vertex[e, c][n]
+toSort[ Propagator[Loop[n_]][v__], {i_} ] :=
+  prop[Loop, psort[v], {Loop[1000 + n]}][v, i]
 
-fromp[ t_, v_ ] := fromv/@ Propagator[t]@@ v
-
-fromp[ _, v_, _[t_] ] := fromv/@ Propagator[t]@@ v
+toSort[ Propagator[t_][v__], {i_} ] := prop[t, psort[v]][v, i]
 
 
 Attributes[psort] = Attributes[plist] = {Orderless}
 
-plist[ t_, r___ ] := { Map[renum, t, {2}], plist[r] }
+plist[ p_[i__], r___ ] := { toProp[Map[renum, p, {2}]][i], plist[r] }
 
 plist[ ] = {}
 
@@ -561,17 +569,38 @@ renum[ x:h_[n_, r___] ] := (x = h[++vc, r]) /; n > 1000
 renum[ x:h_[_, r___] ] := x = h[--pc, r]
 
 
-CanonicalOrder[ tops_TopologyList ] := CanonicalOrder/@ tops
+toProp[ _[t_, _[v__]] ] := Propagator[t][v]
 
-CanonicalOrder[ top:P$Topology ] :=
-Block[ {vert, Loop, lc = 0, vc = 0, pc = 0},
-  Head[top]@@ Apply[fromp, Flatten[plist@@ Map[tosort, top, 2]], 1]
+toProp[ _[_, _[v__], _[t_]] ] := Propagator[t][v]
+
+
+toVert[ vert[e_][n_, 0] ] := Vertex[e][n]
+
+toVert[ vert[e_][n_, c_] ] := Vertex[e, c][n]
+
+
+ord[ _[v__][v__, i_] ] := i
+
+ord[ _[__, i_] ] := -i
+
+
+TopologySort[ tops_TopologyList ] := TopologySort/@ tops
+
+TopologySort[ top:P$Topology ] :=
+  Head[top]@@ Map[toVert, Head/@ topSort[top], {2}]
+
+
+TopologyOrdering[ tops_TopologyList ] := TopologyOrdering/@ tops
+
+TopologyOrdering[ top:P$Topology ] :=
+Block[ {sort = topSort[top]},
+  {Head[top]@@ Map[toVert, Head/@ sort, {2}], ord/@ sort}
 ]
 
 
 (* Compare topologies *)
 
-TopologiesCompare[ tops_ ] :=
+TopologyCompare[ tops_ ] :=
 Block[ {comp},
   comp =
     If[ Count[ tops[[1]], Propagator[Loop[_]][__] ] > 1 ||
@@ -588,7 +617,7 @@ Block[ {comp},
 
 (* Finding the symmetry factor: start with symfac = 1, append new
    propagators to loop propagators until all loop propagators have two
-   additional vertices.  After each step do a TopologiesCompare and choose
+   additional vertices.  After each step do a TopologyCompare and choose
    the topology with the smallest symmetry factor (counting downwards,
    since we start with symfac = 1), then proceed to add the next
    propagator.  The inverse of the last symfac is then the s in
@@ -599,7 +628,7 @@ Block[ {ext, p, t = Topology[1]@@ top},
   ext = Min[ 0, Cases[top, Vertex[1][n_] -> n, {2}] ];
   While[ Length[ p = Flatten[MapIndexed[ChooseProp, List@@ t]] ] =!= 0,
     ++ext;
-    t = TopologiesCompare[
+    t = TopologyCompare[
       MapAt[AddToPropagator[#, ext]&, t, #]&/@ p /.
         Topology[s_][p1___, Topology[snew_][pnew__], p2___] :> 
           Topology[s snew][p1, pnew, p2] ];

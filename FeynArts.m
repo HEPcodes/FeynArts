@@ -1,8 +1,8 @@
 (*
 
-This is FeynArts, Version 3.1
-Copyright by Sepp Kueblbeck, Hagen Eck, and Thomas Hahn 1991-2003
-last modified 7 Apr 03 by Thomas Hahn
+This is FeynArts, Version 3.2
+Copyright by Sepp Kueblbeck, Hagen Eck, and Thomas Hahn 1991-2007
+last modified 6 Mar 07 by Thomas Hahn
 
 Release notes:
 
@@ -44,16 +44,12 @@ Have fun!
 
 
 Print[""];
-Print["FeynArts 3.1"];
+Print["FeynArts 3.2"];
 Print["by Hagen Eck, Sepp Kueblbeck, and Thomas Hahn"];
-Print["last revised 7 Apr 03"]
+Print["last revised 5 Feb 07"]
 
 
 BeginPackage["FeynArts`"]
-
-FullFileName::usage = "FullFileName[name, path] returns the name of the
-file with its full path appended."
-
 
 (* definitions for Utilities.m *)
 
@@ -283,8 +279,16 @@ CreateTopologies[l, i -> o]."
 CreateVFTopologies::usage = "CreateVFTopologies[l, i -> o] generates all
 topologies with 1PI vertex functions whose total loop order is l."
 
-CanonicalOrder::usage = "CanonicalOrder[top] orders the topology top into
-a (more or less) canonical order."
+TopologySort::usage = "TopologySort[top] sorts the topology top into a
+(more or less) canonical order."
+
+TopologyOrdering::usage = "TopologyOrdering[top] returns the topology
+top sorted into a (more or less) canonical order, together with the
+permutation that brings it into this order, i.e. a list of the positions
+at which the propagators in the sorted version appeared in the unsorted
+version.  A negative integer in the permutation indicates that also the
+vertices in the respective propagator were exchanged with respect to the
+original."
 
 SymmetryFactor::usage = "SymmetryFactor[top] returns the symmetry factor
 for the topology top.  This value is needed if you want to enter new
@@ -343,11 +347,17 @@ TopologyList.  It specifies the process as a rule \"inparticles ->
 outparticles\"."
 
 IndexDelta::usage = "IndexDelta[i1, i2] is a symbol in the definition of a
-classes coupling that indicates that the coupling is diagonal in the
-indices i1 and i2."
+classes coupling indicating that the coupling is diagonal in the indices
+i1 and i2."
+
+IndexEps::usage = "IndexEps[i1, i2, i3] is the totally antisymmetric
+symbol in the indices i1, i2, i3."
 
 
 (* definitions for Initialize.m *)
+
+ReadModelFile::usage = "ReadModelFile[modfile, text] reads the model
+file modfile and prints the message text."
 
 InitializeModel::usage = "InitializeModel[MOD] initializes the classes
 model for the model MOD and the generic model given by the GenericModel
@@ -405,6 +415,12 @@ diagram for every value the index can take on."
 IndexSum::usage = "IndexSum[expr, {i, range}] represents the unevaluated
 sum of expr in the index i over range.  To execute the sum, replace
 IndexSum by Sum."
+
+AddHC::usage = "AddHC[mat] extends mat by its Hermitian conjugate part,
+e.g. AndHC[A[1, i, j]] returns (A[1, i, j] + Conjugate[A[1, j, i]])/2. 
+AddHC[mat, w] forms the weighted sum with weight function w, e.g.
+AndHC[A[1, i, j], w] returns (w[i, j] A[1, i, j]/2 + Conjugate[w[j, i]]
+Conjugate[A[1, j, i]]/2)."
 
 ReferenceOrder::usage = "ReferenceOrder[x] gives a list of all field
 points of the current model in (unsorted) list form.  x can be Generic or
@@ -630,9 +646,9 @@ TheLabel statements during model initialization."
 
 TheLabel::usage = "TheLabel[p] returns the PropagatorLabel of particle p."
 
-Appearance::usage = "Appearance[i] gives the rendering information for the
-index i.  For example, Appearance[Index[Lorentz, i_]] := Greek[i + 11]
-makes Lorentz indices appear as \"\\mu\", \"\\nu\", etc."
+IndexStyle::usage = "IndexStyle[i] gives the rendering information for
+the index i.  For example, IndexStyle[Index[Lorentz, i_]] := Greek[i +
+11] makes Lorentz indices appear as \"\\mu\", \"\\nu\", etc."
 
 TheC::usage = "TheC is an internal symbol for storing the coupling
 matrices."
@@ -652,9 +668,9 @@ contain the symbol ConjugateCoupling."
 ConjugateCoupling::usage = "ConjugateCoupling[coupl] defines how the
 charge-conjugated coupling is derived from coupl.  Typically, one I
 multiplying the coupling constant must not be conjugated because it
-derives from the exponent of the path integral, e.g. I \int d^4x {\cal L}.  
-If no definition is made for ConjugateCoupling, the final amplitudes will
-contain this symbol."
+derives from the exponent of the path integral.  If no definition is
+made for ConjugateCoupling, the final amplitudes will contain this
+symbol."
 
 G::usage = "G[sym][cto][fields][kinpart] is a generic coupling matrix of
 counter-term order cto for fields corresponding to the kinematical object
@@ -716,6 +732,9 @@ DiagramSelect::usage = "DiagramSelect[diags, crit] selects the diagrams
 from diags for which crit is true.  For example, for selecting diagrams
 where field #5 is not a S[1], one could use DiagramSelect[diags, FreeQ[#,
 Field[5] -> S[1]]&]."
+
+DiagramComplement::usage = "DiagramComplement[diagall, diag1, diag2,
+...] gives all diagrams in diagall which are not in any of the diagi."
 
 ToFA1Conventions::usage = "ToFA1Conventions[expr] converts expr back to
 FeynArts 1 conventions.  Note that this conversion only renames some
@@ -847,12 +866,12 @@ ComposedChar[t, Null, sup] is a label with a superscript only."
 
 Shape::usage = "Shape[tops] edits the shapes of the topologies tops."
 
-ShapeData::usage = "ShapeData[topcode] returns the shape data for the
-topology characterized by topcode."
+ShapeData::usage = "ShapeData[topcode] is the database of shapes currently
+in memory.  It is indexed by the three strings given by TopologyCode."
 
-TopologyCode::usage = "TopologyCode[top] returns a string identifying the
-topology.  This string is unique as far painting the topology is
-concerned."
+TopologyCode::usage = "TopologyCode[top] returns a list of three strings
+identifying the topology.  This code is unique as far painting the
+topology is concerned."
 
 
 (* FeynArts system constants *)
@@ -879,6 +898,9 @@ P$Generic::usage = "P$Generic is the pattern for generic fields."
 P$NonCommuting::usage = "P$NonCommuting is the pattern for the
 non-commuting generic fields."
 
+P$InsertionObjects::usage = "P$InsertionObjects matches the objects
+in the generic amplitude that will be taken for insertions."
+
 
 P$Topology = Topology[__] | Topology[_][__]
 
@@ -886,19 +908,13 @@ P$Generic = F | S | V | U | SV
 
 P$NonCommuting = F | U
 
+P$InsertionObjects = G[_][_][__][__] | Mass[_] | GaugeXi[_] |
+  VertexFunction[_][__]
 
-FullFileName[ file_, path_ ] :=
-Block[ {full},
-  Catch[
-    Scan[
-      If[ FileType[full = ToFileName[#, file]] === File, Throw[full] ] &,
-      path ];
-    file ]
-]
+$FeynArts = 3.2
 
-$FeynArts = 3.1
-
-$FeynArtsDir = SetDirectory[DirectoryName[ FullFileName[$Input, $Path] ]]
+$FeynArtsDir =
+  SetDirectory[DirectoryName[System`Private`FindFile[$Input]]]
 
 ResetDirectory[]
 

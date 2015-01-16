@@ -2,7 +2,7 @@
 	SM.mod
 		Classes model file for the Standard Model
 		by Hagen Eck and Sepp Kueblbeck 1995
-		last modified 21 May 03 by Thomas Hahn
+		last modified 6 Mar 07 by Thomas Hahn
 
 This file contains the definition of a Classes model for FeynArts.
 It needs the Generic model file Lorentz.gen.
@@ -30,6 +30,8 @@ Oct 95: one-loop counter terms added by Stefan Bauberger:
 	include field renormalization of the Goldstone bosons.
 	The counter terms associated with quark mixing are not well
 	tested yet.
+
+Apr 99: Christian Schappacher added colour indices for the quarks
 
 Apr 99:	Terms for ghost sector updated by Ayres Freitas.
 	The gauge-fixing terms are still assumed not to be renormalized
@@ -83,7 +85,7 @@ This file introduces the following symbols:
 
 	dCKM1:		quark mixing matrix RCs
 
-        dZG01, dZGp1:	field RC for unphysical scalars
+	dZG01, dZGp1:	field RC for unphysical scalars
 	dUZZ1, dUZA1,
 	dUAZ1, dUAA1:	field RCs for photon and Z ghosts
 	dUW1:		field RC for +/- ghosts
@@ -104,7 +106,9 @@ This file introduces the following symbols:
 
 IndexRange[ Index[Generation] ] = Range[3]
 
-Appearance[ Index[Generation, i_Integer] ] := Alph[i + 8]
+IndexRange[ Index[Colour] ] = NoUnfold[Range[3]]
+
+IndexStyle[ Index[Generation, i_Integer] ] := Alph[i + 8]
 
 MaxGenerationIndex = 3
 
@@ -112,25 +116,14 @@ MaxGenerationIndex = 3
 ViolatesQ[ q__ ] := Plus[q] =!= 0
 
 
-HermitianConjugate[ expr_[args___, j1_, j2_] ] :=
-  Conjugate[ expr[args, j2, j1] ]
-
-HermitianConjugate[ expr_ ] := Conjugate[expr]
-
-
 mdZfLR1[ type_, j1_, j2_ ] :=
   Mass[F[type, {j1}]]/2 dZfL1[type, j1, j2] +
-    Mass[F[type, {j2}]]/2 HermitianConjugate[dZfR1[type, j1, j2]]
+    Mass[F[type, {j2}]]/2 Conjugate[dZfR1[type, j2, j1]]
 
 mdZfRL1[ type_, j1_, j2_ ] :=
   Mass[F[type, {j1}]]/2 dZfR1[type, j1, j2] +
-    Mass[F[type, {j2}]]/2 HermitianConjugate[dZfL1[type, j1, j2]]
+    Mass[F[type, {j2}]]/2 Conjugate[dZfL1[type, j2, j1]]
 
-dZfL1cc[ type_, j1_, j2_ ] :=
-  dZfL1[type, j1, j2]/2 + HermitianConjugate[dZfL1[type, j1, j2]]/2
-
-dZfR1cc[ type_, j1_, j2_ ] :=
-  dZfR1[type, j1, j2]/2 + HermitianConjugate[dZfR1[type, j1, j2]]/2
 
 (* the leptonic field RCs are diagonal: *)
 
@@ -184,10 +177,9 @@ M$ClassesDescription = {
 	(* Quarks (u): I_3 = +1/2, Q = +2/3 *)
   F[3] == {
 	SelfConjugate -> False,
-	Indices -> {Index[Generation]},
+	Indices -> {Index[Generation], Index[Colour]},
 	Mass -> MQU,
 	QuantumNumbers -> 2/3 Charge,
-	MatrixTraceFactor -> 3,
 	PropagatorLabel -> ComposedChar["u", Index[Generation]],
 	PropagatorType -> Straight,
 	PropagatorArrow -> Forward },
@@ -195,10 +187,9 @@ M$ClassesDescription = {
 	(* Quarks (d): I_3 = -1/2, Q = -1/3 *) 
   F[4] == {
 	SelfConjugate -> False,
-	Indices -> {Index[Generation]},
+	Indices -> {Index[Generation], Index[Colour]},
 	Mass -> MQD,
 	QuantumNumbers -> -1/3 Charge,
-	MatrixTraceFactor -> 3,
 	PropagatorLabel -> ComposedChar["d", Index[Generation]],
 	PropagatorType -> Straight, 
 	PropagatorArrow -> Forward },
@@ -337,7 +328,9 @@ MQU[2] = MC;
 MQU[3] = MT;
 MQD[1] = MD;
 MQD[2] = MS;
-MQD[3] = MB
+MQD[3] = MB;
+MQU[gen_, _] := MQU[gen];
+MQD[gen_, _] := MQD[gen]
 
 TheLabel[ F[1, {1}] ] = ComposedChar["\\nu", "e"]; 
 TheLabel[ F[1, {2}] ] = ComposedChar["\\nu", "\\mu"]; 
@@ -345,12 +338,12 @@ TheLabel[ F[1, {3}] ] = ComposedChar["\\nu", "\\tau"];
 TheLabel[ F[2, {1}] ] = "e"; 
 TheLabel[ F[2, {2}] ] = "\\mu"; 
 TheLabel[ F[2, {3}] ] = "\\tau";
-TheLabel[ F[3, {1}] ] = "u"; 
-TheLabel[ F[3, {2}] ] = "c";
-TheLabel[ F[3, {3}] ] = "t";
-TheLabel[ F[4, {1}] ] = "d"; 
-TheLabel[ F[4, {2}] ] = "s";
-TheLabel[ F[4, {3}] ] = "b"
+TheLabel[ F[3, {1, ___}] ] = "u"; 
+TheLabel[ F[3, {2, ___}] ] = "c";
+TheLabel[ F[3, {3, ___}] ] = "t";
+TheLabel[ F[4, {1, ___}] ] = "d"; 
+TheLabel[ F[4, {2, ___}] ] = "s";
+TheLabel[ F[4, {3, ___}] ] = "b"
 
 GaugeXi[ V[1] ] = GaugeXi[A];
 GaugeXi[ V[2] ] = GaugeXi[Z];
@@ -358,7 +351,7 @@ GaugeXi[ V[3] ] = GaugeXi[W];
 GaugeXi[ S[1] ] = 1;
 GaugeXi[ S[2] ] = GaugeXi[Z];
 GaugeXi[ S[3] ] = GaugeXi[W];
-GaugeXi[ U[1] ] = 1;
+GaugeXi[ U[1] ] = GaugeXi[A];
 GaugeXi[ U[2] ] = GaugeXi[Z];
 GaugeXi[ U[3] ] = GaugeXi[W];
 GaugeXi[ U[4] ] = GaugeXi[W]
@@ -417,11 +410,11 @@ M$CouplingMatrices = {
 
   C[ S[2], S[2] ] == -I *
     { {0, dZG01},
-      {0, -EL/(2 MW SW) dTad1} },
+      {0, -EL/(2 MW SW) dTH1} },
 
   C[ S[3], -S[3] ] == -I *
     { {0, dZGp1},
-      {0, -EL/(2 MW SW) dTad1} },
+      {0, -EL/(2 MW SW) dTH1} },
 
 	(* U-U:  G(+) . { -mom^2, 1 } *)
 
@@ -434,7 +427,7 @@ M$CouplingMatrices = {
       {0, GaugeXi[Z] (MZ^2 (-dZG01/2 + dUZZ1) + dMZsq1/2) } },
   
   C[ U[2], -U[1] ] == -I/Sqrt[GaugeXi[A]] *
-    { {0, -dZAZ1/2},
+    { {0, -dZAZ1/2 + dUAZ1},
       {0, 0} },
   
   C[ U[1], -U[2] ] == -I/Sqrt[GaugeXi[Z]] *
@@ -453,29 +446,28 @@ M$CouplingMatrices = {
 	                  omega[-], omega[+] } *)
 
   C[ -F[1, {j1}], F[1, {j2}] ] == I *
-    { {0, -dZfL1cc[1, j1, j2]},
-      {0, dZfR1cc[1, j1, j2]},
+    { {0, -AddHC[dZfL1[1, j1, j2]]},
+      {0, AddHC[dZfR1[1, j1, j2]]},
       {0, 0},
       {0, 0} },
 
   C[ -F[2, {j1}], F[2, {j2}] ] == I *
-    { {0, -dZfL1cc[2, j1, j2]},
-      {0, dZfR1cc[2, j1, j2]},
+    { {0, -AddHC[dZfL1[2, j1, j2]]},
+      {0, AddHC[dZfR1[2, j1, j2]]},
       {0, -mdZfLR1[2, j1, j2] - IndexDelta[j1, j2] dMf1[2, j1]},
       {0, -mdZfRL1[2, j1, j2] - IndexDelta[j1, j2] dMf1[2, j1]} },
 
-  C[ -F[3, {j1}], F[3, {j2}] ] == I *
-    { {0, -dZfL1cc[3, j1, j2]},
-      {0, dZfR1cc[3, j1, j2]},
+  C[ -F[3, {j1, o1}], F[3, {j2, o2}] ] == I IndexDelta[o1, o2] *
+    { {0, -AddHC[dZfL1[3, j1, j2]]},
+      {0, AddHC[dZfR1[3, j1, j2]]},
       {0, -mdZfLR1[3, j1, j2] - IndexDelta[j1, j2] dMf1[3, j1]},
       {0, -mdZfRL1[3, j1, j2] - IndexDelta[j1, j2] dMf1[3, j1]} },
 
-  C[ -F[4, {j1}], F[4, {j2}] ] == I *
-    { {0, -dZfL1cc[4, j1, j2]},
-      {0, dZfR1cc[4, j1, j2]},
+  C[ -F[4, {j1, o1}], F[4, {j2, o2}] ] == I IndexDelta[o1, o2] *
+    { {0, -AddHC[dZfL1[4, j1, j2]]},
+      {0, AddHC[dZfR1[4, j1, j2]]},
       {0, -mdZfLR1[4, j1, j2] - IndexDelta[j1, j2] dMf1[4, j1]},
       {0, -mdZfRL1[4, j1, j2] - IndexDelta[j1, j2] dMf1[4, j1]} },
-
 
 	(* V-V-V-V:  G(+) . { g[mu1, mu2] g[mu3, mu4],
 	                      g[mu1, mu4] g[mu2, mu3],
@@ -517,41 +509,41 @@ M$CouplingMatrices = {
 	(* S-S-S-S:  G(+) . 1 *)
 
   C[ S[1], S[1], S[1], S[1] ] == -3 I EL^2 MH^2/(4 SW^2 MW^2) *
-    { {1, 2 dZe1 - 2 dSW1/SW + dMHsq1/MH^2 + EL/(2 SW MW MH^2) dTad1 -
+    { {1, 2 dZe1 - 2 dSW1/SW + dMHsq1/MH^2 + EL/(2 SW MW MH^2) dTH1 -
             dMWsq1/MW^2 + 2 dZH1} },
 
   C[ S[1], S[1], S[2], S[2] ] == -I EL^2 MH^2/(4 SW^2 MW^2) *
-    { {1, 2 dZe1 - 2 dSW1/SW + dMHsq1/MH^2 + EL/(2 SW MW MH^2) dTad1 -
+    { {1, 2 dZe1 - 2 dSW1/SW + dMHsq1/MH^2 + EL/(2 SW MW MH^2) dTH1 -
             dMWsq1/MW^2 + dZH1 + dZG01} },
 
   C[ S[1], S[1], S[3], -S[3] ] == -I EL^2 MH^2/(4 SW^2 MW^2) *
-    { {1, 2 dZe1 - 2 dSW1/SW + dMHsq1/MH^2 + EL/(2 SW MW MH^2) dTad1 -
+    { {1, 2 dZe1 - 2 dSW1/SW + dMHsq1/MH^2 + EL/(2 SW MW MH^2) dTH1 -
             dMWsq1/MW^2 + dZH1 + dZGp1} },
 
   C[ S[2], S[2], S[2], S[2] ] == -3 I EL^2 MH^2/(4 SW^2 MW^2) *
-    { {1, 2 dZe1 - 2 dSW1/SW + dMHsq1/MH^2 + EL/(2 SW MW MH^2) dTad1 -
+    { {1, 2 dZe1 - 2 dSW1/SW + dMHsq1/MH^2 + EL/(2 SW MW MH^2) dTH1 -
             dMWsq1/MW^2 + 2 dZG01} },
 
   C[ S[2], S[2], S[3], -S[3] ] == -I EL^2 MH^2/(4 SW^2 MW^2) *
-    { {1, 2 dZe1 - 2 dSW1/SW + dMHsq1/MH^2 + EL/(2 SW MW MH^2) dTad1 -
+    { {1, 2 dZe1 - 2 dSW1/SW + dMHsq1/MH^2 + EL/(2 SW MW MH^2) dTH1 -
             dMWsq1/MW^2 + dZG01 + dZGp1} },
 
   C[ S[3], S[3], -S[3], -S[3] ] == -I EL^2 MH^2/(2 SW^2 MW^2) *
-    { {1, 2 dZe1 - 2 dSW1/SW + dMHsq1/MH^2 + EL/(2 SW MW MH^2) dTad1 -
+    { {1, 2 dZe1 - 2 dSW1/SW + dMHsq1/MH^2 + EL/(2 SW MW MH^2) dTH1 -
             dMWsq1/MW^2 + 2 dZGp1} },
 
 	(* S-S-S:  G(+) . 1 *)
 
   C[ S[1], S[1], S[1] ] == -3 I EL MH^2/(2 SW MW) *
-    { {1, dZe1 - dSW1/SW + dMHsq1/MH^2 + EL/(2 SW MW MH^2) dTad1 -
+    { {1, dZe1 - dSW1/SW + dMHsq1/MH^2 + EL/(2 SW MW MH^2) dTH1 -
             dMWsq1/(2 MW^2) + 3/2 dZH1} },
  
   C[ S[1], S[2], S[2] ] == -I EL MH^2/(2 SW MW) *
-    { {1, dZe1 - dSW1/SW + dMHsq1/MH^2 + EL/(2 SW MW MH^2) dTad1 -
+    { {1, dZe1 - dSW1/SW + dMHsq1/MH^2 + EL/(2 SW MW MH^2) dTH1 -
             dMWsq1/(2 MW^2) + dZH1/2 + dZG01} },
 
   C[ S[3], S[1], -S[3] ] == -I EL MH^2/(2 SW MW) *
-    { {1, dZe1 - dSW1/SW + dMHsq1/MH^2 + EL/(2 SW MW MH^2) dTad1 -
+    { {1, dZe1 - dSW1/SW + dMHsq1/MH^2 + EL/(2 SW MW MH^2) dTH1 -
             dMWsq1/(2 MW^2) + dZH1/2 + dZGp1} },
 
 	(* S-S-V-V:  G(+) . g[mu3, mu4] *)
@@ -686,68 +678,68 @@ M$CouplingMatrices = {
   C[ -F[2, {j1}], F[2, {j2}], V[1] ] == I EL *
     { {-FermionCharge[2] IndexDelta[j1, j2],
         -FermionCharge[2] *
-          (IndexDelta[j1, j2] (dZe1 + dZAA1/2) + dZfL1cc[2, j1, j2]) +
+          (IndexDelta[j1, j2] (dZe1 + dZAA1/2) + AddHC[dZfL1[2, j1, j2]]) +
           gL[2] IndexDelta[j1, j2] dZZA1/2},
       {-FermionCharge[2] IndexDelta[j1, j2],
         -FermionCharge[2] *
-          (IndexDelta[j1, j2] (dZe1 + dZAA1/2) + dZfR1cc[2, j1, j2]) +
+          (IndexDelta[j1, j2] (dZe1 + dZAA1/2) + AddHC[dZfR1[2, j1, j2]]) +
           gR[2] IndexDelta[j1, j2] dZZA1/2} },
 
-  C[ -F[3, {j1}], F[3, {j2}], V[1] ] == I EL *
+  C[ -F[3, {j1, o1}], F[3, {j2, o2}], V[1] ] == I EL IndexDelta[o1, o2] *
     { {-FermionCharge[3] IndexDelta[j1, j2],
         -FermionCharge[3] *
-          (IndexDelta[j1, j2] (dZe1 + dZAA1/2) + dZfL1cc[3, j1, j2]) +
+          (IndexDelta[j1, j2] (dZe1 + dZAA1/2) + AddHC[dZfL1[3, j1, j2]]) +
           gL[3] IndexDelta[j1, j2] dZZA1/2},
       {-FermionCharge[3] IndexDelta[j1, j2],
         -FermionCharge[3] *
-          (IndexDelta[j1, j2] (dZe1 + dZAA1/2) + dZfR1cc[3, j1, j2]) +
+          (IndexDelta[j1, j2] (dZe1 + dZAA1/2) + AddHC[dZfR1[3, j1, j2]]) +
           gR[3] IndexDelta[j1, j2] dZZA1/2} },
 
-  C[ -F[4, {j1}], F[4, {j2}], V[1] ] == I EL *
+  C[ -F[4, {j1, o1}], F[4, {j2, o2}], V[1] ] == I EL IndexDelta[o1, o2] *
     { {-FermionCharge[4] IndexDelta[j1, j2],
         -FermionCharge[4] *
-          (IndexDelta[j1, j2] (dZe1 + dZAA1/2) + dZfL1cc[4, j1, j2]) +
+          (IndexDelta[j1, j2] (dZe1 + dZAA1/2) + AddHC[dZfL1[4, j1, j2]]) +
           gL[4] IndexDelta[j1, j2] dZZA1/2},
       {-FermionCharge[4] IndexDelta[j1, j2],
         -FermionCharge[4] *
-          (IndexDelta[j1, j2] (dZe1 + dZAA1/2) + dZfR1cc[4, j1, j2]) +
+          (IndexDelta[j1, j2] (dZe1 + dZAA1/2) + AddHC[dZfR1[4, j1, j2]]) +
           gR[4] IndexDelta[j1, j2] dZZA1/2} },
 
   C[ -F[1, {j1}], F[1, {j2}], V[2] ] == I EL *
     { {gL[1] IndexDelta[j1, j2],
         IndexDelta[j1, j2] (gL[1] dZZZ1/2 + dgL[1]) +
-        gL[1] dZfL1cc[1, j1, j2]},
+        gL[1] AddHC[dZfL1[1, j1, j2]]},
       {0, 0} },
 
   C[ -F[2, {j1}], F[2, {j2}], V[2] ] == I EL *
     { {gL[2] IndexDelta[j1, j2],
         IndexDelta[j1, j2] *
           (gL[2] dZZZ1/2 + dgL[2] - FermionCharge[2] dZAZ1/2) +
-          gL[2] dZfL1cc[2, j1, j2]},
+          gL[2] AddHC[dZfL1[2, j1, j2]]},
       {gR[2] IndexDelta[j1, j2],
         IndexDelta[j1, j2] *
           (gR[2] dZZZ1/2 + dgR[2] - FermionCharge[2] dZAZ1/2) +
-          gR[2] dZfR1cc[2, j1, j2]} },
+          gR[2] AddHC[dZfR1[2, j1, j2]]} },
 
-  C[ -F[3, {j1}], F[3, {j2}], V[2] ] == I EL *
+  C[ -F[3, {j1, o1}], F[3, {j2, o2}], V[2] ] == I EL IndexDelta[o1, o2] *
     { {gL[3] IndexDelta[j1, j2],
         IndexDelta[j1, j2] *
           (gL[3] dZZZ1/2 + dgL[3] - FermionCharge[3] dZAZ1/2) +
-          gL[3] dZfL1cc[3, j1, j2]},
+          gL[3] AddHC[dZfL1[3, j1, j2]]},
       {gR[3] IndexDelta[j1, j2],
         IndexDelta[j1, j2] *
           (gR[3] dZZZ1/2 + dgR[3] - FermionCharge[3] dZAZ1/2) +
-          gR[3] dZfR1cc[3, j1, j2]} },
+          gR[3] AddHC[dZfR1[3, j1, j2]]} },
 
-  C[ -F[4, {j1}], F[4, {j2}], V[2] ] == I EL *
+  C[ -F[4, {j1, o1}], F[4, {j2, o2}], V[2] ] == I EL IndexDelta[o1, o2] *
     { {gL[4] IndexDelta[j1, j2],
         IndexDelta[j1, j2] *
           (gL[4] dZZZ1/2 + dgL[4] - FermionCharge[4] dZAZ1/2) +
-          gL[4] dZfL1cc[4, j1, j2]},
+          gL[4] AddHC[dZfL1[4, j1, j2]]},
       {gR[4] IndexDelta[j1, j2],
         IndexDelta[j1, j2] *
           (gR[4] dZZZ1/2 + dgR[4] - FermionCharge[4] dZAZ1/2) +
-          gR[4] dZfR1cc[4, j1, j2]} },
+          gR[4] AddHC[dZfR1[4, j1, j2]]} },
 
   C[ -F[1, {j1}], F[2, {j2}], -V[3] ] ==
     I EL/(Sqrt[2] SW) IndexDelta[j1, j2] *
@@ -779,23 +771,24 @@ M$CouplingMatrices = {
               dZfL1[1, j1, j1] Conjugate[dZfL1[2, j1, j1]]) },
       {0, 0, 0} },
 
-  C[ -F[3, {j1}], F[4, {j2}], -V[3] ] == I EL/(Sqrt[2] SW) *
+  C[ -F[3, {j1, o1}], F[4, {j2, o2}], -V[3] ] ==
+    I EL/(Sqrt[2] SW) IndexDelta[o1, o2] *
     { {CKM[j1, j2],
         CKM[j1, j2] (dZe1 - dSW1/SW + dZW1/2) + dCKM1[j1, j2] +
         1/2 IndexSum[
-          HermitianConjugate[dZfL1[3, j1, gn]] CKM[gn, j2] +
+          Conjugate[dZfL1[3, gn, j1]] CKM[gn, j2] +
           CKM[j1, gn] dZfL1[4, gn, j2],
         {gn, MaxGenerationIndex}]},
       {0, 0} },
 
-  C[ -F[4, {j2}], F[3, {j1}], V[3] ] == I EL/(Sqrt[2] SW) *
-    { {HermitianConjugate[CKM[j2, j1]],
-        HermitianConjugate[CKM[j2, j1]] (dZe1 - dSW1/SW + dZW1/2) +
-          HermitianConjugate[dCKM1[j2, j1]] +
+  C[ -F[4, {j2, o2}], F[3, {j1, o1}], V[3] ] ==
+    I EL/(Sqrt[2] SW) IndexDelta[o1, o2] *
+    { {Conjugate[CKM[j1, j2]],
+        Conjugate[CKM[j1, j2]] (dZe1 - dSW1/SW + dZW1/2) +
+          Conjugate[dCKM1[j1, j2]] +
           1/2 IndexSum[
-            HermitianConjugate[dZfL1[4, j2, gn]] *
-              HermitianConjugate[CKM[gn, j1]] +
-            HermitianConjugate[CKM[j2, gn]] dZfL1[3, gn, j1],
+            Conjugate[dZfL1[4, gn, j2]] Conjugate[CKM[j1, gn]] +
+            Conjugate[CKM[gn, j2]] dZfL1[3, gn, j1],
           {gn, MaxGenerationIndex}]},
       {0, 0} },
 
@@ -811,7 +804,8 @@ M$CouplingMatrices = {
           dMf1[2, j1]/Mass[F[2, {j1}]] - dMWsq1/(2 MW^2) + dZH1/2) +
           mdZfRL1[2, j1, j2]} },
 
-  C[ -F[3, {j1}], F[3, {j2}], S[1] ] == -I EL/(2 SW MW) *
+  C[ -F[3, {j1, o1}], F[3, {j2, o2}], S[1] ] ==
+    -I EL/(2 SW MW) IndexDelta[o1, o2] *
     { {Mass[F[3, {j1}]] IndexDelta[j1, j2],
         Mass[F[3, {j1}]] IndexDelta[j1, j2] (dZe1 - dSW1/SW +
           dMf1[3, j1]/Mass[F[3, {j1}]] - dMWsq1/(2 MW^2) + dZH1/2) +
@@ -821,7 +815,8 @@ M$CouplingMatrices = {
           dMf1[3, j1]/Mass[F[3, {j1}]] - dMWsq1/(2 MW^2) + dZH1/2) +
           mdZfRL1[3, j1, j2]} },
 
-  C[ -F[4, {j1}], F[4, {j2}], S[1] ] == -I EL/(2 SW MW) *
+  C[ -F[4, {j1, o1}], F[4, {j2, o2}], S[1] ] ==
+    -I EL/(2 SW MW) IndexDelta[o1, o2] *
     { {Mass[F[4, {j1}]] IndexDelta[j1, j2],
         Mass[F[4, {j1}]] IndexDelta[j1, j2] (dZe1 - dSW1/SW +
           dMf1[4, j1]/Mass[F[4, {j1}]] - dMWsq1/(2 MW^2) + dZH1/2) +
@@ -841,7 +836,8 @@ M$CouplingMatrices = {
           dMf1[2, j1]/Mass[F[2, {j1}]] - dMWsq1/(2 MW^2) + dZG01/2) -
           mdZfRL1[2, j1, j2]} },
 
-  C[ -F[3, {j1}], F[3, {j2}], S[2] ] == EL/(2 SW MW) *
+  C[ -F[3, {j1, o1}], F[3, {j2, o2}], S[2] ] ==
+    EL/(2 SW MW) IndexDelta[o1, o2] *
     { {Mass[F[3, {j1}]] IndexDelta[j1, j2],
         Mass[F[3, {j1}]] IndexDelta[j1, j2] (dZe1 - dSW1/SW +
           dMf1[3, j1]/Mass[F[3, {j1}]] - dMWsq1/(2 MW^2) + dZG01/2) +
@@ -851,7 +847,8 @@ M$CouplingMatrices = {
           dMf1[3, j1]/Mass[F[3, {j1}]] - dMWsq1/(2 MW^2) + dZG01/2) -
           mdZfRL1[3, j1, j2]} },
 
-  C[ -F[4, {j1}], F[4, {j2}], S[2] ] == -EL/(2 SW MW) *
+  C[ -F[4, {j1, o1}], F[4, {j2, o2}], S[2] ] ==
+    -EL/(2 SW MW) IndexDelta[o1, o2] *
     { {Mass[F[4, {j1}]] IndexDelta[j1, j2],
         Mass[F[4, {j1}]] IndexDelta[j1, j2] (dZe1 - dSW1/SW +
           dMf1[4, j1]/Mass[F[4, {j1}]] - dMWsq1/(2 MW^2) + dZG01/2) +
@@ -861,14 +858,14 @@ M$CouplingMatrices = {
           dMf1[4, j1]/Mass[F[4, {j1}]] - dMWsq1/(2 MW^2) + dZG01/2) -
           mdZfRL1[4, j1, j2]} },
 
-  C[ -F[3, {j1}], F[4, {j2}], -S[3] ] == I EL/(Sqrt[2] SW MW) *
+  C[ -F[3, {j1, o1}], F[4, {j2, o2}], -S[3] ] ==
+    I EL/(Sqrt[2] SW MW) IndexDelta[o1, o2] *
     { {Mass[F[3, {j1}]] CKM[j1, j2],
         Mass[F[3, {j1}]] *
           (CKM[j1, j2] (dZe1 - dSW1/SW + dMf1[3, j1]/Mass[F[3, {j1}]] -
             dMWsq1/(2 MW^2) + dZGp1/2) + dCKM1[j1, j2]) +
           1/2 IndexSum[
-            Mass[F[3, {gn}]] HermitianConjugate[dZfR1[3, j1, gn]] *
-              CKM[gn, j2] +
+            Mass[F[3, {gn}]] Conjugate[dZfR1[3, gn, j1]] CKM[gn, j2] +
             Mass[F[3, {j1}]] CKM[j1, gn] dZfL1[4, gn, j2],
           {gn, MaxGenerationIndex}]},
       {-Mass[F[4, {j2}]] CKM[j1, j2],
@@ -876,32 +873,31 @@ M$CouplingMatrices = {
           (CKM[j1, j2] (dZe1 - dSW1/SW + dMf1[4, j2]/Mass[F[4, {j2}]] -
             dMWsq1/(2 MW^2) + dZGp1/2) + dCKM1[j1, j2]) -
           1/2 IndexSum[
-            Mass[F[4, {j2}]] HermitianConjugate[dZfL1[3, j1, gn]] *
-              CKM[gn, j2] +
+            Mass[F[4, {j2}]] Conjugate[dZfL1[3, gn, j1]] CKM[gn, j2] +
             Mass[F[4, {gn}]] CKM[j1, gn] dZfR1[4, gn, j2],
           {gn, MaxGenerationIndex}]} },
 
-  C[ -F[4, {j2}], F[3, {j1}], S[3] ] == -I EL/(Sqrt[2] SW MW) *
-    { {Mass[F[4, {j2}]] HermitianConjugate[CKM[j2, j1]],
-        Mass[F[4, {j2}]] *
-          (HermitianConjugate[CKM[j2, j1]] (dZe1 - dSW1/SW +
-            dMf1[4, j2]/Mass[F[4, {j2}]] - dMWsq1/(2 MW^2) + dZGp1/2) +
-            HermitianConjugate[dCKM1[j2, j1]]) +
+  C[ -F[4, {j2, o2}], F[3, {j1, o1}], S[3] ] ==
+    -I EL/(Sqrt[2] SW MW) IndexDelta[o1, o2] *
+    { {Mass[F[4, {j2}]] Conjugate[CKM[j1, j2]],
+        Mass[F[4, {j2}]] (
+            Conjugate[CKM[j1, j2]] (dZe1 - dSW1/SW +
+              dMf1[4, j2]/Mass[F[4, {j2}]] - dMWsq1/(2 MW^2) + dZGp1/2) +
+            Conjugate[dCKM1[j1, j2]] ) +
           1/2 IndexSum[
-            Mass[F[4, {gn}]] HermitianConjugate[dZfR1[4, j2, gn]] *
-              HermitianConjugate[CKM[gn, j1]] +
-            Mass[F[4, {j2}]] HermitianConjugate[CKM[j2, gn]] *
-              dZfL1[3, gn, j1],
+            Mass[F[4, {gn}]] Conjugate[dZfR1[4, gn, j2]] *
+              Conjugate[CKM[j1, gn]] +
+            Mass[F[4, {j2}]] Conjugate[CKM[gn, j2]] dZfL1[3, gn, j1],
           {gn, MaxGenerationIndex}]},
-      {-Mass[F[3, {j1}]] HermitianConjugate[CKM[j2, j1]],
-        -Mass[F[3, {j1}]] *
-          (HermitianConjugate[CKM[j2, j1]] (dZe1 - dSW1/SW +
-            dMf1[3, j2]/Mass[F[3, {j2}]] - dMWsq1/(2 MW^2) + dZGp1/2) +
-            HermitianConjugate[dCKM1[j2, j1]]) -
+      {-Mass[F[3, {j1}]] Conjugate[CKM[j1, j2]],
+        -Mass[F[3, {j1}]] (
+            Conjugate[CKM[j1, j2]] (dZe1 - dSW1/SW +
+              dMf1[3, j2]/Mass[F[3, {j2}]] - dMWsq1/(2 MW^2) + dZGp1/2) +
+            Conjugate[dCKM1[j1, j2]] ) -
           1/2 IndexSum[
-            Mass[F[3, {j1}]] HermitianConjugate[dZfL1[4, j2, gn]] *
-              HermitianConjugate[CKM[gn, j1]] +
-            Mass[F[3, {gn}]] HermitianConjugate[CKM[j2, gn]] *
+            Mass[F[3, {j1}]] Conjugate[dZfL1[4, gn, j2]] *
+              Conjugate[CKM[j1, gn]] +
+            Mass[F[3, {gn}]] Conjugate[CKM[gn, j2]] *
               dZfR1[3, gn, j1],
           {gn, MaxGenerationIndex}]} },
 
@@ -953,7 +949,7 @@ M$CouplingMatrices = {
   C[ -U[2], U[4], V[3] ] == I EL/Sqrt[GaugeXi[Z]] *
     { {CW/SW,
        CW/SW (dZe1 - 1/(CW^2 SW) dSW1 + dZW1/2 - dZZZ1/2 + dUW1) + dZZA1/2},
-      {0, 0} }, 
+      {0, 0} },
 
   C[ -U[3], U[1], V[3] ] == I EL/Sqrt[GaugeXi[W]] *
     { {1, dZe1 + dUAA1 - CW/SW dUZA1},
@@ -974,25 +970,25 @@ M$CouplingMatrices = {
 	(* S-U-U:  G(+) . 1 *)
 
   C[ S[1], -U[2], U[2] ] == -I EL MZ Sqrt[GaugeXi[Z]]/(2 SW CW) *
-    { {1, dZe1 + (SW^2 - CW^2)/(CW^2 SW) dSW1 + dZH1/2 - dZchi1/2 + dUZZ1} },
+    { {1, dZe1 + (SW^2 - CW^2)/(CW^2 SW) dSW1 + dZH1/2 - dZG01/2 + dUZZ1} },
 
   C[ S[1], -U[3], U[3] ] == -I EL MW Sqrt[GaugeXi[W]]/(2 SW) *
-    { {1, dZe1 - dSW1/SW + dZH1/2 - dZphi1/2 + dUW1} },
+    { {1, dZe1 - dSW1/SW + dZH1/2 - dZGp1/2 + dUW1} },
 
   C[ S[1], -U[4], U[4] ] == -I EL MW Sqrt[GaugeXi[W]]/(2 SW) *
-    { {1, dZe1 - dSW1/SW + dZH1/2 - dZphi1/2 + dUW1} },
+    { {1, dZe1 - dSW1/SW + dZH1/2 - dZGp1/2 + dUW1} },
 
   C[ S[2], -U[4], U[4] ] == EL MW Sqrt[GaugeXi[W]]/(2 SW) *
-    { {1, dZe1 - dSW1/SW + dZchi1/2 - dZphi1/2 + dUW1} },
+    { {1, dZe1 - dSW1/SW + dZG01/2 - dZGp1/2 + dUW1} },
 
   C[ S[2], -U[3], U[3] ] == -EL MW Sqrt[GaugeXi[W]]/(2 SW) *
-    { {1, dZe1 - dSW1/SW + dZchi1/2 - dZphi1/2 + dUW1} },
+    { {1, dZe1 - dSW1/SW + dZG01/2 - dZGp1/2 + dUW1} },
 
   C[ -S[3], -U[2], U[3] ] == I EL MZ Sqrt[GaugeXi[Z]]/(2 SW) *
-    { {1, dZe1 - dSW1/SW + dZphi1/2 - dZchi1/2 + dUW1} },
+    { {1, dZe1 - dSW1/SW + dZGp1/2 - dZG01/2 + dUW1} },
 
   C[ S[3], -U[2], U[4] ] == I EL MZ Sqrt[GaugeXi[Z]]/(2 SW) *
-    { {1, dZe1 + dSW1/SW + dZphi1/2 - dZchi1/2 + dUW1} },
+    { {1, dZe1 + dSW1/SW + dZGp1/2 - dZG01/2 + dUW1} },
 
   C[ -S[3], -U[4], U[2] ] == I EL (SW^2 - CW^2) MW Sqrt[GaugeXi[W]]/(2 CW SW) *
     { {1, dZe1 + dSW1/((SW^2 - CW^2) CW^2 SW) + dUZZ1 +
@@ -1017,11 +1013,11 @@ M$LastModelRules = {}
 
 QEDOnly = ExcludeParticles -> {F[1], V[2], V[3], S, SV, U[2], U[3], U[4]}
 
-NoGeneration1 = ExcludeParticles -> F[_, {1}]
+NoGeneration1 = ExcludeParticles -> F[_, {1, ___}]
 
-NoGeneration2 = ExcludeParticles -> F[_, {2}]
+NoGeneration2 = ExcludeParticles -> F[_, {2, ___}]
 
-NoGeneration3 = ExcludeParticles -> F[_, {3}]
+NoGeneration3 = ExcludeParticles -> F[_, {3, ___}]
 
 NoElectronHCoupling =
   ExcludeFieldPoints -> {
@@ -1032,26 +1028,26 @@ NoLightFHCoupling =
   ExcludeFieldPoints -> {
     FieldPoint[_][-F[2], F[2], S],
     FieldPoint[_][-F[2], F[1], S],
-    FieldPoint[_][-F[3, {1}], F[3, {1}], S],
-    FieldPoint[_][-F[3, {2}], F[3, {2}], S],
+    FieldPoint[_][-F[3, {1, ___}], F[3, {1, ___}], S],
+    FieldPoint[_][-F[3, {2, ___}], F[3, {2, ___}], S],
     FieldPoint[_][-F[4], F[4], S],
-    FieldPoint[_][-F[4], F[3, {1}], S],
-    FieldPoint[_][-F[4], F[3, {2}], S] }
+    FieldPoint[_][-F[4], F[3, {1, ___}], S],
+    FieldPoint[_][-F[4], F[3, {2, ___}], S] }
 
 NoQuarkMixing =
   ExcludeFieldPoints -> {
-    FieldPoint[_][-F[4, {1}], F[3, {2}], S[3]],
-    FieldPoint[_][-F[4, {1}], F[3, {2}], V[3]],
-    FieldPoint[_][-F[4, {1}], F[3, {3}], S[3]],
-    FieldPoint[_][-F[4, {1}], F[3, {3}], V[3]],
-    FieldPoint[_][-F[4, {2}], F[3, {1}], S[3]],
-    FieldPoint[_][-F[4, {2}], F[3, {1}], V[3]],
-    FieldPoint[_][-F[4, {2}], F[3, {3}], S[3]],
-    FieldPoint[_][-F[4, {2}], F[3, {3}], V[3]],
-    FieldPoint[_][-F[4, {3}], F[3, {1}], S[3]],
-    FieldPoint[_][-F[4, {3}], F[3, {1}], V[3]],
-    FieldPoint[_][-F[4, {3}], F[3, {2}], S[3]],
-    FieldPoint[_][-F[4, {3}], F[3, {2}], V[3]] }
+    FieldPoint[_][-F[4, {1, ___}], F[3, {2, ___}], S[3]],
+    FieldPoint[_][-F[4, {1, ___}], F[3, {2, ___}], V[3]],
+    FieldPoint[_][-F[4, {1, ___}], F[3, {3, ___}], S[3]],
+    FieldPoint[_][-F[4, {1, ___}], F[3, {3, ___}], V[3]],
+    FieldPoint[_][-F[4, {2, ___}], F[3, {1, ___}], S[3]],
+    FieldPoint[_][-F[4, {2, ___}], F[3, {1, ___}], V[3]],
+    FieldPoint[_][-F[4, {2, ___}], F[3, {3, ___}], S[3]],
+    FieldPoint[_][-F[4, {2, ___}], F[3, {3, ___}], V[3]],
+    FieldPoint[_][-F[4, {3, ___}], F[3, {1, ___}], S[3]],
+    FieldPoint[_][-F[4, {3, ___}], F[3, {1, ___}], V[3]],
+    FieldPoint[_][-F[4, {3, ___}], F[3, {2, ___}], S[3]],
+    FieldPoint[_][-F[4, {3, ___}], F[3, {2, ___}], V[3]] }
 
 
 (* The following definitions of renormalization constants
@@ -1064,71 +1060,39 @@ NoQuarkMixing =
 
 Clear[RenConst]
 
-RenConst[ dMf1[type_, j1_] ] :=
-Block[ {m1 = TheMass[F[type, {j1}]], sff},
-  sff = SelfEnergy[F[type, {j1}] -> F[type, {j1}], m1];
-  ReTilde[ m1/2 (LVectorCoeff[sff] + RVectorCoeff[sff]) +
-    LScalarCoeff[sff] ]
-]
-
-RenConst[ dZfL1[type_, j1_, j1_] ] :=
-Block[ {m1 = TheMass[F[type, {j1}]], sff, dsff},
-  sff = SelfEnergy[F[type, {j1}] -> F[type, {j1}], m1];
-  dsff = DSelfEnergy[F[type, {j1}] -> F[type, {j1}], m1];
-  -ReTilde[ LVectorCoeff[sff] +
-    m1^2 (LVectorCoeff[dsff] + RVectorCoeff[dsff]) +
-    2 m1 LScalarCoeff[dsff] ]
-]
+RenConst[ dMf1[type_, j1_] ] := MassRC[F[type, {j1}]]
 
 RenConst[ dZfL1[type_, j1_, j2_] ] :=
-Block[ {m1 = TheMass[F[type, {j1}]], m2 = TheMass[F[type, {j2}]], sff},
-  sff = SelfEnergy[F[type, {j1}] -> F[type, {j2}], m2];
-  2/(m1^2 - m2^2) ReTilde[
-    m2^2 LVectorCoeff[sff] + m1 m2 RVectorCoeff[sff] +
-    (m1^2 + m2^2)/m1 LScalarCoeff[sff] ]
-]
-
-RenConst[ dZfR1[type_, j1_, j1_] ] :=
-Block[ {m1 = TheMass[F[type, {j1}]], sff, dsff},
-  sff = SelfEnergy[F[type, {j1}] -> F[type, {j1}], m1];
-  dsff = DSelfEnergy[F[type, {j1}] -> F[type, {j1}], m1];
-  -ReTilde[ RVectorCoeff[sff] +
-    m1^2 (LVectorCoeff[dsff] + RVectorCoeff[dsff]) +
-    2 m1 LScalarCoeff[dsff] ]
-]
+  FieldRC[F[type, {j1}], F[type, {j2}]][[1]]
 
 RenConst[ dZfR1[type_, j1_, j2_] ] :=
-Block[ {m1 = TheMass[F[type, {j1}]], m2 = TheMass[F[type, {j2}]], sff},
-  sff = SelfEnergy[F[type, {j1}] -> F[type, {j2}], m2];
-  2 m2/(m1^2 - m2^2) ReTilde[
-    m2 RVectorCoeff[sff] + m1 LVectorCoeff[sff] + 2 LScalarCoeff[sff] ]
-]
+  FieldRC[F[type, {j1}], F[type, {j2}]][[2]]
 
-RenConst[ dMZsq1 ] := -ReTilde[SelfEnergy[V[2] -> V[2], MZ]]
+RenConst[ dMZsq1 ] := MassRC[V[2]]
 
-RenConst[ dMWsq1 ] := -ReTilde[SelfEnergy[V[3] -> V[3], MW]]
+RenConst[ dMWsq1 ] := MassRC[V[3]]
 
-RenConst[ dMHsq1 ] := ReTilde[SelfEnergy[S[1] -> S[1], MH]]
+RenConst[ dMHsq1 ] := MassRC[S[1]]
 
-RenConst[ dZAA1  ] := ReTilde[DSelfEnergy[V[1] -> V[1], 0]]
+RenConst[ dZAA1 ] := FieldRC[V[1]]
 
-RenConst[ dZAZ1  ] := 2/MZ^2 ReTilde[SelfEnergy[V[1] -> V[2], MZ]]
+RenConst[ dZAZ1 ] := FieldRC[V[1], V[2]]
 
-RenConst[ dZZA1  ] := -2/MZ^2 ReTilde[SelfEnergy[V[1] -> V[2], 0]]
+RenConst[ dZZA1 ] := FieldRC[V[2], V[1]]
 
-RenConst[ dZZZ1  ] := ReTilde[DSelfEnergy[V[2] -> V[2], MZ]]
+RenConst[ dZZZ1 ] := FieldRC[V[2]]
 
-RenConst[ dZG01  ] := -ReTilde[DSelfEnergy[S[2] -> S[2], MG0]]
+RenConst[ dZG01 ] := FieldRC[S[2]]
 
-RenConst[ dZW1   ] := ReTilde[DSelfEnergy[V[3] -> V[3], MW]]
+RenConst[ dZW1 ] := FieldRC[V[3]]
 
-RenConst[ dZGp1  ] := -ReTilde[DSelfEnergy[S[3] -> S[3], MGp]]
+RenConst[ dZGp1 ] := FieldRC[S[3]]
 
-RenConst[ dZH1   ] := -ReTilde[DSelfEnergy[S[1] -> S[1], MH]]
+RenConst[ dZH1 ] := FieldRC[S[1]]
 
-RenConst[ dTad1  ] := -ReTilde[SelfEnergy[S[1] -> {}, -1]]
+RenConst[ dTH1 ] := TadpoleRC[S[1]]
 
-RenConst[ dSW1   ] := CW^2/SW/2 (dMZsq1/MZ^2 - dMWsq1/MW^2)
+RenConst[ dSW1 ] := CW^2/SW/2 (dMZsq1/MZ^2 - dMWsq1/MW^2)
 
-RenConst[ dZe1   ] := -1/2 (dZAA1 + SW/CW dZZA1)
+RenConst[ dZe1 ] := -1/2 (dZAA1 + SW/CW dZZA1)
 

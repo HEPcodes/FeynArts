@@ -1,14 +1,12 @@
 (*
-	SMQCD.mod
-		Addendum classes model file for SMc.mod
+	(SM|THDM)QCD.mod
+		Addendum classes model file for SM.mod
 		to include the strong interactions
-                by Christian Schappacher
-		last modified 25 May 01 by Thomas Hahn
-
-Note: this file uses colour indices for the quarks, as does SMc.mod.
+		by Christian Schappacher
+		last modified 15 Jan 07 by Thomas Hahn
 
 This file introduces the following symbols in addition to the ones in
-SMc.mod:
+SM.mod:
 
 	GS, the strong coupling constant
 
@@ -25,11 +23,10 @@ SMc.mod:
 *)
 
 
-If[ $NoElectroweak === True,
-  M$ClassesDescription = M$CouplingMatrices = {},
-(* else *)
-  Block[ {$Path = $ModelPath}, << SMc.mod ]
-]
+ReadModelFile[ StringReplace[$Input, "QCD" -> ""] ]
+
+If[ $NoElectroweak === True, M$CouplingMatrices = {} ]
+
 
 IndexRange[ Index[Gluon] ] = NoUnfold[Range[8]]
 

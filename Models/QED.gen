@@ -3,7 +3,7 @@
 		Generic model file for QED
 		(simplex version of Lorentz.gen)
 		by A. Denner, H. Eck, O. Hahn, S. Kueblbeck
-		last modified 24 Oct 00 by Thomas Hahn
+		last modified 6 Mar 07 by Thomas Hahn
 *)
 
 
@@ -15,7 +15,7 @@
 KinematicIndices[ F ] = {};
 KinematicIndices[ V ] = {Lorentz}
 
-Appearance[ Index[Lorentz, i_Integer] ] := Greek[i + 11]
+IndexStyle[ Index[Lorentz, i_Integer] ] := Greek[i + 11]
 
 Attributes[ MetricTensor ] = Attributes[ ScalarProduct ] = {Orderless}
 

@@ -3,7 +3,7 @@
 		Addendum classes model file for MSSM.mod
 		to include the strong interactions
 		by Christian Schappacher
-		last modified 24 May 01 by Thomas Hahn
+		last modified 17 Jan 07 by Thomas Hahn
 
 Note: The 4-squark-couplings are part of MSSM.mod.
 
@@ -23,11 +23,11 @@ MSSM.mod:
 		\sum_i SUNF[a, b, i] SUNF[i, c, d]
 *)
 
-If[ $NoElectroweak === True,
-  M$ClassesDescription = M$CouplingMatrices = {},
-(* else *)
-  Block[ {$Path = $ModelPath}, << MSSM.mod ]
-]
+
+ReadModelFile["MSSM.mod"]
+
+If[ $NoElectroweak === True, M$CouplingMatrices = {} ]
+
 
 IndexRange[ Index[Gluon] ] = NoUnfold[Range[8]]
 

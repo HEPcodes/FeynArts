@@ -3,23 +3,25 @@
 		Addendum classes model file for SM.mod
 		to include the strong interactions
 		by Christian Schappacher
-		last modified 8 Sep 08 by Thomas Hahn
+		last modified 13 Aug 09 by Thomas Hahn
 
 This file introduces the following symbols in addition to the ones in
 SM.mod:
 
-	GS, the strong coupling constant
+	GS: the strong coupling constant
 
-	SUNT[a, i, j], the generators of SU(N)
+	SUNT[a, i, j]: the generators of SU(N)
 		(half the Gell-Mann matrices)
 
-	SUNF[a, b, c], the structure constants of SU(N)
+	SUNF[a, b, c]: the structure constants of SU(N)
 
-	SUNF[a, b, c, d], a short-hand for the sum
+	SUNF[a, b, c, d]: a short-hand for the sum
 		\sum_i SUNF[a, b, i] SUNF[i, c, d]
 
-	dZGG1, gluon field RC
-        dZg1, strong coupling-constant RC
+	GaugeXi[G]: gluon gauge parameter
+
+	dZGG1: gluon field RC
+        dZg1: strong coupling-constant RC
 *)
 
 
@@ -49,6 +51,10 @@ M$ClassesDescription = Join[ M$ClassesDescription, {
 	PropagatorType -> GhostDash,
 	PropagatorArrow -> Forward }
 } ]
+
+
+GaugeXi[ V[5] ] = GaugeXi[G];
+GaugeXi[ U[5] ] = GaugeXi[G]
 
 
 M$CouplingMatrices = Join[ M$CouplingMatrices, {
@@ -102,5 +108,8 @@ M$CouplingMatrices = Join[ M$CouplingMatrices, {
 
 } ]
 
-(***********************************************************************)
+
+RenConst[ dZGG1 ] := UVDivergentPart[FieldRC[V[5]]]
+
+RenConst[ dZg1 ] := -1/2 dZGG1
 

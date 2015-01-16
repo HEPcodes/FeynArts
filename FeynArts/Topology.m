@@ -1,7 +1,7 @@
 (*
 	Topology.m
 		Creation of topologies for Feynman graphs
-		last modified 21 Nov 08 th
+		last modified 12 Aug 09 th
 *)
 
 Begin["`Topology`"]
@@ -555,7 +555,7 @@ toSort[ Propagator[Loop[n_]][v__], {i_} ] :=
 toSort[ Propagator[t_][v__], {i_} ] := prop[t, psort[v]][v, i]
 
 
-Attributes[psort] = Attributes[plist] = {Orderless}
+Attributes[ psort ] = Attributes[ plist ] = {Orderless}
 
 plist[ p_[i__], r___ ] := { toProp[Map[renum, p, {2}]][i], plist[r] }
 

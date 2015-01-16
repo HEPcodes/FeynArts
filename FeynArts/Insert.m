@@ -2,7 +2,7 @@
 	Insert.m
 		Insertion of fields into topologies created by 
 		CreateTopologies.
-		last modified 26 Jun 09 th
+		last modified 12 Aug 09 th
 
 The insertion is done in 3 levels: insertion of generic fields (Generic),
 of classes of a certain model (Classes) or of the members of the classes
@@ -86,7 +86,7 @@ opt = ActualOptions[InsertFields, options]},
     ];
 
     omit = Union[ CheckProperField/@ Flatten[{
-      Cases[last, !p_ :> {p, Antiparticle[p]}],
+      Cases[last, !p_ :> {p, AntiParticle[p]}],
       Cases[ExcludeParticles /. excl, _. P$Generic[_, _]] }] ];
     need = CheckProperField/@ Complement[last /. !p_ -> p, omit];
 
@@ -399,7 +399,7 @@ Block[ {theins, rul, freesites, filter, pfilter},
 ]
 
 
-Attributes[IndexDelta] = {Orderless}
+Attributes[ IndexDelta ] = {Orderless}
 
 IndexDelta[ n_, n_ ] = 1
 

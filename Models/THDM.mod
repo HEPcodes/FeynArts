@@ -2,7 +2,7 @@
 	THDM.mod
 		Classes model file for the Two-Higgs-Doublet Model
 		by Abdesslam Arhrib, Oliver Brein, and Thomas Hahn
-		last modified 6 Mar 07 by Thomas Hahn
+		last modified 13 Aug 09 by Thomas Hahn
 
 This file contains the definition of the two-Higgs-doublet model
 for FeynArts.  It needs the Generic model file Lorentz.gen.
@@ -26,7 +26,7 @@ This file introduces the following symbols:
 	CW, SW:		cosine and sine of weak mixing angle
 
 	MW, MZ:		W, and Z masses
-	Mh0, MHH, MA0, MG0, MGp, MHp: the Higgs masses
+	Mh0, MHH, MA0, MHp: the Higgs masses
 
 	MLE:		lepton class mass
 	ME, MM, ML:	lepton masses (e, mu, tau)
@@ -155,7 +155,7 @@ M$ClassesDescription = {
   S[4] == {
 	SelfConjugate -> True,
 	Indices -> {},
-	Mass -> MG0,
+	Mass -> MZ,
 	PropagatorLabel -> ComposedChar["G", Null, "0"],
 	PropagatorType -> ScalarDash,
 	PropagatorArrow -> None },
@@ -172,7 +172,7 @@ M$ClassesDescription = {
   S[6] == {
 	SelfConjugate -> False,
 	Indices -> {},
-	Mass -> MGp,
+	Mass -> MW,
 	PropagatorLabel -> "G",
 	PropagatorType -> ScalarDash,
 	PropagatorArrow -> Forward },
@@ -272,27 +272,23 @@ M$CouplingMatrices = {C[S[6], -S[6], V[1]] == {{I*EL}}, C[S[6], -S[6], V[2]] ==
  C[-S[6], V[2], V[3]] == {{((-I)*EL*MW*SW)/CW}}, 
  C[V[1], -V[3], V[3]] == {{(-I)*EL}}, C[V[2], -V[3], V[3]] == 
   {{((-I)*CW*EL)/SW}}, C[S[4], U[3], -U[3]] == 
-  {{-(EL*MW*Sqrt[GaugeXi[W]])/(2*SW)}}, C[S[4], U[4], -U[4]] == 
-  {{(EL*MW*Sqrt[GaugeXi[W]])/(2*SW)}}, C[S[6], U[1], -U[3]] == 
-  {{(-I)*EL*MW*Sqrt[GaugeXi[W]]}}, C[-S[6], U[1], -U[4]] == 
-  {{(-I)*EL*MW*Sqrt[GaugeXi[W]]}}, C[S[6], U[2], -U[3]] == 
-  {{((I/2)*EL*MW*(-CW^2 + SW^2)*Sqrt[GaugeXi[W]])/(CW*SW)}}, 
- C[-S[6], U[2], -U[4]] == {{((I/2)*EL*MW*(-CW^2 + SW^2)*Sqrt[GaugeXi[W]])/
-     (CW*SW)}}, C[S[6], U[4], -U[2]] == 
-  {{((I/2)*EL*MW*Sqrt[GaugeXi[Z]])/(CW*SW)}}, 
- C[-S[6], U[3], -U[2]] == {{((I/2)*EL*MW*Sqrt[GaugeXi[Z]])/(CW*SW)}}, 
- C[-U[3], U[3], V[1]] == {{((-I)*EL)/Sqrt[GaugeXi[W]]}, {0}}, 
- C[-U[4], U[4], V[1]] == {{(I*EL)/Sqrt[GaugeXi[W]]}, {0}}, 
- C[-U[3], U[3], V[2]] == {{((-I)*CW*EL)/(SW*Sqrt[GaugeXi[W]])}, {0}}, 
- C[-U[4], U[4], V[2]] == {{(I*CW*EL)/(SW*Sqrt[GaugeXi[W]])}, {0}}, 
- C[-U[3], U[1], V[3]] == {{(I*EL)/Sqrt[GaugeXi[W]]}, {0}}, 
- C[-U[4], U[1], -V[3]] == {{((-I)*EL)/Sqrt[GaugeXi[W]]}, {0}}, 
- C[-U[1], U[4], V[3]] == {{((-I)*EL)/Sqrt[GaugeXi[A]]}, {0}}, 
- C[-U[1], U[3], -V[3]] == {{(I*EL)/Sqrt[GaugeXi[A]]}, {0}}, 
- C[-U[3], U[2], V[3]] == {{(I*CW*EL)/(SW*Sqrt[GaugeXi[W]])}, {0}}, 
- C[-U[4], U[2], -V[3]] == {{((-I)*CW*EL)/(SW*Sqrt[GaugeXi[W]])}, {0}}, 
- C[-U[2], U[4], V[3]] == {{((-I)*CW*EL)/(SW*Sqrt[GaugeXi[Z]])}, {0}}, 
- C[-U[2], U[3], -V[3]] == {{(I*CW*EL)/(SW*Sqrt[GaugeXi[Z]])}, {0}}, 
+  {{-(EL*MW*GaugeXi[W])/(2*SW)}}, C[S[4], U[4], -U[4]] == 
+  {{(EL*MW*GaugeXi[W])/(2*SW)}}, C[S[6], U[1], -U[3]] == 
+  {{(-I)*EL*MW*GaugeXi[W]}}, C[-S[6], U[1], -U[4]] == 
+  {{(-I)*EL*MW*GaugeXi[W]}}, C[S[6], U[2], -U[3]] == 
+  {{((I/2)*EL*MW*(-CW^2 + SW^2)*GaugeXi[W])/(CW*SW)}}, 
+ C[-S[6], U[2], -U[4]] == {{((I/2)*EL*MW*(-CW^2 + SW^2)*GaugeXi[W])/
+     (CW*SW)}}, C[S[6], U[4], -U[2]] == {{((I/2)*EL*MW*GaugeXi[Z])/(CW*SW)}}, 
+ C[-S[6], U[3], -U[2]] == {{((I/2)*EL*MW*GaugeXi[Z])/(CW*SW)}}, 
+ C[-U[3], U[3], V[1]] == {{(-I)*EL}, {0}}, C[-U[4], U[4], V[1]] == 
+  {{I*EL}, {0}}, C[-U[3], U[3], V[2]] == {{((-I)*CW*EL)/SW}, {0}}, 
+ C[-U[4], U[4], V[2]] == {{(I*CW*EL)/SW}, {0}}, 
+ C[-U[3], U[1], V[3]] == {{I*EL}, {0}}, C[-U[4], U[1], -V[3]] == 
+  {{(-I)*EL}, {0}}, C[-U[1], U[4], V[3]] == {{(-I)*EL}, {0}}, 
+ C[-U[1], U[3], -V[3]] == {{I*EL}, {0}}, C[-U[3], U[2], V[3]] == 
+  {{(I*CW*EL)/SW}, {0}}, C[-U[4], U[2], -V[3]] == {{((-I)*CW*EL)/SW}, {0}}, 
+ C[-U[2], U[4], V[3]] == {{((-I)*CW*EL)/SW}, {0}}, 
+ C[-U[2], U[3], -V[3]] == {{(I*CW*EL)/SW}, {0}}, 
  C[S[1], S[1], V[2], V[2]] == {{((I/2)*EL^2)/(CW^2*SW^2)}}, 
  C[S[1], S[1], V[3], -V[3]] == {{((I/2)*EL^2)/SW^2}}, 
  C[S[4], S[4], V[2], V[2]] == {{((I/2)*EL^2)/(CW^2*SW^2)}}, 
@@ -357,12 +353,12 @@ M$CouplingMatrices = {C[S[6], -S[6], V[1]] == {{I*EL}}, C[S[6], -S[6], V[2]] ==
  C[S[2], V[2], V[2]] == {{(I*CBA*EL*MW)/(CW^2*SW)}}, 
  C[S[1], V[3], -V[3]] == {{(I*EL*MW*SBA)/SW}}, 
  C[S[2], V[3], -V[3]] == {{(I*CBA*EL*MW)/SW}}, 
- C[S[1], U[2], -U[2]] == {{((-I/2)*EL*MW*SBA*Sqrt[GaugeXi[Z]])/(CW^2*SW)}}, 
- C[S[2], U[2], -U[2]] == {{((-I/2)*CBA*EL*MW*Sqrt[GaugeXi[Z]])/(CW^2*SW)}}, 
- C[S[1], U[3], -U[3]] == {{((-I/2)*EL*MW*SBA*Sqrt[GaugeXi[W]])/SW}}, 
- C[S[2], U[3], -U[3]] == {{((-I/2)*CBA*EL*MW*Sqrt[GaugeXi[W]])/SW}}, 
- C[S[1], U[4], -U[4]] == {{((-I/2)*EL*MW*SBA*Sqrt[GaugeXi[W]])/SW}}, 
- C[S[2], U[4], -U[4]] == {{((-I/2)*CBA*EL*MW*Sqrt[GaugeXi[W]])/SW}}, 
+ C[S[1], U[2], -U[2]] == {{((-I/2)*EL*MW*SBA*GaugeXi[Z])/(CW^2*SW)}}, 
+ C[S[2], U[2], -U[2]] == {{((-I/2)*CBA*EL*MW*GaugeXi[Z])/(CW^2*SW)}}, 
+ C[S[1], U[3], -U[3]] == {{((-I/2)*EL*MW*SBA*GaugeXi[W])/SW}}, 
+ C[S[2], U[3], -U[3]] == {{((-I/2)*CBA*EL*MW*GaugeXi[W])/SW}}, 
+ C[S[1], U[4], -U[4]] == {{((-I/2)*EL*MW*SBA*GaugeXi[W])/SW}}, 
+ C[S[2], U[4], -U[4]] == {{((-I/2)*CBA*EL*MW*GaugeXi[W])/SW}}, 
  C[S[1], S[1], S[1], S[1]] == 
   {{(((-3*I)/4)*EL^2*(CBA^2*MHH^2*S2A^2 + Mh0^2*(2*CAB + S2A*SBA)^2 - 
        (2*(C2A + C2B)^2*Lambda5*MW^2*SW^2)/EL^2))/(MW^2*S2B^2*SW^2)}}, 

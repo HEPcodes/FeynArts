@@ -1,7 +1,7 @@
 (*
 	Utilities.m
 		diverse utility functions for other parts of FA
-		last modified 12 Dec 08 th
+		last modified 18 Oct 09 th
 *)
 
 Begin["`Utilities`"]
@@ -28,6 +28,9 @@ Block[ {p},
 
 ResolveLevel::invalid =
 "Invalid level specification `1`."
+
+	(* to make things like PaintLevel -> {InsertionLevel} work: *)
+ResolveLevel[ {{___, lev_}} ] := ResolveLevel[{lev}]
 
 ResolveLevel[ lev_List ] :=
   (Union[lev /. Generic -> AAA] /. AAA -> Generic) /;
@@ -83,6 +86,12 @@ TakeGraph[ gr_ ] = gr
 TakeIns[ _ -> ins_ ] = ins
 
 TakeIns[ _ ] = Sequence[]
+
+
+Subst[ expr_, i_List, j_List ] :=
+  expr /. Thread[Take[i, Length[j]] -> j]
+
+Subst[ expr_, ___ ] = expr
 
 
 (* Canonical ordering *)

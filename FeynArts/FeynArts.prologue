@@ -1,6 +1,6 @@
 % FeynArts.prologue
 % PostScript prologue for FeynArts-generated Feynman diagrams
-% last modified 8 Jun 05 th
+% last modified 12 Aug 09 th
 
 #ifndef TEX
 
@@ -240,15 +240,15 @@ FeynArtsDict begin
     } bind def
   } ifelse
 
+  /pcs 0 def
+  dup { //FeynArtsDict exch known { /pcs pcs 1 add def } if } forall
   /phi ommc dphi sub def
-  /dphi dphi dup add 2 index length div def
+  /dphi dphi dup add pcs div def
   //PropagatorThickness setlinewidth
   1 setlinecap
+  gsave
   fromx fromy moveto
-  {
-    cvx exec
-    /phi phi dphi add def
-  } forall
+  exec
   stroke
 
   arrow 0 ne {
@@ -288,6 +288,7 @@ FeynArtsDict begin
     closepath
     fill
   } if
+  grestore
 } bind def
 
 
@@ -321,6 +322,7 @@ FeynArtsDict begin
     exch sin rad mul ctry add
     lineto
   } ifelse
+  /phi phi dphi add def
 } bind def
 
 /Dash {
@@ -352,6 +354,7 @@ FeynArtsDict begin
     exch a sin mul ctry add
     lineto
   } for
+  /phi phi dphi add def
 } bind def
 
 
@@ -375,6 +378,7 @@ FeynArtsDict begin
     exch sin a mul ctry add
     lineto
   } for
+  /phi phi dphi add def
 } bind def
 
 

@@ -3,7 +3,7 @@
 		Generic model file for the Lorentz formalism
 		in the background field formalism
 		by A. Denner, H. Eck, O. Hahn, S. Kueblbeck 1995
-		last modified 19 Jun 07 by Thomas Hahn
+		last modified 4 May 10 by Thomas Hahn
 
 This file defines the generic analytical propagators and couplings.
 The model described herein is the standard generic model of renormalizable
@@ -26,13 +26,14 @@ KinematicIndices[ S ] = {};
 KinematicIndices[ SV ] = {Lorentz};
 KinematicIndices[ U ] = {}
 
+$FermionLines = True
 
 Attributes[ MetricTensor ] = Attributes[ ScalarProduct ] = {Orderless}
 
 
-FourVector/: -FourVector[ mom_, mu_ ] := FourVector[Expand[-mom], mu]
+FourVector/: -FourVector[ mom_, mu___ ] := FourVector[Expand[-mom], mu]
 
-FourVector[ 0, _ ] = 0
+FourVector[ 0, ___ ] = 0
 
 
 SpinorType[j_Integer, ___] := MajoranaSpinor /; SelfConjugate[F[j]]
@@ -325,4 +326,6 @@ Format[ MetricTensor ] = "g"
 Format[ ScalarProduct[a__] ] := Dot[a]
 
 Format[ FourVector[a_, b_] ] := a[b]
+
+Format[ FourVector[a_] ] := a
 

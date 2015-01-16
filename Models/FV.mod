@@ -1,9 +1,9 @@
 (*
 	FV.mod
 		Add-on model file for non-minimal flavour-violation
-		("upgrades" ordinary to full 6x6 squark mixing)
-		by Thomas Hahn and Jose Illana
-		last modified 14 Jun 08 by th
+		("upgrades" ordinary 2x2 to full 6x6 squark mixing)
+		by Thomas Hahn and Jose Ignacio Illana
+		last modified 21 Oct 09 by th
 *)
 
 
@@ -23,35 +23,47 @@ TheMass[ S[t:12, {s_, g_, ___}] ] := MSf[s, t - 10, g]
 TheMass[ S[t:13 | 14, {as_, ___}] ] := MASf[as, t - 10]
 
 
-ReplaceCoupling[lhs_ == rhs_, {n_}] :=
-  ReplaceSf[ReplaceAf[lhs == (rhs /. {
-    Af[t:3 | 4, __] -> af[t],
-    AfC[t:3 | 4, __] -> Conjugate[af[t]] }), n], n]
+Attributes[sAf] = {HoldFirst}
+
+sAf[d_, m_][Mass[F[t:3 | 4, j_]] r_] := sAf[d, Mass[F[t, j]] m][r]
+
+sAf[d__][x_] := d x /; FreeQ[x, af]
+
+sAf[d__][r_ x_] := x sAf[d][r] /; FreeQ[x, af]
+
+sAf[d__][x_Plus] := sAf[d]/@ x
+
+sAf[d__][af[t_]] := xAf[d, Identity, t]
+
+sAf[d__][c_[af[t_]]] := xAf[d, c, t]
+
+
+Attributes[xAf] = {HoldFirst}
+
+xAf[IndexDelta[j1_, j2_], m_, Conjugate, t_] :=
+  mAf[j2, j1, m, Conjugate, t]
+
+xAf[IndexDelta[j__], m__] := mAf[j, m]
+
+xAf[d_[j1_, j2_], m__, 3] :=
+  IndexSum[d[gn, j2] mAf[gn, j1, m, 3], {gn, 3}]
+
+xAf[d_[j1_, j2_], m__, 4] :=
+  IndexSum[d[j1, gn] mAf[gn, j2, m, 4], {gn, 3}]
+
+
+mAf[j1_, j2_, m_, c_, t_] :=
+  c[Af[t, j1, j2]] (m /. Mass[F[t, _]] -> Mass[F[t, {j1}]])
 
 
 ReplaceAf[
-  (lhs:C[_, S[13 | 14, {s1_, j1_, _}], -S[13 | 14, {s2_, j2_, _}]]) ==
+  (lhs:C[_, S[13 | 14, {_, j1_, _}], -S[13 | 14, {_, j2_, _}]]) ==
   rhs_, n_ ] :=
 Block[ {sel, new},
-  Attributes[sel] = {Listable, HoldFirst};
-  sel[r_ IndexDelta[j1, j2], d_, m__] :=
-    sel[r, IndexDelta[j1, j2] d, m];
-  sel[r_ Mass[F[t:3 | 4, j_]], d_, m_, si_, so_] :=
-    sel[r, d, Mass[F[t, j]] m, si, so];
-  sel[r_ Conjugate[usf[t_, _][s1, si_]], d_, m_, _, so_] :=
-    Conjugate[usf[t, j1][s1, si]] sel[r, d, m, si, so];
-  sel[r_ usf[t_, _][s2, so_], d_, m_, si_, _] :=
-    usf[t, j2][s2, so] sel[r, d, m, si, so];
-  sel[x_, d_, m_, __] := x d m /; FreeQ[x, af];
-  sel[r_ x_, d__] := x sel[r, d] /; FreeQ[x, af];
-  sel[x_Plus, d__] := sel[#, d]&/@ x;
-  sel[x_af, d__] := sel[Identity[x], d];
-  sel[c_[af[t_]], _, m_, i__] :=
-  Block[ {g1, g2},
-    {g1, g2} = {j1, j2}[[{i}]];
-    c[Af[t, g1, g2]] (m /. Mass[F[t, _]] -> Mass[F[t, {g1}]])
-  ];
-  new = sel[rhs, 1, 1, 0, 0];
+  Attributes[sel] = {Listable};
+  sel[r_ d:IndexDelta[j1, j2] | _CKM | _CKMC] := sAf[d, 1][r];
+  new = sel[rhs /. Conjugate[CKM[j__]] -> CKMC[j]] /.
+    CKMC[j__] -> Conjugate[CKM[j]];
   If[ !FreeQ[new, af], Message[ReplaceCoupling::warning, n, Af] ];
   lhs == new
 ] /; !FreeQ[rhs, af]
@@ -92,18 +104,22 @@ Block[ {sel, new},
 ]
 
 
-ReplaceCoupling::warning = "Coupling #`` still contains ``."
-
-
 ISum[IndexDelta[a_, b_] r_, {a_, _}] := r /. a -> b
 
 ISum/: IndexSum[ISum[expr_, i_], j__] :=
   IndexSum[expr, Sequence@@ Sort[{i, j}]]
 
 
+ReplaceCoupling::warning = "Coupling #`` still contains ``."
+
+ReplaceCoupling[c_, {n_}] := ReplaceSf[ReplaceAf[c, n], n]
+
+
 M$CouplingMatrices = MapIndexed[ReplaceCoupling,
   M$CouplingMatrices /. {
+    Af[t:3 | 4, __] -> af[t],
+    AfC[t:3 | 4, __] -> Conjugate[af[t]],
     USf[t:3 | 4, g_][a_, b_] -> usf[t, g][a, b],
     USf[a_, b_, t:3 | 4, g_] -> usf[t, g][a, b],
-   USfC[a_, b_, t:3 | 4, g_] -> Conjugate[usf[t, g][a, b]] } ]
+   USfC[a_, b_, t:3 | 4, g_] -> Conjugate[usf[t, g][a, b]] }]
 

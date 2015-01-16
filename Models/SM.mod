@@ -2,7 +2,7 @@
 	SM.mod
 		Classes model file for the Standard Model
 		by Hagen Eck and Sepp Kueblbeck 1995
-		last modified 6 Mar 07 by Thomas Hahn
+		last modified 4 May 10 by Thomas Hahn
 
 This file contains the definition of a Classes model for FeynArts.
 It needs the Generic model file Lorentz.gen.
@@ -25,8 +25,8 @@ Reference:
 
 Oct 95: one-loop counter terms added by Stefan Bauberger:
 	Some corrections and addition of all one-loop counter terms
-	according to A. Denner. The gauge-fixing terms are assumed not
-	to be renormalized. The Denner conventions are extended to
+	according to A. Denner.  The gauge-fixing terms are assumed not
+	to be renormalized.  The Denner conventions are extended to
 	include field renormalization of the Goldstone bosons.
 	The counter terms associated with quark mixing are not well
 	tested yet.
@@ -52,7 +52,6 @@ This file introduces the following symbols:
 	CW, SW:		cosine and sine of Weinberg angle
 
 	MW, MZ, MH:	W, Z, Higgs masses
-	MG0, MGp:	Goldstone masses
 
 	MLE:		lepton class mass
 	ME, MM, ML:	lepton masses (e, mu, tau)
@@ -266,7 +265,7 @@ M$ClassesDescription = {
   S[2] == {
 	SelfConjugate -> True,
 	Indices -> {},
-	Mass -> MG0,
+	Mass -> MZ,
 	PropagatorLabel -> ComposedChar["G", Null, "0"],
 	PropagatorType -> ScalarDash,
 	PropagatorArrow -> None },
@@ -275,7 +274,7 @@ M$ClassesDescription = {
   S[3] == {
 	SelfConjugate -> False,
 	Indices -> {},
-	Mass -> MGp,
+	Mass -> MW,
 	QuantumNumbers -> -Charge,
 	PropagatorLabel -> "G",
 	PropagatorType -> ScalarDash,
@@ -418,27 +417,27 @@ M$CouplingMatrices = {
 
 	(* U-U:  G(+) . { -mom^2, 1 } *)
 
-  C[ U[1], -U[1] ] == -I/Sqrt[GaugeXi[A]] *
+  C[ U[1], -U[1] ] == -I *
     { {0, -dZAA1/2 + dUAA1},
       {0, 0} },
   
-  C[ U[2], -U[2] ] == -I/Sqrt[GaugeXi[Z]] *
+  C[ U[2], -U[2] ] == -I *
     { {0, -dZZZ1/2 + dUZZ1},
       {0, GaugeXi[Z] (MZ^2 (-dZG01/2 + dUZZ1) + dMZsq1/2) } },
   
-  C[ U[2], -U[1] ] == -I/Sqrt[GaugeXi[A]] *
+  C[ U[2], -U[1] ] == -I *
     { {0, -dZAZ1/2 + dUAZ1},
       {0, 0} },
   
-  C[ U[1], -U[2] ] == -I/Sqrt[GaugeXi[Z]] *
+  C[ U[1], -U[2] ] == -I *
     { {0, -dZZA1/2 + dUZA1},
       {0, GaugeXi[Z] MZ^2 dUZA1} },
   
-  C[ U[3], -U[3] ] == -I/Sqrt[GaugeXi[W]] *
+  C[ U[3], -U[3] ] == -I *
     { {0, -dZW1/2 + dUW1},
       {0, GaugeXi[W] (MW^2 (-dZGp1/2 + dUW1) + dMWsq1/2) } },
 
-  C[ U[4], -U[4] ] == -I/Sqrt[GaugeXi[W]] *
+  C[ U[4], -U[4] ] == -I *
     { {0, -dZW1/2 + dUW1},
       {0, GaugeXi[W] (MW^2 (-dZGp1/2 + dUW1) + dMWsq1/2) } },
 
@@ -917,91 +916,91 @@ M$CouplingMatrices = {
 
 	(* U-U-V:  G(+) . { p1_mu3, p2_mu3 } *)
 
-  C[ -U[3], U[3], V[1] ] == -I EL/Sqrt[GaugeXi[W]] *
+  C[ -U[3], U[3], V[1] ] == -I EL *
     { {1, dZe1 + dZAA1/2 - dZW1/2 + dUW1 - CW/SW dZZA1/2},
       {0, 0} },
 
-  C[ -U[4], U[4], V[1] ] == I EL/Sqrt[GaugeXi[W]] *
+  C[ -U[4], U[4], V[1] ] == I EL *
     { {1, dZe1 + dZAA1/2 - dZW1/2 + dUW1 - CW/SW dZZA1/2},
       {0, 0} },
 
-  C[ -U[3], U[3], V[2] ] == I EL CW/SW/Sqrt[GaugeXi[W]] *
+  C[ -U[3], U[3], V[2] ] == I EL CW/SW *
     { {1, dZe1 - 1/(CW^2 SW) dSW1 + dZZZ1/2 - dZW1/2 + dUW1 - SW/CW dZAZ1/2},
       {0, 0} },
 
-  C[ -U[4], U[4], V[2] ] == -I EL CW/SW/Sqrt[GaugeXi[W]] *
+  C[ -U[4], U[4], V[2] ] == -I EL CW/SW *
     { {1, dZe1 - 1/(CW^2 SW) dSW1 + dZZZ1/2 - dZW1/2 + dUW1 - SW/CW dZAZ1/2},
       {0, 0} },
 
-  C[ -U[3], U[2], V[3] ] == -I EL CW/SW/Sqrt[GaugeXi[W]] *
+  C[ -U[3], U[2], V[3] ] == -I EL CW/SW *
     { {1, dZe1 - 1/(CW^2 SW) dSW1 + dUZZ1 - SW/CW dUAZ1},
       {0, 0} },
 
-  C[ -U[2], U[3], -V[3] ] == -I EL/Sqrt[GaugeXi[Z]] *
+  C[ -U[2], U[3], -V[3] ] == -I EL *
     { {CW/SW,
        CW/SW (dZe1 - 1/(CW^2 SW) dSW1 + dZW1/2 - dZZZ1/2 + dUW1) + dZZA1/2},
       {0, 0} }, 
 
-  C[ -U[4], U[2], -V[3] ] == I EL CW/SW/Sqrt[GaugeXi[W]] *
+  C[ -U[4], U[2], -V[3] ] == I EL CW/SW *
     { {1, dZe1 - 1/(CW^2 SW) dSW1 + dUZZ1 - SW/CW dUAZ1},
       {0, 0} },
 
-  C[ -U[2], U[4], V[3] ] == I EL/Sqrt[GaugeXi[Z]] *
+  C[ -U[2], U[4], V[3] ] == I EL *
     { {CW/SW,
        CW/SW (dZe1 - 1/(CW^2 SW) dSW1 + dZW1/2 - dZZZ1/2 + dUW1) + dZZA1/2},
       {0, 0} },
 
-  C[ -U[3], U[1], V[3] ] == I EL/Sqrt[GaugeXi[W]] *
+  C[ -U[3], U[1], V[3] ] == I EL *
     { {1, dZe1 + dUAA1 - CW/SW dUZA1},
       {0, 0} },
 
-  C[ -U[1], U[3], -V[3] ] == I EL/Sqrt[GaugeXi[A]] *
+  C[ -U[1], U[3], -V[3] ] == I EL *
     { {1, dZe1 + dZW1/2 - dZAA1/2 + dUW1 + CW/SW dZAZ1/2},
       {0, 0} },
 
-  C[ -U[4], U[1], -V[3] ] == -I EL/Sqrt[GaugeXi[W]] *
+  C[ -U[4], U[1], -V[3] ] == -I EL *
     { {1, dZe1 + dUAA1 - CW/SW dUZA1},
       {0, 0} },
 
-  C[ -U[1], U[4], V[3] ] == -I EL/Sqrt[GaugeXi[A]] *
+  C[ -U[1], U[4], V[3] ] == -I EL *
     { {1, dZe1 + dZW1/2 - dZAA1/2 + dUW1 + CW/SW dZAZ1/2},
       {0, 0} },
 
 	(* S-U-U:  G(+) . 1 *)
 
-  C[ S[1], -U[2], U[2] ] == -I EL MZ Sqrt[GaugeXi[Z]]/(2 SW CW) *
+  C[ S[1], -U[2], U[2] ] == -I EL MZ GaugeXi[Z]/(2 SW CW) *
     { {1, dZe1 + (SW^2 - CW^2)/(CW^2 SW) dSW1 + dZH1/2 - dZG01/2 + dUZZ1} },
 
-  C[ S[1], -U[3], U[3] ] == -I EL MW Sqrt[GaugeXi[W]]/(2 SW) *
+  C[ S[1], -U[3], U[3] ] == -I EL MW GaugeXi[W]/(2 SW) *
     { {1, dZe1 - dSW1/SW + dZH1/2 - dZGp1/2 + dUW1} },
 
-  C[ S[1], -U[4], U[4] ] == -I EL MW Sqrt[GaugeXi[W]]/(2 SW) *
+  C[ S[1], -U[4], U[4] ] == -I EL MW GaugeXi[W]/(2 SW) *
     { {1, dZe1 - dSW1/SW + dZH1/2 - dZGp1/2 + dUW1} },
 
-  C[ S[2], -U[4], U[4] ] == EL MW Sqrt[GaugeXi[W]]/(2 SW) *
+  C[ S[2], -U[4], U[4] ] == EL MW GaugeXi[W]/(2 SW) *
     { {1, dZe1 - dSW1/SW + dZG01/2 - dZGp1/2 + dUW1} },
 
-  C[ S[2], -U[3], U[3] ] == -EL MW Sqrt[GaugeXi[W]]/(2 SW) *
+  C[ S[2], -U[3], U[3] ] == -EL MW GaugeXi[W]/(2 SW) *
     { {1, dZe1 - dSW1/SW + dZG01/2 - dZGp1/2 + dUW1} },
 
-  C[ -S[3], -U[2], U[3] ] == I EL MZ Sqrt[GaugeXi[Z]]/(2 SW) *
+  C[ -S[3], -U[2], U[3] ] == I EL MZ GaugeXi[Z]/(2 SW) *
     { {1, dZe1 - dSW1/SW + dZGp1/2 - dZG01/2 + dUW1} },
 
-  C[ S[3], -U[2], U[4] ] == I EL MZ Sqrt[GaugeXi[Z]]/(2 SW) *
+  C[ S[3], -U[2], U[4] ] == I EL MZ GaugeXi[Z]/(2 SW) *
     { {1, dZe1 + dSW1/SW + dZGp1/2 - dZG01/2 + dUW1} },
 
-  C[ -S[3], -U[4], U[2] ] == I EL (SW^2 - CW^2) MW Sqrt[GaugeXi[W]]/(2 CW SW) *
+  C[ -S[3], -U[4], U[2] ] == I EL (SW^2 - CW^2) MW GaugeXi[W]/(2 CW SW) *
     { {1, dZe1 + dSW1/((SW^2 - CW^2) CW^2 SW) + dUZZ1 +
         (2 SW CW)/(SW^2 - CW^2) dUAZ1} },
 
-  C[ S[3], -U[3], U[2] ] == I EL (SW^2 - CW^2) MW Sqrt[GaugeXi[W]]/(2 CW SW) *
+  C[ S[3], -U[3], U[2] ] == I EL (SW^2 - CW^2) MW GaugeXi[W]/(2 CW SW) *
     { {1, dZe1 + dSW1/((SW^2 - CW^2) CW^2 SW) + dUZZ1 +
         (2 SW CW)/(SW^2 - CW^2) dUAZ1} },
 
-  C[ -S[3], -U[4], U[1] ] == I EL MW Sqrt[GaugeXi[W]] *
+  C[ -S[3], -U[4], U[1] ] == I EL MW GaugeXi[W] *
     { {1, dZe1 + dUAA1 + (SW^2 - CW^2)/(2 SW CW) dUZA1} },
 
-  C[ S[3], -U[3], U[1] ] == I EL MW Sqrt[GaugeXi[W]] *
+  C[ S[3], -U[3], U[1] ] == I EL MW GaugeXi[W] *
     { {1, dZe1 + dUAA1 + (SW^2 - CW^2)/(2 SW CW) dUZA1} }
 }
 
@@ -1067,6 +1066,11 @@ RenConst[ dZfL1[type_, j1_, j2_] ] :=
 
 RenConst[ dZfR1[type_, j1_, j2_] ] :=
   FieldRC[F[type, {j1}], F[type, {j2}]][[2]]
+
+RenConst[ dCKM1[j1_, j2_] ] := 1/4 IndexSum[
+  (dZfL1[3, j1, gn] - Conjugate[dZfL1[3, gn, j1]]) CKM[gn, j2] -
+  CKM[j1, gn] (dZfL1[4, gn, j2] - Conjugate[dZfL1[4, j2, gn]]),
+  {gn, MaxGenerationIndex} ]
 
 RenConst[ dMZsq1 ] := MassRC[V[2]]
 

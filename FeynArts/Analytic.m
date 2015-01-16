@@ -2,15 +2,14 @@
 	Analytic.m
 		Translation of InsertFields output into
 		analytic expressions
-		last modified 19 Jun 09 th
+		last modified 16 Apr 10 th
 *)
 
 Begin["`Analytic`"]
 
 Options[ CreateFeynAmp ] = {
   AmplitudeLevel -> InsertionLevel,	(* i.e. taken from InsertFields *)
-  GaugeRules -> {_GaugeXi -> 1,
-    Global`MG0 -> Global`MZ, Global`MGp -> Global`MW},
+  GaugeRules -> {_GaugeXi -> 1},
   PreFactor -> -I (2 Pi)^(-4 LoopNumber),
   Truncated -> False,
   MomentumConservation -> True
@@ -231,6 +230,10 @@ Block[ {amp, gm, rawgm, orig, anti},
     orig[__] :> Seq[]
 ]
 
+FieldNumber[ fi_ ] := Sequence@@ Cases[fi, Field[n_] -> n, Infinity, 1] /;
+  !FreeQ[fi, orig]
+
+
 (* Create the basic amplitude *)
 
 CreateAmpGraph[ top_, Graph[s_, ___][ru__] ] :=
@@ -287,7 +290,7 @@ Block[ {ki = KinematicIndices[fi], kin},
    This works unambiguously (i.e. correctly) only if fermion chains
    never "touch", i.e. if there are at most two fermions at each vertex.
    This is always the case in renormalizable theories.  Effective theories
-   may however contain 4- or more fermion vertices, typically as a result
+   may however contain 4- or more-fermion vertices, typically as a result
    of integrating out heavy bosons, such as in the Fermi model.  In such a
    case one must set $FermionLines = False and give the fermion fields an
    explicit spinor index with which it is possible (outside of FeynArts)
@@ -296,7 +299,7 @@ Block[ {ki = KinematicIndices[fi], kin},
 ReverseProp[ pr_[from_, to_, part_] ] :=
   pr[to, from, AntiParticle[part]]
 
-Attributes[BuildChain] = {Flat, Orderless}
+Attributes[ BuildChain ] = {Flat, Orderless}
 
 BuildChain[ c1:_[___, _[_, v_, _]], c2:_[_[v_, __], ___] ] :=
   Join[c1, c2]
@@ -520,7 +523,7 @@ Block[ {ext, int, ins, deltas},
     anti -> AntiParticle /.
     app[ x_. (fi:P$Generic)[n__], k__ ] :> x fi[n, k];
   deltas = DeleteCases[ Union@@ CouplingDeltas/@
-    Union[ Cases[ins, G[_][cto_][fi__][__] :> FieldPoint[cto][fi]] ],
+    Union[ Cases[ins, G[_][cto_][fi__][_] :> FieldPoint[cto][fi]] ],
     _Integer ];
   ins = ins /. G -> GtoC /. Mass -> TheMass /. gaugeru /.
     _MTF -> 1 /. Thread[deltas -> 1];
@@ -541,34 +544,38 @@ Block[ {ext, int, ins, deltas},
    kinematical expression (for a G[-]).  If neither method resolves TheC,
    it will issue a warning and return C[cto][fields][kinpart]. *) 
 
-GtoC[ sym_ ][ cto_ ][ fi__ ][ kin__ ] :=
-Block[ {vert, cv, perm, kinpart, nc},
-  vert = MixingPartners[#][[-1]]&/@ {fi};
+GtoC[ sym_ ][ cto_ ][ fi__ ][ k_ ] :=
+Block[ {vert, perm, ferm, kin, cv},
+  vert = Last/@ MixingPartners/@ {fi};
+
   perm = FindVertex[ToClasses[vert], Classes];
-  If[ perm === $Failed, Return[(C[cto]@@ vert)@@ kin] ];
-  cv = vert[[perm]];
-  kinpart = {kin} /. MapIndexed[KinRule, perm];
+  If[ perm === $Failed, Return[C[cto][fi][k]] ];
 
-  nc = Cases[vert, _. P$NonCommuting[__]];
-  If[ nc =!= Cases[cv, _. P$NonCommuting[__]],
-    If[ Length[nc] > 2, Message[CreateFeynAmp::ambig, vert] ];
-    kinpart = kinpart /. M$FlippingRules ];
+  ferm = Cases[vert, _. _F];
+  vert = vert[[perm]];
+  kin = k /. MapIndexed[KinRule, perm];
+  If[ ferm =!= Cases[vert, _. _F],
+    If[ Length[ferm] > 2, Message[CreateFeynAmp::ambig, vert] ];
+    kin = kin /. M$FlippingRules ];
 
-	(* try to resolve coupling *)
-  If[ Head[cv = (TheC@@ kinpart)@@ cv] =!= List && sym === -1,
-    cv = -MapAt[-#&, cv, {0, 1}] ];
+  cv = SignResolve[sym, TheC[kin]@@ vert];
 
   If[ !FreeQ[cv, TheC],
-    Message[CreateFeynAmp::nocoupl, vert, kinpart];
-    Return[ (C[cto]@@ vert)@@ kinpart ] ];
+    Message[CreateFeynAmp::nocoupl, vert, kin];
+    Return[C[cto][fi][k]] ];
 
 	(* check requested counter-term order *)
   If[ Length[cv] <= cto,
     Message[CreateFeynAmp::counter, vert, cto];
-    Return[ (C[cto]@@ vert)@@ kinpart ] ];
+    Return[C[cto][fi][k]] ];
 
   cv[[cto + 1]]
 ]
+
+
+SignResolve[ -1, TheC[kin_][cv__] ] := -TheC[-kin][cv]
+
+SignResolve[ _, c_ ] = c
 
 
 KinRule[i_, {i_}] = Sequence[]
@@ -593,9 +600,8 @@ Block[ {pos, fp},
     Message[FindVertex::novert, v];
     Return[$Failed] ];
   fp = ReferenceOrder[lev][[ pos[[1, 1]] ]];
-  pos = Ordering[v];
-  MapThread[(pos[[#1]] = #2)&, {Ordering[fp], pos}];
-  pos
+  fp[[ Ordering[fp] ]] = Ordering[v];
+  fp
 ]
 
 
@@ -755,9 +761,9 @@ Block[ {Rule, tag, group, res, c = 0},
 ]
 
 
-Attributes[prop] = {Orderless}
+Attributes[ prop ] = {Orderless}
 
-Attributes[merge] = {Flat, Orderless}
+Attributes[ merge ] = {Flat, Orderless}
 
 merge[ prop[i_, j_], prop[j_, k_] ] := prop[i, k]
 

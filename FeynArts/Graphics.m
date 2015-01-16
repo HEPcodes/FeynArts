@@ -1,7 +1,7 @@
 (*
 	Graphics.m
 		Graphics routines for FeynArts
-		last modified 26 Mar 09 th
+		last modified 14 Apr 10 th
 *)
 
 Begin["`Graphics`"]
@@ -84,13 +84,13 @@ Paint::nolevel =
 Paint::colrows =
 "ColumnsXRows is not an integer or a pair of integers."
 
-Paint[ top:P$Topology, opt___?OptionQ ] :=
+Paint[ top:P$Topology, opt:P$Options ] :=
   Paint[ TopologyList[top], opt ]
 
-Paint[ top:(P$Topology -> _), opt___?OptionQ ] :=
+Paint[ top:(P$Topology -> _), opt:P$Options ] :=
   Paint[ TopologyList[][top], opt ]
 
-Paint[ tops_TopologyList, options___?OptionQ ] :=
+Paint[ tops_TopologyList, options:P$Options ] :=
 Block[ {fnum, ghead, opt = ActualOptions[Paint, options]},
   fnum = FieldNumbers /. opt;
   ghead = Switch[ ghead = SheetHeader /. opt,
@@ -107,7 +107,7 @@ Block[ {fnum, ghead, opt = ActualOptions[Paint, options]},
   PaintSheet[tops]
 ]
 
-Paint[ tops:TopologyList[info___][___], options___?OptionQ ] :=
+Paint[ tops:TopologyList[info___][___], options:P$Options ] :=
 Block[ {plevel, ins, ghead,
 fnum = False, opt = ActualOptions[Paint, options]},
   If[ (plevel = ResolveLevel[PaintLevel /. opt /. {info} /.
@@ -130,8 +130,11 @@ fnum = False, opt = ActualOptions[Paint, options]},
     None | False,
       FeynArtsGraphics[],
     Automatic | True, 
-      If[ (ghead = Process /. {info}) === Process, FeynArtsGraphics[],
-        FeynArtsGraphics[Map[TheLabel, ghead, {2}] /. _Index -> Null]
+      If[ (ghead = Process /. {info}) === Process,
+        FeynArtsGraphics[],
+      (* else *)
+        FeynArtsGraphics[Map[TheLabel[#, External]&, ghead, {2}] /.
+          _Index -> Null]
       ],
     _,
       FeynArtsGraphics[ghead]
@@ -206,10 +209,10 @@ VGraphics[ _[e_, c_:0][n_] ] := VertexGraphics[c][ Vertex[e][n] ]
 PGraphics[ _[from_, to_, 0, ___], height_, labelpos_ ] :=
   PropagatorGraphics[Straight][from, to, height, labelpos]
 
-PGraphics[ _[from_, to_, particle_, ___], height_, labelpos_ ] :=
+PGraphics[ _[type_][from_, to_, particle_, ___], height_, labelpos_ ] :=
   PropagatorGraphics[
     PropagatorType[particle],
-    TheLabel[particle],
+    TheLabel[particle, ResolveType[type]],
     PropagatorArrow[particle] ][from, to, height, labelpos]
 
 
@@ -226,7 +229,7 @@ Unprotect[Show, Display, Export]
 Show[ g:FeynArtsGraphics[___][___] ] := Show/@ Render[g]
 
 Display[ chan_, g:FeynArtsGraphics[___][___], format___String,
-  opt___?OptionQ ] :=
+  opt:P$Options ] :=
 Block[ {rg},
   rg = Render[g, InferFormat[chan, format],
     ImageSize -> (ImageSize /. {opt} /. Options[Display] /.
@@ -238,7 +241,7 @@ Block[ {rg},
 Display[ chan_, s_String, ___ ] := (WriteString[chan, s]; Close[chan])
 
 Export[ chan_, g:FeynArtsGraphics[___][___], format___String,
-  opt___?OptionQ ] :=
+  opt:P$Options ] :=
 Block[ {rg},
   rg = Render[g, InferFormat[chan, format],
     ImageSize -> (ImageSize /. {opt} /. Options[Export] /.
@@ -336,9 +339,23 @@ FilePerSheet[ file_, n_ ] := Table[file, {n}]
 
 PSString[ s_String ] = s
 
-PSString[ s_Symbol ] := "/" <> ToString[s] <> " "
+PSString[ RGBColor[r_, g_, b_, ___] ] :=
+  ToString[r] <> " " <> ToString[g] <> " " <> ToString[b] <>
+  " setrgbcolor "
 
-PSString[ n_ ] := ToString[n] <> " "
+PSString[ CMYKColor[c_, m_, y_, k_, ___] ] :=
+  ToString[c] <> " " <> ToString[m] <> " " <> ToString[y] <>
+  " " <> ToString[k] <> " setcmykcolor "
+
+PSString[ Hue[h_, s_:1, b_:1, ___] ] :=
+  ToString[h] <> " " <> ToString[s] <> " " <> ToString[b] <>
+  " sethsbcolor "
+
+PSString[ GrayLevel[g_, ___] ] := ToString[g] <> " setgray "
+
+PSString[ Thickness[t_] ] := ToString[t DiagramSize] <> " setlinewidth "
+
+PSString[ s_ ] := ToString[s] <> " " /; Head[s] =!= List
 
 PSString[ s__ ] := StringJoin[PSString/@ Flatten[{s}]]
 
@@ -350,8 +367,8 @@ TeXString[ s_ ] := ToString[s]
 TeXString[ s__ ] := StringJoin[TeXString/@ {s}]
 
 
-Attributes[PSRender] = Attributes[TeXRender] =
-  Attributes[MmaRender] = {Listable}
+Attributes[ PSRender ] = Attributes[ TeXRender ] =
+  Attributes[ MmaRender ] = {Listable}
 
 
 PSRender[ FeynArtsGraphics[h___][sheet_] ] :=
@@ -361,7 +378,7 @@ Block[ {rows, cols, g},
   PSString[cols, rows, "Layout\n" <> g]
 ]
 
-Attributes[TeXJoin] = {Flat, OneIdentity}
+Attributes[ TeXJoin ] = {Flat, OneIdentity}
 
 TeXJoin[ n_Integer ] := ToString[n]
 
@@ -460,7 +477,7 @@ MmaRender[ VertexGraphics[c_][xy_] ] := {{},
 PSRender[ PropagatorGraphics[type_, label_:0, arrow_:0][
   from_, to_, height_, labelpos_:0 ] ] :=
 Block[ {dir, ommc, cs, ctr, rad, mid, dphi, line},
-  line = PSString["[ ", type, "] ", arrow, height, from, to, "Prop\n"];
+  line = PSString["{ ", type, "} ", arrow, height, from, to, "Prop\n"];
 
   If[ label =!= 0,
     CalcPropData[from, to, height];
@@ -473,9 +490,8 @@ TeXRender[ PropagatorGraphics[type_, label_:0, arrow_:0][
   from_, to_, height_, labelpos_:0 ] ] :=
 Block[ {dir, ommc, cs, ctr, rad, mid, dphi, line},
   line = TeXString["\\FAProp", from, to,
-    If[ NumberQ[height], {height, ""}, height], "{" <>
-    StringDrop[StringJoin[(" /" <> ToString[#])&/@ Flatten[{type}]], 1] <>
-    "}{", arrow, "}\n"];
+    If[ NumberQ[height], {height, ""}, height],
+    "{" <> StringDrop[PSString[type], -1] <> "}{", arrow, "}\n"];
 
   If[ label =!= 0,
     CalcPropData[from, to, height];
@@ -486,17 +502,17 @@ Block[ {dir, ommc, cs, ctr, rad, mid, dphi, line},
 
 MmaRender[ PropagatorGraphics[type_, label_:0, arrow_:0][
   from_, to_, height_, labelpos_:0 ] ] :=
-Block[ {dir, ommc, cs, ctr, rad, mid, dphi, line, phi, damping, h, v},
+Block[ {dir, ommc, cs, ctr, rad, mid, dphi, line, phi, damping, t, h, v},
   CalcPropData[from, to, height];
   If[ arrow =!= 0,
-    damping[phi_] :=
-      Block[ {x = (rad Abs[phi - ommc])^4}, x/(x + DampingConst) ],
+    damping[phi_] := (#/(# + DampingConst))&[(rad Abs[phi - ommc])^4],
   (* else *)
-    damping[phi_] = 1 ];
+    _damping = 1 ];
   phi = Mod[ommc - dphi, 2 NPi];
-  h = Flatten[{type}];
+  t = Flatten[{type}];
+  h = Position[t, Straight | ScalarDash | GhostDash | Sine | Cycles, 1];
   dphi *= 2./Length[h];
-  line = HalfLine[#, phi += dphi, dphi]&/@ h;
+  line = scope[MapAt[HalfLine[#, phi += dphi, dphi]&, t, h]];
 
   If[ arrow =!= 0,
     h = .5 arrow ArrowLength {Cos[dir], Sin[dir]};
@@ -719,10 +735,11 @@ FlipShape[ h_, top_, _[ntop_, map_], {vert_, prop_, labels_} ] :=
 Block[ {ord = Ordering[Abs[map]], vord, vmap},
   vord = Flatten[(4 Abs[#] - 1 + Sign[#] {-1, 1})/2&/@ map];
   vmap = Thread[ Level[ntop, {2}] -> Level[top, {2}][[vord]] ];
-  Throw[{
-    Sort[h[1]/@ vert /. vmap],
-    Sequence@@ Transpose[MapThread[h[23], {prop[[ord]], labels[[ord]], map}]]
-  }]
+  Throw[
+    FAPrint[2, "  found shape through ", h, " flip"];
+    { Sort[h[1]/@ vert /. vmap],
+      Sequence@@ Transpose[MapThread[h[23],
+        {prop[[ord]], labels[[ord]], map}]] } ]
 ]
 
 
@@ -766,10 +783,14 @@ vars, tadbr, tad, min, ok, c, ct, pt, shrink = {}, rev = {}, loops = {}},
   out = Sort[Cases[top, _[Outgoing][v_, _] :> v]];
   vert = Join[out, in];
 
+  FAPrint[1, "shaping topology ", TopologyCode[top]];
+
   FindFlip[ TopBottom, top, Thread[vert -> Reverse[Join[in, out]]] ];
 
   FindFlip[ LeftRight, top, Flatten[{Thread[vert -> Sort[vert]],
     Incoming -> Outgoing, Outgoing -> Incoming}] ];
+
+  FAPrint[2, "  autoshaping"];
 
   props[_] = {};
   top /. Propagator -> pr;
@@ -896,11 +917,11 @@ pr[ type_ ][ from_, to_, ___ ] := (
   AppendTo[props[type], {from, to}] )
 
 
-Attributes[twig] = {Orderless}
+Attributes[ twig ] = {Orderless}
 
 twig[ a:_[1, ___][_], b_ ] := branch[b, a]
 
-Attributes[Leaves] = {Orderless, Flat}
+Attributes[ Leaves ] = {Orderless, Flat}
 
 Leaves[ branch[a_, b__], twig[a:_[2, ___][_], c_] ] :=
   Leaves[branch[c, a, b]]
@@ -1041,7 +1062,7 @@ MkDir[ dir_String ] := Check[CreateDirectory[dir], Abort[]]
 MkDir[ dirs__String ] := Fold[MkDir[ToFileName[##]]&, {}, {dirs}]
 
 
-Attributes[GetShape] = {HoldRest}
+Attributes[ GetShape ] = {HoldRest}
 
 GetShape[ {topcode__}, ___ ] :=
 Block[ {shapedata = ShapeData[topcode]},

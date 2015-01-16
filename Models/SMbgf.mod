@@ -2,7 +2,7 @@
 	SMbgf.mod
 		Classes model file for the Standard Model in
 		the background field formalism
-		last modified 6 Mar 07 by Thomas Hahn
+		last modified 13 Aug 09 by Thomas Hahn
 
 Reference:
 	A. Denner, S. Dittmaier, and G. Weiglein
@@ -103,18 +103,18 @@ M$ClassesDescription =
    PropagatorLabel -> ComposedChar["H", Null, Null, "\\hat"], 
    PropagatorType -> ScalarDash, PropagatorArrow -> None, 
    InsertOnly -> {Internal, External}}, 
- S[2] == {SelfConjugate -> True, Indices -> {}, Mass -> MG0, 
+ S[2] == {SelfConjugate -> True, Indices -> {}, Mass -> MZ, 
    PropagatorLabel -> ComposedChar["G", Null, "0"], 
    PropagatorType -> ScalarDash, PropagatorArrow -> None, 
    InsertOnly -> Loop}, S[20] == {SelfConjugate -> True, Indices -> {}, 
-   Mass -> MG0, PropagatorLabel -> ComposedChar["G", Null, "0", "\\hat"], 
+   Mass -> MZ, PropagatorLabel -> ComposedChar["G", Null, "0", "\\hat"], 
    PropagatorType -> ScalarDash, PropagatorArrow -> None, 
    InsertOnly -> {Internal, External}}, 
- S[3] == {SelfConjugate -> False, Indices -> {}, Mass -> MGp, 
+ S[3] == {SelfConjugate -> False, Indices -> {}, Mass -> MW, 
    QuantumNumbers -> -Charge, PropagatorLabel -> "G", 
    PropagatorType -> ScalarDash, PropagatorArrow -> Forward, 
    InsertOnly -> Loop}, S[30] == {SelfConjugate -> False, Indices -> {}, 
-   Mass -> MGp, QuantumNumbers -> -Charge, PropagatorLabel -> 
+   Mass -> MW, QuantumNumbers -> -Charge, PropagatorLabel -> 
     ComposedChar["G", Null, Null, "\\hat"], PropagatorType -> ScalarDash, 
    PropagatorArrow -> Forward, InsertOnly -> {Internal, External}}, 
  U[1] == {SelfConjugate -> False, Indices -> {}, Mass -> 0, 
@@ -233,30 +233,27 @@ M$CouplingMatrices =
   {{0}, {((-I)*EL*IndexDelta[j1, j2]*Mass[F[2, {j1}]])/(Sqrt[2]*MW*SW)}}, 
  C[-F[2, {j1}], F[1, {j2}], S[3]] == 
   {{((-I)*EL*IndexDelta[j1, j2]*Mass[F[2, {j1}]])/(Sqrt[2]*MW*SW)}, {0}}, 
- C[-U[3], U[3], V[1]] == {{((-I)*EL)/Sqrt[GaugeXi[W]]}, {0}}, 
- C[-U[4], U[4], V[1]] == {{(I*EL)/Sqrt[GaugeXi[W]]}, {0}}, 
- C[-U[3], U[3], V[2]] == {{(I*CW*EL)/(SW*Sqrt[GaugeXi[W]])}, {0}}, 
- C[-U[4], U[4], V[2]] == {{((-I)*CW*EL)/(SW*Sqrt[GaugeXi[W]])}, {0}}, 
- C[-U[3], U[2], V[3]] == {{((-I)*CW*EL)/(SW*Sqrt[GaugeXi[W]])}, {0}}, 
- C[-U[2], U[3], -V[3]] == {{((-I)*CW*EL)/(SW*Sqrt[GaugeXi[Z]])}, {0}}, 
- C[-U[4], U[2], -V[3]] == {{(I*CW*EL)/(SW*Sqrt[GaugeXi[W]])}, {0}}, 
- C[-U[2], U[4], V[3]] == {{(I*CW*EL)/(SW*Sqrt[GaugeXi[Z]])}, {0}}, 
- C[-U[3], U[1], V[3]] == {{(I*EL)/Sqrt[GaugeXi[W]]}, {0}}, 
- C[-U[1], U[3], -V[3]] == {{(I*EL)/Sqrt[GaugeXi[A]]}, {0}}, 
- C[-U[4], U[1], -V[3]] == {{((-I)*EL)/Sqrt[GaugeXi[W]]}, {0}}, 
- C[-U[1], U[4], V[3]] == {{((-I)*EL)/Sqrt[GaugeXi[A]]}, {0}}, 
- C[S[1], -U[2], U[2]] == {{((-I/2)*EL*MZ*Sqrt[GaugeXi[Z]])/(CW*SW)}}, 
- C[S[1], -U[3], U[3]] == {{((-I/2)*EL*MW*Sqrt[GaugeXi[W]])/SW}}, 
- C[S[1], -U[4], U[4]] == {{((-I/2)*EL*MW*Sqrt[GaugeXi[W]])/SW}}, 
- C[S[2], -U[4], U[4]] == {{(EL*MW*Sqrt[GaugeXi[W]])/(2*SW)}}, 
- C[S[2], -U[3], U[3]] == {{-(EL*MW*Sqrt[GaugeXi[W]])/(2*SW)}}, 
- C[-S[3], -U[2], U[3]] == {{((I/2)*EL*MZ*Sqrt[GaugeXi[Z]])/SW}}, 
- C[S[3], -U[2], U[4]] == {{((I/2)*EL*MZ*Sqrt[GaugeXi[Z]])/SW}}, 
- C[-S[3], -U[4], U[2]] == {{((I/2)*EL*MW*(-CW^2 + SW^2)*Sqrt[GaugeXi[W]])/
-     (CW*SW)}}, C[S[3], -U[3], U[2]] == 
-  {{((I/2)*EL*MW*(-CW^2 + SW^2)*Sqrt[GaugeXi[W]])/(CW*SW)}}, 
- C[-S[3], -U[4], U[1]] == {{I*EL*MW*Sqrt[GaugeXi[W]]}}, 
- C[S[3], -U[3], U[1]] == {{I*EL*MW*Sqrt[GaugeXi[W]]}}, 
+ C[-U[3], U[3], V[1]] == {{(-I)*EL}, {0}}, C[-U[4], U[4], V[1]] == 
+  {{I*EL}, {0}}, C[-U[3], U[3], V[2]] == {{(I*CW*EL)/SW}, {0}}, 
+ C[-U[4], U[4], V[2]] == {{((-I)*CW*EL)/SW}, {0}}, 
+ C[-U[3], U[2], V[3]] == {{((-I)*CW*EL)/SW}, {0}}, 
+ C[-U[2], U[3], -V[3]] == {{((-I)*CW*EL)/SW}, {0}}, 
+ C[-U[4], U[2], -V[3]] == {{(I*CW*EL)/SW}, {0}}, 
+ C[-U[2], U[4], V[3]] == {{(I*CW*EL)/SW}, {0}}, 
+ C[-U[3], U[1], V[3]] == {{I*EL}, {0}}, C[-U[1], U[3], -V[3]] == 
+  {{I*EL}, {0}}, C[-U[4], U[1], -V[3]] == {{(-I)*EL}, {0}}, 
+ C[-U[1], U[4], V[3]] == {{(-I)*EL}, {0}}, C[S[1], -U[2], U[2]] == 
+  {{((-I/2)*EL*MZ*GaugeXi[Z])/(CW*SW)}}, C[S[1], -U[3], U[3]] == 
+  {{((-I/2)*EL*MW*GaugeXi[W])/SW}}, C[S[1], -U[4], U[4]] == 
+  {{((-I/2)*EL*MW*GaugeXi[W])/SW}}, C[S[2], -U[4], U[4]] == 
+  {{(EL*MW*GaugeXi[W])/(2*SW)}}, C[S[2], -U[3], U[3]] == 
+  {{-(EL*MW*GaugeXi[W])/(2*SW)}}, C[-S[3], -U[2], U[3]] == 
+  {{((I/2)*EL*MZ*GaugeXi[Z])/SW}}, C[S[3], -U[2], U[4]] == 
+  {{((I/2)*EL*MZ*GaugeXi[Z])/SW}}, C[-S[3], -U[4], U[2]] == 
+  {{((I/2)*EL*MW*(-CW^2 + SW^2)*GaugeXi[W])/(CW*SW)}}, 
+ C[S[3], -U[3], U[2]] == {{((I/2)*EL*MW*(-CW^2 + SW^2)*GaugeXi[W])/(CW*SW)}}, 
+ C[-S[3], -U[4], U[1]] == {{I*EL*MW*GaugeXi[W]}}, 
+ C[S[3], -U[3], U[1]] == {{I*EL*MW*GaugeXi[W]}}, 
  C[-F[1, {j1}], F[1, {j2}]] == 
   {{0, (-I/2)*(Conjugate[dZfL1[1, j1, j1]] + dZfL1[1, j1, j1])*
      IndexDelta[j1, j2]}, {0, (I/2)*(Conjugate[dZfR1[1, j1, j1]] + 
@@ -266,9 +263,9 @@ M$CouplingMatrices =
      IndexDelta[j1, j2]}, {0, (I/2)*(Conjugate[dZfR1[2, j1, j1]] + 
       dZfR1[2, j1, j1])*IndexDelta[j1, j2]}, 
    {0, (-I/2)*IndexDelta[j1, j2]*(2*dMf1[2, j1] + dZfL1[2, j1, j1]*
-       Mass[F[2, {j1}]] + Conjugate[dZfR1[2, j1, j1]]*Mass[F[2, {j2}]])}, 
+       Mass[F[2, {j1}]] + Conjugate[dZfR1[2, j2, j2]]*Mass[F[2, {j2}]])}, 
    {0, (-I/2)*IndexDelta[j1, j2]*(2*dMf1[2, j1] + dZfR1[2, j1, j1]*
-       Mass[F[2, {j1}]] + Conjugate[dZfL1[2, j1, j1]]*Mass[F[2, {j2}]])}}, 
+       Mass[F[2, {j1}]] + Conjugate[dZfL1[2, j2, j2]]*Mass[F[2, {j2}]])}}, 
  C[-F[3, {j1, o1}], F[3, {j2, o2}]] == 
   {{0, (-I/2)*(Conjugate[dZfL1[3, j2, j1]] + dZfL1[3, j1, j2])*
      IndexDelta[o1, o2]}, {0, (I/2)*(Conjugate[dZfR1[3, j2, j1]] + 
@@ -415,90 +412,84 @@ M$CouplingMatrices =
   {{(I*CW*EL)/SW, (I*CW*EL*(-dMWsq1 + dZH1*MW^2))/(MW^2*SW)}, {0, 0}, {0, 0}, 
    {0, 0}}, C[S[10], S[10], S[10], S[10]] == 
   {{(((-3*I)/4)*EL^2*MH^2)/(MW^2*SW^2), 
-    (((-3*I)/8)*EL^2*(dTad1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/
-     (MW^3*SW^3)}}, C[S[10], S[10], S[10], S[1]] == 
-  {{(((-3*I)/4)*EL^2*MH^2)/(MW^2*SW^2), 
-    (((-3*I)/8)*EL^2*(dTad1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/
-     (MW^3*SW^3)}}, C[S[10], S[1], S[1], S[1]] == 
-  {{(((-3*I)/4)*EL^2*MH^2)/(MW^2*SW^2), 
-    (((-3*I)/8)*EL^2*(dTad1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/
-     (MW^3*SW^3)}}, C[S[10], S[10], S[20], S[20]] == 
-  {{((-I/4)*EL^2*MH^2)/(MW^2*SW^2), 
-    ((-I/8)*EL^2*(dTad1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/(MW^3*SW^3)}}, 
+    (((-3*I)/8)*EL^2*(dTH1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/(MW^3*SW^3)}}, 
+ C[S[10], S[10], S[10], S[1]] == {{(((-3*I)/4)*EL^2*MH^2)/(MW^2*SW^2), 
+    (((-3*I)/8)*EL^2*(dTH1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/(MW^3*SW^3)}}, 
+ C[S[10], S[1], S[1], S[1]] == {{(((-3*I)/4)*EL^2*MH^2)/(MW^2*SW^2), 
+    (((-3*I)/8)*EL^2*(dTH1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/(MW^3*SW^3)}}, 
+ C[S[10], S[10], S[20], S[20]] == {{((-I/4)*EL^2*MH^2)/(MW^2*SW^2), 
+    ((-I/8)*EL^2*(dTH1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/(MW^3*SW^3)}}, 
  C[S[10], S[10], S[20], S[2]] == {{((-I/4)*EL^2*MH^2)/(MW^2*SW^2), 
-    ((-I/8)*EL^2*(dTad1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/(MW^3*SW^3)}}, 
+    ((-I/8)*EL^2*(dTH1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/(MW^3*SW^3)}}, 
  C[S[10], S[1], S[20], S[20]] == {{((-I/4)*EL^2*MH^2)/(MW^2*SW^2), 
-    ((-I/8)*EL^2*(dTad1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/(MW^3*SW^3)}}, 
+    ((-I/8)*EL^2*(dTH1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/(MW^3*SW^3)}}, 
  C[S[10], S[1], S[2], S[2]] == {{((-I/4)*EL^2*MH^2)/(MW^2*SW^2), 
-    ((-I/8)*EL^2*(dTad1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/(MW^3*SW^3)}}, 
+    ((-I/8)*EL^2*(dTH1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/(MW^3*SW^3)}}, 
  C[S[1], S[1], S[20], S[2]] == {{((-I/4)*EL^2*MH^2)/(MW^2*SW^2), 
-    ((-I/8)*EL^2*(dTad1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/(MW^3*SW^3)}}, 
+    ((-I/8)*EL^2*(dTH1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/(MW^3*SW^3)}}, 
  C[S[10], S[10], S[30], -S[30]] == {{((-I/4)*EL^2*MH^2)/(MW^2*SW^2), 
-    ((-I/8)*EL^2*(dTad1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/(MW^3*SW^3)}}, 
+    ((-I/8)*EL^2*(dTH1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/(MW^3*SW^3)}}, 
  C[S[10], S[10], S[30], -S[3]] == {{((-I/4)*EL^2*MH^2)/(MW^2*SW^2), 
-    ((-I/8)*EL^2*(dTad1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/(MW^3*SW^3)}}, 
+    ((-I/8)*EL^2*(dTH1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/(MW^3*SW^3)}}, 
  C[S[10], S[10], S[3], -S[30]] == {{((-I/4)*EL^2*MH^2)/(MW^2*SW^2), 
-    ((-I/8)*EL^2*(dTad1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/(MW^3*SW^3)}}, 
+    ((-I/8)*EL^2*(dTH1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/(MW^3*SW^3)}}, 
  C[S[10], S[1], S[30], -S[30]] == {{((-I/4)*EL^2*MH^2)/(MW^2*SW^2), 
-    ((-I/8)*EL^2*(dTad1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/(MW^3*SW^3)}}, 
+    ((-I/8)*EL^2*(dTH1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/(MW^3*SW^3)}}, 
  C[S[10], S[1], S[3], -S[3]] == {{((-I/4)*EL^2*MH^2)/(MW^2*SW^2), 
-    ((-I/8)*EL^2*(dTad1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/(MW^3*SW^3)}}, 
+    ((-I/8)*EL^2*(dTH1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/(MW^3*SW^3)}}, 
  C[S[1], S[1], S[30], -S[3]] == {{((-I/4)*EL^2*MH^2)/(MW^2*SW^2), 
-    ((-I/8)*EL^2*(dTad1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/(MW^3*SW^3)}}, 
+    ((-I/8)*EL^2*(dTH1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/(MW^3*SW^3)}}, 
  C[S[1], S[1], S[3], -S[30]] == {{((-I/4)*EL^2*MH^2)/(MW^2*SW^2), 
-    ((-I/8)*EL^2*(dTad1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/(MW^3*SW^3)}}, 
+    ((-I/8)*EL^2*(dTH1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/(MW^3*SW^3)}}, 
  C[S[20], S[20], S[20], S[20]] == {{(((-3*I)/4)*EL^2*MH^2)/(MW^2*SW^2), 
-    (((-3*I)/8)*EL^2*(dTad1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/
-     (MW^3*SW^3)}}, C[S[20], S[20], S[20], S[2]] == 
-  {{(((-3*I)/4)*EL^2*MH^2)/(MW^2*SW^2), 
-    (((-3*I)/8)*EL^2*(dTad1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/
-     (MW^3*SW^3)}}, C[S[20], S[2], S[2], S[2]] == 
-  {{(((-3*I)/4)*EL^2*MH^2)/(MW^2*SW^2), 
-    (((-3*I)/8)*EL^2*(dTad1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/
-     (MW^3*SW^3)}}, C[S[20], S[20], S[30], -S[30]] == 
-  {{((-I/4)*EL^2*MH^2)/(MW^2*SW^2), 
-    ((-I/8)*EL^2*(dTad1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/(MW^3*SW^3)}}, 
+    (((-3*I)/8)*EL^2*(dTH1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/(MW^3*SW^3)}}, 
+ C[S[20], S[20], S[20], S[2]] == {{(((-3*I)/4)*EL^2*MH^2)/(MW^2*SW^2), 
+    (((-3*I)/8)*EL^2*(dTH1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/(MW^3*SW^3)}}, 
+ C[S[20], S[2], S[2], S[2]] == {{(((-3*I)/4)*EL^2*MH^2)/(MW^2*SW^2), 
+    (((-3*I)/8)*EL^2*(dTH1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/(MW^3*SW^3)}}, 
+ C[S[20], S[20], S[30], -S[30]] == {{((-I/4)*EL^2*MH^2)/(MW^2*SW^2), 
+    ((-I/8)*EL^2*(dTH1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/(MW^3*SW^3)}}, 
  C[S[20], S[20], S[30], -S[3]] == {{((-I/4)*EL^2*MH^2)/(MW^2*SW^2), 
-    ((-I/8)*EL^2*(dTad1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/(MW^3*SW^3)}}, 
+    ((-I/8)*EL^2*(dTH1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/(MW^3*SW^3)}}, 
  C[S[20], S[20], S[3], -S[30]] == {{((-I/4)*EL^2*MH^2)/(MW^2*SW^2), 
-    ((-I/8)*EL^2*(dTad1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/(MW^3*SW^3)}}, 
+    ((-I/8)*EL^2*(dTH1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/(MW^3*SW^3)}}, 
  C[S[20], S[2], S[30], -S[30]] == {{((-I/4)*EL^2*MH^2)/(MW^2*SW^2), 
-    ((-I/8)*EL^2*(dTad1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/(MW^3*SW^3)}}, 
+    ((-I/8)*EL^2*(dTH1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/(MW^3*SW^3)}}, 
  C[S[20], S[2], S[3], -S[3]] == {{((-I/4)*EL^2*MH^2)/(MW^2*SW^2), 
-    ((-I/8)*EL^2*(dTad1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/(MW^3*SW^3)}}, 
+    ((-I/8)*EL^2*(dTH1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/(MW^3*SW^3)}}, 
  C[S[2], S[2], S[30], -S[3]] == {{((-I/4)*EL^2*MH^2)/(MW^2*SW^2), 
-    ((-I/8)*EL^2*(dTad1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/(MW^3*SW^3)}}, 
+    ((-I/8)*EL^2*(dTH1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/(MW^3*SW^3)}}, 
  C[S[2], S[2], S[3], -S[30]] == {{((-I/4)*EL^2*MH^2)/(MW^2*SW^2), 
-    ((-I/8)*EL^2*(dTad1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/(MW^3*SW^3)}}, 
+    ((-I/8)*EL^2*(dTH1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/(MW^3*SW^3)}}, 
  C[S[30], S[30], -S[30], -S[30]] == 
   {{((-I/2)*EL^2*MH^2)/(MW^2*SW^2), 
-    ((-I/4)*EL^2*(dTad1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/(MW^3*SW^3)}}, 
+    ((-I/4)*EL^2*(dTH1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/(MW^3*SW^3)}}, 
  C[S[30], S[30], -S[30], -S[3]] == {{((-I/2)*EL^2*MH^2)/(MW^2*SW^2), 
-    ((-I/4)*EL^2*(dTad1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/(MW^3*SW^3)}}, 
+    ((-I/4)*EL^2*(dTH1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/(MW^3*SW^3)}}, 
  C[S[30], S[3], -S[30], -S[30]] == {{((-I/2)*EL^2*MH^2)/(MW^2*SW^2), 
-    ((-I/4)*EL^2*(dTad1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/(MW^3*SW^3)}}, 
+    ((-I/4)*EL^2*(dTH1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/(MW^3*SW^3)}}, 
  C[S[30], S[3], -S[3], -S[3]] == {{((-I/2)*EL^2*MH^2)/(MW^2*SW^2), 
-    ((-I/4)*EL^2*(dTad1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/(MW^3*SW^3)}}, 
+    ((-I/4)*EL^2*(dTH1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/(MW^3*SW^3)}}, 
  C[S[3], S[3], -S[30], -S[3]] == {{((-I/2)*EL^2*MH^2)/(MW^2*SW^2), 
-    ((-I/4)*EL^2*(dTad1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/(MW^3*SW^3)}}, 
+    ((-I/4)*EL^2*(dTH1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/(MW^3*SW^3)}}, 
  C[S[10], S[10], S[10]] == {{(((-3*I)/2)*EL*MH^2)/(MW*SW), 
-    (((-3*I)/4)*EL*(dTad1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/(MW^2*SW^2)}}, 
+    (((-3*I)/4)*EL*(dTH1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/(MW^2*SW^2)}}, 
  C[S[10], S[10], S[1]] == {{(((-3*I)/2)*EL*MH^2)/(MW*SW), 
-    (((-3*I)/4)*EL*(dTad1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/(MW^2*SW^2)}}, 
+    (((-3*I)/4)*EL*(dTH1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/(MW^2*SW^2)}}, 
  C[S[10], S[20], S[20]] == {{((-I/2)*EL*MH^2)/(MW*SW), 
-    ((-I/4)*EL*(dTad1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/(MW^2*SW^2)}}, 
+    ((-I/4)*EL*(dTH1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/(MW^2*SW^2)}}, 
  C[S[10], S[20], S[2]] == {{((-I/2)*EL*MH^2)/(MW*SW), 
-    ((-I/4)*EL*(dTad1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/(MW^2*SW^2)}}, 
+    ((-I/4)*EL*(dTH1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/(MW^2*SW^2)}}, 
  C[S[1], S[20], S[20]] == {{((-I/2)*EL*MH^2)/(MW*SW), 
-    ((-I/4)*EL*(dTad1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/(MW^2*SW^2)}}, 
+    ((-I/4)*EL*(dTH1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/(MW^2*SW^2)}}, 
  C[S[30], S[10], -S[30]] == {{((-I/2)*EL*MH^2)/(MW*SW), 
-    ((-I/4)*EL*(dTad1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/(MW^2*SW^2)}}, 
+    ((-I/4)*EL*(dTH1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/(MW^2*SW^2)}}, 
  C[S[30], S[10], -S[3]] == {{((-I/2)*EL*MH^2)/(MW*SW), 
-    ((-I/4)*EL*(dTad1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/(MW^2*SW^2)}}, 
+    ((-I/4)*EL*(dTH1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/(MW^2*SW^2)}}, 
  C[S[30], S[1], -S[30]] == {{((-I/2)*EL*MH^2)/(MW*SW), 
-    ((-I/4)*EL*(dTad1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/(MW^2*SW^2)}}, 
+    ((-I/4)*EL*(dTH1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/(MW^2*SW^2)}}, 
  C[S[3], S[10], -S[30]] == {{((-I/2)*EL*MH^2)/(MW*SW), 
-    ((-I/4)*EL*(dTad1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/(MW^2*SW^2)}}, 
+    ((-I/4)*EL*(dTH1*EL + 2*(dMHsq1 + dZH1*MH^2)*MW*SW))/(MW^2*SW^2)}}, 
  C[S[10], S[10], V[30], -V[30]] == 
   {{((I/2)*EL^2)/SW^2, ((I/2)*dZH1*EL^2)/SW^2}}, 
  C[S[10], S[10], V[30], -V[3]] == 
@@ -909,10 +900,10 @@ M$CouplingMatrices =
    {0, 0}}, C[-F[2, {j1}], F[2, {j2}], S[10]] == 
   {{((-I/2)*EL*IndexDelta[j1, j2]*Mass[F[2, {j1}]])/(MW*SW), 
     ((-I/4)*EL*IndexDelta[j1, j2]*(2*dMf1[2, j1] + dZfL1[2, j1, j1]*
-        Mass[F[2, {j1}]] + Conjugate[dZfR1[2, j1, j1]]*Mass[F[2, {j2}]]))/
+        Mass[F[2, {j1}]] + Conjugate[dZfR1[2, j2, j2]]*Mass[F[2, {j2}]]))/
      (MW*SW)}, {((-I/2)*EL*IndexDelta[j1, j2]*Mass[F[2, {j1}]])/(MW*SW), 
     ((-I/4)*EL*IndexDelta[j1, j2]*(2*dMf1[2, j1] + dZfR1[2, j1, j1]*
-        Mass[F[2, {j1}]] + Conjugate[dZfL1[2, j1, j1]]*Mass[F[2, {j2}]]))/
+        Mass[F[2, {j1}]] + Conjugate[dZfL1[2, j2, j2]]*Mass[F[2, {j2}]]))/
      (MW*SW)}}, C[-F[3, {j1, o1}], F[3, {j2, o2}], S[10]] == 
   {{((-I/2)*EL*IndexDelta[j1, j2]*IndexDelta[o1, o2]*Mass[F[3, {j1}]])/
      (MW*SW), ((-I/4)*EL*IndexDelta[o1, o2]*
@@ -934,10 +925,10 @@ M$CouplingMatrices =
  C[-F[2, {j1}], F[2, {j2}], S[20]] == 
   {{-(EL*IndexDelta[j1, j2]*Mass[F[2, {j1}]])/(2*MW*SW), 
     -(EL*IndexDelta[j1, j2]*(2*dMf1[2, j1] + dZfL1[2, j1, j1]*
-         Mass[F[2, {j1}]] + Conjugate[dZfR1[2, j1, j1]]*Mass[F[2, {j2}]]))/
+         Mass[F[2, {j1}]] + Conjugate[dZfR1[2, j2, j2]]*Mass[F[2, {j2}]]))/
      (4*MW*SW)}, {(EL*IndexDelta[j1, j2]*Mass[F[2, {j1}]])/(2*MW*SW), 
     (EL*IndexDelta[j1, j2]*(2*dMf1[2, j1] + dZfR1[2, j1, j1]*
-        Mass[F[2, {j1}]] + Conjugate[dZfL1[2, j1, j1]]*Mass[F[2, {j2}]]))/
+        Mass[F[2, {j1}]] + Conjugate[dZfL1[2, j2, j2]]*Mass[F[2, {j2}]]))/
      (4*MW*SW)}}, C[-F[3, {j1, o1}], F[3, {j2, o2}], S[20]] == 
   {{(EL*IndexDelta[j1, j2]*IndexDelta[o1, o2]*Mass[F[3, {j1}]])/(2*MW*SW), 
     (EL*IndexDelta[o1, o2]*(2*dMf1[3, j1]*IndexDelta[j1, j2] + 
@@ -999,8 +990,8 @@ M$CouplingMatrices =
  C[-S[30], V[30]] == {{0, 0}, {0, (-I)*dZH1*MW}}, 
  C[S[20], V[20]] == {{0, 0}, {0, -(dZH1*MZ)}}, 
  C[S[10], S[10]] == {{0, (-I)*dZH1}, {0, I*(-dMHsq1 - dZH1*MH^2)}}, 
- C[S[20], S[20]] == {{0, (-I)*dZH1}, {0, ((I/2)*dTad1*EL)/(MW*SW)}}, 
- C[S[30], -S[30]] == {{0, (-I)*dZH1}, {0, ((I/2)*dTad1*EL)/(MW*SW)}}, 
+ C[S[20], S[20]] == {{0, (-I)*dZH1}, {0, ((I/2)*dTH1*EL)/(MW*SW)}}, 
+ C[S[30], -S[30]] == {{0, (-I)*dZH1}, {0, ((I/2)*dTH1*EL)/(MW*SW)}}, 
  C[V[10], -V[3], V[3]] == {{(-I)*EL}, {((-I)*EL)/GaugeXi[Q]}, 
    {(I*EL)/GaugeXi[Q]}, {0}}, C[-V[30], V[3], V[1]] == 
   {{(-I)*EL}, {((-I)*EL)/GaugeXi[Q]}, {(I*EL)/GaugeXi[Q]}, {0}}, 
@@ -1363,12 +1354,12 @@ TheLabel[ F[1, {3}] ] = ComposedChar["\\nu", "\\tau"];
 TheLabel[ F[2, {1}] ] = "e";
 TheLabel[ F[2, {2}] ] = "\\mu";
 TheLabel[ F[2, {3}] ] = "\\tau";
-TheLabel[ F[3, {1}] ] = "u";
-TheLabel[ F[3, {2}] ] = "c";
-TheLabel[ F[3, {3}] ] = "t";
-TheLabel[ F[4, {1}] ] = "d";
-TheLabel[ F[4, {2}] ] = "s";
-TheLabel[ F[4, {3}] ] = "b"
+TheLabel[ F[3, {1, ___}] ] = "u";
+TheLabel[ F[3, {2, ___}] ] = "c";
+TheLabel[ F[3, {3, ___}] ] = "t";
+TheLabel[ F[4, {1, ___}] ] = "d";
+TheLabel[ F[4, {2, ___}] ] = "s";
+TheLabel[ F[4, {3, ___}] ] = "b"
 
 
 M$LastModelRules = {}
@@ -1426,71 +1417,39 @@ NoQuarkMixing =
 
 Clear[RenConst]
 
-RenConst[ dMf1[type_, j1_] ] :=
-Block[ {m1 = TheMass[F[type, {j1}]], sff},
-  sff = SelfEnergy[F[type, {j1}] -> F[type, {j1}], m1];
-  ReTilde[ m1/2 (LVectorCoeff[sff] + RVectorCoeff[sff]) +
-    LScalarCoeff[sff] ]
-]
-
-RenConst[ dZfL1[type_, j1_, j1_] ] :=
-Block[ {m1 = TheMass[F[type, {j1}]], sff, dsff},
-  sff = SelfEnergy[F[type, {j1}] -> F[type, {j1}], m1];
-  dsff = DSelfEnergy[F[type, {j1}] -> F[type, {j1}], m1];
-  -ReTilde[ LVectorCoeff[sff] +
-    m1^2 (LVectorCoeff[dsff] + RVectorCoeff[dsff]) +
-    2 m1 LScalarCoeff[dsff] ]
-]
+RenConst[ dMf1[type_, j1_] ] := MassRC[F[type, {j1}]]
 
 RenConst[ dZfL1[type_, j1_, j2_] ] :=
-Block[ {m1 = TheMass[F[type, {j1}]], m2 = TheMass[F[type, {j2}]], sff},
-  sff = SelfEnergy[F[type, {j2}] -> F[type, {j1}], m2];
-  2/(m1^2 - m2^2) ReTilde[
-    m2^2 LVectorCoeff[sff] + m1 m2 RVectorCoeff[sff] +
-    (m1^2 + m2^2)/m1 LScalarCoeff[sff] ]
-]
-
-RenConst[ dZfR1[type_, j1_, j1_] ] :=
-Block[ {m1 = TheMass[F[type, {j1}]], sff, dsff},
-  sff = SelfEnergy[F[type, {j1}] -> F[type, {j1}], m1];
-  dsff = DSelfEnergy[F[type, {j1}] -> F[type, {j1}], m1];
-  -ReTilde[ RVectorCoeff[sff] +
-    m1^2 (LVectorCoeff[dsff] + RVectorCoeff[dsff]) +
-    2 m1 LScalarCoeff[dsff] ]
-]
+  FieldRC[F[type, {j1}], F[type, {j2}]][[1]]
 
 RenConst[ dZfR1[type_, j1_, j2_] ] :=
-Block[ {m1 = TheMass[F[type, {j1}]], m2 = TheMass[F[type, {j2}]], sff},
-  sff = SelfEnergy[F[type, {j2}] -> F[type, {j1}], m2];
-  2 m2/(m1^2 - m2^2) ReTilde[
-    m2 RVectorCoeff[sff] + m1 LVectorCoeff[sff] + 2 LScalarCoeff[sff] ]
-]
+  FieldRC[F[type, {j1}], F[type, {j2}]][[2]]
 
-RenConst[ dMZsq1 ] := ReTilde[SelfEnergy[V[20] -> V[20], MZ]]
+RenConst[ dMZsq1 ] := MassRC[V[20]]
 
-RenConst[ dMWsq1 ] := ReTilde[SelfEnergy[V[30] -> V[30], MW]]
+RenConst[ dMWsq1 ] := MassRC[V[30]]
 
-RenConst[ dMHsq1 ] := ReTilde[SelfEnergy[S[10] -> S[10], MH]]
+RenConst[ dMHsq1 ] := MassRC[S[10]]
 
-RenConst[ dZAA1  ] := -ReTilde[DSelfEnergy[V[10] -> V[10], 0]]
+RenConst[ dZAA1 ] := FieldRC[V[10]]
 
-RenConst[ dZAZ1  ] := 2 CW/SW (dMWsq1/MW^2 - dMZsq1/MZ^2)
+RenConst[ dZAZ1 ] := 2 CW/SW (dMWsq1/MW^2 - dMZsq1/MZ^2)
 
-RenConst[ dZZA1  ] := 0
+RenConst[ dZZA1 ] := 0
 
-RenConst[ dZZZ1  ] := dZAA1 - (CW^2 - SW^2)/(2 CW SW) dZAZ1
+RenConst[ dZZZ1 ] := dZAA1 - (CW^2 - SW^2)/(2 CW SW) dZAZ1
 
-RenConst[ dZW1   ] := dZAA1 - CW/SW/2 dZAZ1
+RenConst[ dZW1 ] := dZAA1 - CW/SW/2 dZAZ1
 
-RenConst[ dZH1   ] := dZW1 + dMWsq1/MW2
+RenConst[ dZH1 ] := dZW1 + dMWsq1/MW2
 
-RenConst[ dTad1  ] := -ReTilde[SelfEnergy[S[10] -> {}]]
+RenConst[ dTH1 ] := TadpoleRC[S[10]]
 
-RenConst[ dZe1   ] := -1/2 (dZAA1 + SW/CW dZZA1)
+RenConst[ dZe1 ] := -1/2 dZAA1
 
-RenConst[ dWFZ1  ] := -ReTilde[DSelfEnergy[V[20] -> V[20], MZ]] - dZZZ1
+RenConst[ dWFZ1 ] := FieldRC[V[20]] - dZZZ1
 
-RenConst[ dWFAZ1 ] := -2 ReTilde[SelfEnergy[V[10] -> V[20], MZ]] - dZAZ1
+RenConst[ dWFAZ1 ] := FieldRC[V[10], V[20]] - dZAZ1
 
-RenConst[ dWFW1  ] := -ReTilde[DSelfEnergy[V[30] -> V[30], MW]] - dZW1
+RenConst[ dWFW1 ] := FieldRC[V[30]] - dZW1
 

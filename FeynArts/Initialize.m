@@ -1,7 +1,7 @@
 (*
 	Initialize.m
 		Functions for the initialization of models
-		last modified 29 Jun 09 th
+		last modified 14 Apr 10 th
 *)
 
 Begin["`Initialize`"]
@@ -36,7 +36,7 @@ Begin["`Initialize`"]
 *)
 
 
-Attributes[ FieldPoint ] = {Orderless}
+Attributes[ FieldPoint ] = Attributes[PermutationSymmetry] = {Orderless}
 
 
 ToModelName[mod_] := str/@ Flatten[{mod}]
@@ -212,6 +212,12 @@ Options[ InitializeModel ] = {
   ModelEdit :> Null
 }
 
+InitializeModel::nonlin =
+"Non-linear term `` in ``."
+
+InitializeModel::unknown =
+"Unknown field ``."
+
 InitializeModel::norange =
 "Index `` has no IndexRange specification."
 
@@ -222,6 +228,9 @@ coupling structure.  Coupling is not a vector of length ``."
 InitializeModel::incomp2 =
 "Incompatible index structure in classes coupling ``.  \
 Field `` needs `` indices, not ``."
+
+InitializeModel::kinind =
+"Warning: Wrong number of kinematic indices in field ``."
 
 InitializeModel::nogeneric =
 "Warning: Classes coupling `` matches no generic coupling."
@@ -243,7 +252,9 @@ overall format is wrong, or it contains symbols that were already \
 assigned values somewhere in your model file (most often \"i\" or \"j\").  \
 Please check your generic model file and try again."
 
-InitializeModel[ model_:{}, options___?OptionQ ] :=
+InitializeModel[ opt:P$Options ] := InitializeModel[{}, opt]
+
+InitializeModel[ model_, options:P$Options ] :=
 Block[ {reini, genmod, mod,
 opt = ActualOptions[InitializeModel, options]},
   reini = TrueQ[Reinitialize /. opt];
@@ -274,7 +285,7 @@ Block[ {savecp = $ContextPath},
   $GenericModel = $Model = "";
 
   Clear[AnalyticalPropagator, AnalyticalCoupling, KinematicVector,
-    PossibleFields, CheckFieldPoint, Combinations,
+    PermutationSymmetry, PossibleFields, CheckFieldPoint, Combinations,
     Compatibles, MixingPartners];
   $ExcludedFPs = $ExcludedParticleFPs = {};
 
@@ -394,6 +405,8 @@ Block[ {lhs, cpl, Global`cto, x},
   lhs = CoupFieldPattern/@ {f};
   Evaluate[cpl@@ lhs] = kinvec;
 
+  SetDelayed@@ {PermutationSymmetry@@ ToGeneric[lhs], n};
+
 	(* put Mom and KI dummies in the fields on the rhs.  These dummies 
 	   will appear as part of the Lorentz term indexing of the G's. *)
   x = Evaluate[KinematicVector@@ ToGeneric[{f}]] =
@@ -435,19 +448,28 @@ PropFieldPattern[ fi_ ] :=
   (Message[InitializeModel::nosymb, FullForm[fi]]; Abort[])
 
 
-CoupFieldPattern[ fi_[i_Symbol, m_Symbol] ] := fi[i__, m_, ___List]
+CoupFieldPattern[ f:fi_[i_Symbol, m_Symbol] ] := (
+  If[ Length[KinematicIndices[fi]] =!= 0,
+    Message[InitializeModel::kinind, f] ];
+  fi[i__, m_, ___List] )
 
-CoupFieldPattern[ fi_[i_Symbol, m_Symbol, ki:{__Symbol}] ] := 
-  fi[i__, m_, Append[Pattern[#, _]&/@ ki, ___]]
+CoupFieldPattern[ f:fi_[i_Symbol, m_Symbol, ki:{__Symbol}] ] := 
+  fi[i__, m_, KinIndices[f, ki]]
 
 CoupFieldPattern[
-  fi_[i_Symbol, m_Symbol, ki:({__Symbol} -> {__Symbol})] ] := 
-  fi[i__, m_, Append[#, ___]&/@ Map[Pattern[#, _]&, ki, {2}]]
+    fi_[i_Symbol, m_Symbol, ki1:{__Symbol} -> ki2:{__Symbol}] ] := 
+  fi[i__, m_, KinIndices[f, ki1] -> KinIndices[f, ki2]]
 
 CoupFieldPattern[ s_Symbol fi:_[___] ] := s_. CoupFieldPattern[fi]
 
 CoupFieldPattern[ fi_ ] :=
   (Message[InitializeModel::nosymb, FullForm[fi]]; Abort[])
+
+
+KinIndices[ f_, ki_ ] := (
+  If[ Length[KinematicIndices[Head[f]]] =!= Length[ki],
+    Message[InitializeModel::kinind, f] ];
+  Append[Pattern[#, _]&/@ ki, ___] )
 
 
 On[RuleDelayed::rhs]
@@ -465,13 +487,13 @@ ClearDefs[ defs_ ] := defs = Select[defs, FreeQ[#, P$Generic[__]]&]
 
 Attributes[ Assign ] = {Listable}
 
-Assign[ fi_, Mass[t___] -> b_ ] := TheMass[fi, t] = b
+Assign[ fi_, a_[t___] -> b_ ] := Assign[fi, t, a -> b]
 
-Assign[ fi_, Mass -> b_ ] := TheMass[fi] = b
+Assign[ fi__, Mass -> b_ ] := TheMass[fi] = b
 
-Assign[ fi_, PropagatorLabel -> b_ ] := TheLabel[fi] = b
+Assign[ fi__, PropagatorLabel -> b_ ] := TheLabel[fi] = b
 
-Assign[ fi_, a_ -> b_ ] := a[fi] = b
+Assign[ fi__, a_ -> b_ ] := a[fi] = b
 
 
 (* Initialization of a classes model: *)
@@ -489,6 +511,7 @@ Block[ {unsortedFP, unsortedCT, savecp = $ContextPath},
   ClearDefs[DownValues[#]]&/@ {CheckFieldPoint,
     SelfConjugate, Indices, MixingPartners, TheMass,
     QuantumNumbers, MatrixTraceFactor, InsertOnly,
+    Mixture, TheCoeff, IndexBase,
     TheLabel, PropagatorType, PropagatorArrow};
 
   FAPrint[2, ""];
@@ -498,6 +521,7 @@ Block[ {unsortedFP, unsortedCT, savecp = $ContextPath},
 	(* initialize particles:
 	   set properties of classes from their description list: *)
   Apply[Assign, M$ClassesDescription, 1];
+  Apply[SetCoeff[#][Mixture[#]]&, M$ClassesDescription, 1];
 
   SVCompatibles[ _ ] = {};
   Cases[ DownValues[MixingPartners],
@@ -523,14 +547,14 @@ Block[ {unsortedFP, unsortedCT, savecp = $ContextPath},
 
 	(* forming the explicit and half-generic vertex lists: *)
   Off[Rule::rhs];
-  unsortedFP = Flatten[InitCoupling/@ M$CouplingMatrices, 1];
+  unsortedFP = Flatten[InitCoupling[M$CouplingMatrices], 1];
   On[Rule::rhs];
   ReferenceOrder[Classes] = Union[Apply[List, unsortedFP, 1]];
   FieldPointList[Classes] = Apply[FieldPoint, ReferenceOrder[Classes], 1];
 
   L$CTOrders = Union[Cases[unsortedFP, FieldPoint[n_][__] -> n]];
   Scan[
-    Function[cto,
+    Function[ cto,
       unsortedCT = Union[Select[unsortedFP, #[[0, 1]] === cto &]];
       FieldPointList[cto] = Apply[FieldPoint, unsortedCT, 1];
       FAPrint[2, "> ", Length[unsortedCT],
@@ -590,6 +614,86 @@ Block[ {comp, i, ppart, pleft, pright},
 Unionize[ n_, arg_, new_ ] := n[arg] = Union[Flatten[{n[arg], new}]]
 
 
+(* form linear combinations of couplings *)
+
+SetCoeff[ fi_ ][ fi_ ] := AppendTo[TheCoeff[fi], fi]
+
+SetCoeff[ fi_ ][ p_Plus ] := Scan[SetCoeff[fi], p]
+
+SetCoeff[ fi_ ][ c_. Field[s_. (f:P$Generic)[i_, j___]] ] :=
+  AppendTo[TheCoeff[s f[i]], fi -> {c, j}]
+
+SetCoeff[ fi_ ][ c_. (f:P$Generic)[i_, j___] ] :=
+  AppendTo[TheCoeff[f[i]], fi -> {c, j}]
+
+SetCoeff[ fi_ ][ other_ ] := Message[InitializeModel::nonlin, other, fi]
+
+
+SetCoupling[ c:vert_ == _ ] :=
+  Catch[SetCoupling[c, Distribute[TheCoeff/@ vert, List]]]
+
+SetCoupling[ vert_ == coup_, comb_ ] :=
+  (Coup[ vert ] += coup) /; FreeQ[comb, Rule]
+
+SetCoupling[ vert_ == coup_, comb_ ] :=
+Block[ {sign, vorig, vref, ord, o, new},
+  sign = If[ PermutationSymmetry@@ ToGeneric[vert] === -1,
+    Signature, 1 & ];
+  vorig = vert;
+  vref = vert /. s_. (f:P$Generic)[___] -> s f;
+  o = ord = Ordering[vref];
+  Attributes[ new ] = {Orderless};
+  new[ fi__ ] := (new[fi] = 0 &; SplitCoeff);
+  Scan[(new@@ #)[coup, #]&, comb];
+]
+
+
+SplitCoeff[ coup_, comb_ ] :=
+Block[ {coeff, v, c, fn = 0},
+  o[[ord]] = Ordering[Thread[{vref, comb /. (f_ -> _) -> f}, C]];
+  c = coup sign[o];
+  _coeff = {};
+  v = C@@ DeleteCases[
+    Apply[StripCoeff, Thread[{vorig, comb}, C][[o]], 1],
+    {}, {-2} ];
+  _coeff =.;
+  Coup[v] += c Times@@ Apply[
+    Plus@@ Apply[Times, PermuteFields@@ Transpose[#2], 1]&,
+    DownValues[coeff], 1];
+]
+
+
+StripCoeff[ f0_, -(fi_ -> {coeff_, ind___}) ] :=
+  StripCoeff[f0, -fi -> {Conjugate[coeff], ind}]
+
+StripCoeff[ s0_. (f0:P$Generic)[i0_, patt___],
+    s_. (f:P$Generic)[i_, ___] -> {lc_, ind___} ] := (
+  c = Subst[c, patt, ind];
+  AppendTo[coeff[f[i]], {s0 f0[i0] -> lc, Thread[Indices[f[i]] -> #]}];
+  s f[i, #]
+)&[ IndexBase[Indices[f[i]], ++fn] ]
+
+StripCoeff[ _, s_. (fi:P$Generic)[i_, ___] ] :=
+  s fi[i, IndexBase[Indices[fi], ++fn]]
+
+
+PermuteFields[ fi_, ind_ ] :=
+  Transpose[MapThread[ ReplaceAll,
+    {Transpose[Map[Last, Permutations[fi], {2}]], ind} ]]
+
+
+Attributes[ IndexBase ] = {Listable}
+
+IndexBase[ i_ ] := IndexBase[i] =
+Block[ {n = "", ib = Cases[DownValues[IndexBase], _[_, s_String] -> s]},
+  Scan[ If[ FreeQ[ib, n = n <> #], Return[] ]&,
+    Flatten[{Characters[ToLowerCase[ToString@@ i]], "j", "q", "x"}]  ];
+  n
+]
+
+IndexBase[ i_, n_ ] := ToExpression[IndexBase[i] <> ToString[n]]
+
+
 (* InitCoupling converts a single classes coupling definition
    (Equal) to a function definition (SetDelayed).  It checks for
    compatibility of the generic and the classes coupling structure and
@@ -600,7 +704,17 @@ Unionize[ n_, arg_, new_ ] := n[arg] = Union[Flatten[{n[arg], new}]]
    the inner lists stand for increasing order of the vertices.  For a
    one-dimensional generic coupling we need only {c[0], c[1], ...}. *)
 
-InitCoupling[ vert_ == coup_ ] :=
+InitCoupling[ couplist_ ] := Apply[ InitCoupling,
+Block[ {Coup},
+  _Coup = 0;
+  TheCoeff[ fi_ ] := Throw[Message[InitializeModel::unknown, fi]];
+  Scan[SetCoupling, couplist];
+  TheCoeff[ fi_ ] =.;
+  _Coup =.;
+  DownValues[Coup]
+], 1 ]
+
+InitCoupling[ _[_[vert_]], coup_ ] :=
 Block[ {lhs, rhs, l, cv, x, res, genref = ToGeneric[List@@ vert]},
 
 	(* find corresponding generic coupling.
@@ -672,7 +786,7 @@ SelfConjugate[ _Integer fi_ ] := SelfConjugate[fi]
 
 SelfConjugate[ fi_[i_, __] ] := SelfConjugate[fi[i]]
 
-SelfConjugate[ _ ] = False
+_SelfConjugate = False
 
 
 IndexRange[ error_ ] :=
@@ -682,7 +796,7 @@ Indices[ _Integer fi_ ] := Indices[fi]
 
 Indices[ fi_[i_, __] ] := Indices[fi[i]]
 
-Indices[ _ ] = {}
+_Indices = {}
 
 
 IndexSum[0, _] = 0
@@ -701,26 +815,38 @@ AddHC[ h_, weight_:(1&) ] :=
 
 KinematicIndices[ VS ] := KinematicIndices[SV]
 
-KinematicIndices[ _ ] = {}
+_KinematicIndices = {}
 
 
 MatrixTraceFactor[ _Integer fi_ ] := MatrixTraceFactor[fi]
 
 MatrixTraceFactor[ fi_[i_, __] ] := MatrixTraceFactor[fi[i]]
 
-MatrixTraceFactor[ _ ] = 1
+_MatrixTraceFactor = 1
 
 
 InsertOnly[ _Integer fi_ ] := InsertOnly[fi]
 
 InsertOnly[ fi_[i_, __] ] := InsertOnly[fi[i]]
 
-InsertOnly[ _ ] = {External, Internal, Loop}
+_InsertOnly = {External, Internal, Loop}
 
 
 QuantumNumbers[ -fi_ ] := -QuantumNumbers[fi]
 
-QuantumNumbers[ _ ] = {}
+_QuantumNumbers = {}
+
+
+Mixture[ fi_[i_, j_, ___] ] := Subst[Mixture[fi[i]], i, j]
+
+Mixture[ fi_, ___ ] = fi
+
+
+TheCoeff[ s_Integer f_ ] := s TheCoeff[f]
+
+TheCoeff[ fi_[i_, __] ] := TheCoeff[fi[i]]
+
+_TheCoeff = {}
 
 
 (* There are no direct definitions for the masses of the particles since
@@ -733,18 +859,57 @@ TheMass[ _Integer fi_, t___ ] := TheMass[fi, t]
 
 TheMass[ fi_[i_, j_List, __], t___ ] := TheMass[fi[i, j], t]
 
-TheMass[ fi_[i_, j_List], t___ ] :=
-  Block[ {m = TheMass[fi[i], t]}, IndexMass[m, j] /; Head[m] =!= Mass ]
+TheMass[ fi___ ] := DefaultMass[fi]
 
-TheMass[ fi_, t_ ] :=
-  Block[ {m = TheMass[fi]}, m /; Head[m] =!= Mass ]
 
-TheMass[ fi__ ] = Mass[fi]
+DefaultMass[ fi_[i_, j_List], t___ ] :=
+Block[ {DefaultMass, m},
+  IndexMass[m, j] /; Head[m = TheMass[fi[i], t]] =!= DefaultMass
+]
+
+DefaultMass[ fi_, t_ ] :=
+Block[ {m = TheMass[fi]}, m /; Head[m] =!= Mass ]
+
+DefaultMass[ fi__ ] = Mass[fi]
 
 
 IndexMass[ n_?NumberQ, _ ] = n
 
 IndexMass[ s_, {j___} ] := s[j]
+
+
+TheLabel::undef = "No label defined for `1`."
+
+TheLabel[ SV, ___ ] = {"S", "V"}
+
+TheLabel[ VS, ___ ] = {"V", "S"}
+
+TheLabel[ i_Integer, ___ ] = i
+
+TheLabel[ fi:P$Generic, ___ ] = fi
+
+TheLabel[ (2 | -2) fi_, t___ ] := Reverse[Flatten[{TheLabel[fi, t]}]]
+
+TheLabel[ -fi_, t___ ] := TheLabel[fi, t]
+
+TheLabel[ fi___ ] := DefaultLabel[fi]
+
+
+DefaultLabel[ fi_[i_Integer, j_List], t___ ] :=
+Block[ {DefaultLabel, l},
+  (Subst[l, Indices[fi[i]], IndexStyle/@ j] /. _Index -> Null) /;
+    Head[l = TheLabel[fi[i], t]] =!= DefaultLabel
+]
+
+DefaultLabel[ fi_, t_ ] := TheLabel[fi]
+
+DefaultLabel[ h_[i___] ] :=
+  (Message[TheLabel::undef, h[i]]; ComposedChar[h, i])
+
+
+IndexStyle[ Index[_, i_] ] := Alph[i]
+
+IndexStyle[ other_ ] = other
 
 
 (* Note: AntiParticle[...] := AntiParticle[...] = ... is not possible
@@ -768,7 +933,7 @@ AntiParticle[ s_. part:(fi:P$Generic)[i_, ___] ] :=
   mom_FourMomentum -> -mom
 
 	(* there are no antiparticles at Generic level.
-	   Note that it is important to have _Symbol here to prevent
+	   It is important to have _Symbol here to prevent
 	   AntiParticle[Field[i]] from being evaluated. *)
 AntiParticle[ fi_Symbol ] = fi
 
@@ -797,7 +962,7 @@ PropagatorType[ -fi_ ] := PropagatorType[fi]
 
 PropagatorType[ fi_[i_, __] ] := PropagatorType[fi[i]]
 
-PropagatorType[ _ ] = Straight
+_PropagatorType = Straight
 
 
 PropagatorArrow[ _?Negative fi_ ] :=
@@ -807,34 +972,7 @@ PropagatorArrow[ 2 fi_ ] := PropagatorArrow[fi]
 
 PropagatorArrow[ fi_[i_, __] ] := PropagatorArrow[fi[i]]
 
-PropagatorArrow[ _ ] = None
-
-
-TheLabel::undef = "No label defined for `1`."
-
-TheLabel[ SV ] = {"S", "V"}
-
-TheLabel[ VS ] = {"V", "S"}
-
-TheLabel[ i_Integer ] = i
-
-TheLabel[ fi:P$Generic ] = fi
-
-TheLabel[ (2 | -2) fi_ ] := Reverse[Flatten[{TheLabel[fi]}]]
-
-TheLabel[ -fi_ ] := TheLabel[fi]
-
-TheLabel[ fi_[i_Integer, ndx_List] ] :=
-  TheLabel[fi[i]] /. Thread[ Indices[fi[i]] ->
-    Join[IndexStyle/@ ndx,
-      Table[Null, {Length[Indices[fi[i]]] - Length[ndx]}]] ]
-
-TheLabel[ fi_ ] := (Message[TheLabel::undef, fi]; ToString[fi])
-
-
-IndexStyle[ Index[_, i_] ] := Alph[i]
-
-IndexStyle[ expr_ ] = expr
+_PropagatorArrow = None
 
 
 GaugeXi[ _Integer fi_ ] := GaugeXi[fi]

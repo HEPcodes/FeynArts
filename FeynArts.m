@@ -1,8 +1,8 @@
 (*
 
-This is FeynArts, Version 3.4
-Copyright by Sepp Kueblbeck, Hagen Eck, and Thomas Hahn 1991-2009
-last modified 29 Jun 09 by Thomas Hahn
+This is FeynArts, Version 3.5
+Copyright by Sepp Kueblbeck, Hagen Eck, and Thomas Hahn 1991-2010
+last modified 16 Apr 10 by Thomas Hahn
 
 Release notes:
 
@@ -44,9 +44,9 @@ Have fun!
 
 
 Print[""];
-Print["FeynArts 3.4"];
+Print["FeynArts 3.5"];
 Print["by Hagen Eck, Sepp Kueblbeck, and Thomas Hahn"];
-Print["last revised 19 Jun 09"]
+Print["last revised 16 Apr 10"]
 
 
 BeginPackage["FeynArts`"]
@@ -85,14 +85,24 @@ Seq::usage =
 "Seq is almost identical to Sequence except that it is not expanded
 automatically."
 
-Vertices::usage =
-"Vertices[top] returns a list of all vertices of topology top."
+TakeGraph::usage =
+"TakeGraph[ins -> graph] returns graph."
+
+TakeIns::usage =
+"TakeIns[ins -> graph] returns ins."
+
+Subst::usage =
+"Subst[expr, i, j] substitutes the elements of i by the corresponding
+elements of j, where j may be shorter than i."
 
 PSort::usage =
 "PSort[p] sorts the first two elements of a propagator p."
 
 VSort::usage =
 "VSort[v] sorts vertex v into canonical order."
+
+Vertices::usage =
+"Vertices[top] returns a list of all vertices of topology top."
 
 AddFieldNo::usage =
 "AddFieldNo[top] adds numbers of the form Field[n] to the propagators in
@@ -831,6 +841,11 @@ KinematicIndices::usage =
 field fi carries.  For example, KinematicIndices[V] = {Lorentz} in
 Lorentz.gen."
 
+FieldNumber::usage =
+"FieldNumber[f] can be used in the AnalyticalPropagator and
+AnalyticalCoupling definitions of the Generic model file to find out
+the ordinal number of a field in the diagram being inserted."
+
 MatrixTraceFactor::usage =
 "MatrixTraceFactor -> n is an optional entry for fermions in the 
 M$ClassesDescription list.  A MatrixTrace (a closed loop of fermions) is 
@@ -844,6 +859,11 @@ SelfConjugate::usage =
 list.\n
 SelfConjugate[p] is True if field p is self-conjugate and False
 otherwise."
+
+Mixture::usage =
+"Mixture -> lc is an optional entry in the M$ClassesDescription list
+which specifies that the field is the linear combination lc of other
+fields."
 
 InsertOnly::usage =
 "InsertOnly is an entry in the M$ClassesDescription list.  It specifies
@@ -937,6 +957,11 @@ IndexStyle::usage =
 example, IndexStyle[Index[Lorentz, i_]] := Greek[i + 11] makes Lorentz
 indices appear as \"\\mu\", \"\\nu\", etc."
 
+TheCoeff::usage =
+"TheCoeff[f] gives the list of component fields of which f is a
+linear combination together with the respective coefficients.  
+For a non-composite field, TheCoeff returns the field itself."
+
 TheC::usage =
 "TheC is an internal symbol for storing the coupling matrices."
 
@@ -1005,12 +1030,6 @@ False, every propagator will carry its own momentum."
 VertexFunction::usage =
 "VertexFunction[o][f1, f2, ...] represents the 1PI vertex function of
 loop-order o with external fields f1, f2, ..."
-
-TakeGraph::usage =
-"TakeGraph[ins -> graph] returns graph."
-
-TakeIns::usage =
-"TakeIns[ins -> graph] returns ins."
 
 FindVertex::usage =
 "FindVertex[vert, lev] looks up vertex vert in the currently initialized
@@ -1238,6 +1257,8 @@ TopologyCode::usage =
 topology.  This code is unique as far painting the topology is
 concerned."
 
+{TopBottom, LeftRight}	(* visible for printing *)
+
 
 (* FeynArts system constants *)
 
@@ -1263,6 +1284,9 @@ $ShapeDataDir::usage =
 "$ShapeDataDir points to the directory which contains the data for
 drawing Feynman diagrams."
 
+P$Options::usage =
+"P$Options is a pattern for options."
+
 P$Topology::usage =
 "P$Topology is the pattern for a topology."
 
@@ -1286,7 +1310,10 @@ P$NonCommuting = F | U
 P$InsertionObjects = G[_][_][__][__] | _Mass | _GaugeXi |
   VertexFunction[_][__]
 
-$FeynArts = 3.4
+P$Options = (_Rule | _RuleDelayed)...
+
+
+$FeynArts = 3.5
 
 $FeynArtsDir = DirectoryName[ File /.
   FileInformation[System`Private`FindFile[$Input]] ]

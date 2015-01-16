@@ -56,64 +56,65 @@ cosommc mul midx add /midx exch def sinommc mul midy add /midy exch def h
 dup cosommc mul ctrx add /ctrx exch def sinommc mul ctry add /ctry exch
 def } ifelse /arrow exch def arrow 0 eq { /damping { pop 1 } def } {
 /damping { ommc sub abs //Degree mul rad mul dup mul dup mul dup
-//DampingConst add div } bind def } ifelse /phi ommc dphi sub def /dphi
-dphi dup add 2 index length div def //PropagatorThickness setlinewidth 1
-setlinecap fromx fromy moveto { cvx exec /phi phi dphi add def } forall
-stroke arrow 0 ne { newpath rad 20000 ge { //ArrowLength arrow mul dup
-dir cos mul /x exch def dir sin mul /y exch def x .5 mul midx add y .5
-mul midy add moveto x /x cosommc //ArrowHeight mul def x add neg y /y
-sinommc //ArrowHeight mul def y add neg rlineto x dup add y dup add
-rlineto } { ommc dir sub sin 0 le { /arrow arrow neg def } if /rad rad
-dup add def /ctrx ctrx dup add midx sub def /ctry ctry dup add midy sub
-def /dphi //ArrowLength .5 mul rad atan arrow mul def ommc dphi sub dup
-cos rad mul ctrx add /tipx exch def sin rad mul ctry add /tipy exch def
-ommc dphi add dup /sinommc exch sin def /cosommc exch cos def rad
-//ArrowHeight sub arrowarc arrow 1 eq { arc } { arcn } ifelse rad
-//ArrowHeight add arrowarc exch arrow 1 eq { arcn } { arc } ifelse }
-ifelse closepath fill } if } bind def /arrowarc { dup cosommc mul ctrx
-add /tailx exch def sinommc mul ctry add /taily exch def tailx tipx sub
-tipy taily sub dup dup mul 2 index dup mul add dup .25 mul rad dup mul
-exch sub exch div sqrt arrow mul dup 3 -1 roll mul tailx tipx add .5 mul
-add /midx exch def mul taily tipy add .5 mul add /midy exch def midx midy
-rad tipy midy sub tipx midx sub atan taily midy sub tailx midx sub atan }
-bind def /Straight { rad 20000 lt { ctrx ctry rad phi phi dphi add dphi 0
-ge { arc } { arcn } ifelse } { phi dphi add dup cos rad mul ctrx add exch
-sin rad mul ctry add lineto } ifelse } bind def /Dash { currentpoint
-stroke moveto 0 setdash Straight currentpoint stroke moveto [ ] 0 setdash
-} bind def /ScalarDash { //ScalarDashing Dash } bind def /GhostDash {
+//DampingConst add div } bind def } ifelse /pcs 0 def dup {
+//FeynArtsDict exch known { /pcs pcs 1 add def } if } forall /phi ommc
+dphi sub def /dphi dphi dup add pcs div def //PropagatorThickness
+setlinewidth 1 setlinecap gsave fromx fromy moveto exec stroke arrow 0 ne
+{ newpath rad 20000 ge { //ArrowLength arrow mul dup dir cos mul /x exch
+def dir sin mul /y exch def x .5 mul midx add y .5 mul midy add moveto x
+/x cosommc //ArrowHeight mul def x add neg y /y sinommc //ArrowHeight mul
+def y add neg rlineto x dup add y dup add rlineto } { ommc dir sub sin 0
+le { /arrow arrow neg def } if /rad rad dup add def /ctrx ctrx dup add
+midx sub def /ctry ctry dup add midy sub def /dphi //ArrowLength .5 mul
+rad atan arrow mul def ommc dphi sub dup cos rad mul ctrx add /tipx exch
+def sin rad mul ctry add /tipy exch def ommc dphi add dup /sinommc exch
+sin def /cosommc exch cos def rad //ArrowHeight sub arrowarc arrow 1 eq {
+arc } { arcn } ifelse rad //ArrowHeight add arrowarc exch arrow 1 eq {
+arcn } { arc } ifelse } ifelse closepath fill } if grestore } bind def
+/arrowarc { dup cosommc mul ctrx add /tailx exch def sinommc mul ctry add
+/taily exch def tailx tipx sub tipy taily sub dup dup mul 2 index dup mul
+add dup .25 mul rad dup mul exch sub exch div sqrt arrow mul dup 3 -1
+roll mul tailx tipx add .5 mul add /midx exch def mul taily tipy add .5
+mul add /midy exch def midx midy rad tipy midy sub tipx midx sub atan
+taily midy sub tailx midx sub atan } bind def /Straight { rad 20000 lt {
+ctrx ctry rad phi phi dphi add dphi 0 ge { arc } { arcn } ifelse } { phi
+dphi add dup cos rad mul ctrx add exch sin rad mul ctry add lineto }
+ifelse /phi phi dphi add def } bind def /Dash { currentpoint stroke
+moveto 0 setdash Straight currentpoint stroke moveto [ ] 0 setdash } bind
+def /ScalarDash { //ScalarDashing Dash } bind def /GhostDash {
 //GhostDashing Dash } bind def /Sine { /a dphi abs //Degree mul rad mul
 def /omega //NCrestsSine a mul round dup 1 lt { pop 1 } if .5 add dup add
 180 mul def 0 1 //NPoints a mul floor div 1 { /n exch def /a phi n dphi
 mul add def rad a damping //SineAmp mul n omega mul sin mul sub dup a cos
-mul ctrx add exch a sin mul ctry add lineto } for } bind def /rshift
-CyclesAmp SineAmp sub def /phadj rshift CyclesAmp div acos def /sinphadj
-phadj sin def /Cycles { /a dphi abs //Degree mul rad mul def /omega
-//NCrestsCycles a mul round dup 1 lt { pop 1 } if 180 mul //phadj add dup
-add def /phamp //CyclesBreadth 180 mul rad div dphi 0 lt { neg } if def 0
-1 //NPoints a mul dup add floor div 1 { /n exch def n omega mul //phadj
-sub dup cos //CyclesAmp mul //rshift sub rad add /a exch def sin n dup
-add 1 sub //sinphadj mul sub phamp mul phi add n dphi mul add dup cos a
-mul ctrx add exch sin a mul ctry add lineto } for } bind def /lfont
-//LabelFont findfont def /sfont /Symbol findfont def /slant //lfont dup
-/FontInfo known { /FontInfo get dup /ItalicAngle known { /ItalicAngle get
-sin -.5 mul } { pop 0 } ifelse } { pop 0 } ifelse def /Label { /fsize
-exch //LabelFontSize mul def /super .38 def /putchar { false charpath }
-bind def /chardim { flattenpath pathbbox /height exch def 3 -1 roll sub
-/width exch def pop /icorr font //sfont eq { 0 } { //slant height mul }
-ifelse def } bind def /font //lfont def newpath 0 0 moveto 4 index exec
-flattenpath pathbbox newpath 2 index sub 5 -1 roll 1 add mul -.5 mul 6 -1
-roll add 3 -1 roll sub exch 2 index sub 4 -1 roll 1 add mul -.5 mul 4 -1
-roll add 3 -1 roll sub exch moveto /putchar { show } bind def /chardim {
-} def /font //lfont def exec newpath } bind def /$ { /font //sfont def }
-bind def /# { font fsize scalefont setfont putchar currentpoint /y exch
-def /x exch def chardim /font //lfont def } bind def /_ { font fsize .66
-mul scalefont setfont /super .5 def x .042 fsize mul add y .133 fsize mul
-sub moveto putchar /font //lfont def } bind def /^ { font fsize .66 mul
-scalefont setfont x .083 fsize mul add y super fsize mul add moveto
-putchar /font //lfont def } bind def /~ { font fsize scalefont setfont
-dup stringwidth height add .44 fsize mul sub y add exch -.8 mul width .45
-mul sub icorr add x add exch moveto putchar /font //lfont def } bind def
-end
+mul ctrx add exch a sin mul ctry add lineto } for /phi phi dphi add def }
+bind def /rshift CyclesAmp SineAmp sub def /phadj rshift CyclesAmp div
+acos def /sinphadj phadj sin def /Cycles { /a dphi abs //Degree mul rad
+mul def /omega //NCrestsCycles a mul round dup 1 lt { pop 1 } if 180 mul
+//phadj add dup add def /phamp //CyclesBreadth 180 mul rad div dphi 0 lt
+{ neg } if def 0 1 //NPoints a mul dup add floor div 1 { /n exch def n
+omega mul //phadj sub dup cos //CyclesAmp mul //rshift sub rad add /a
+exch def sin n dup add 1 sub //sinphadj mul sub phamp mul phi add n dphi
+mul add dup cos a mul ctrx add exch sin a mul ctry add lineto } for /phi
+phi dphi add def } bind def /lfont //LabelFont findfont def /sfont
+/Symbol findfont def /slant //lfont dup /FontInfo known { /FontInfo get
+dup /ItalicAngle known { /ItalicAngle get sin -.5 mul } { pop 0 } ifelse
+} { pop 0 } ifelse def /Label { /fsize exch //LabelFontSize mul def
+/super .38 def /putchar { false charpath } bind def /chardim {
+flattenpath pathbbox /height exch def 3 -1 roll sub /width exch def pop
+/icorr font //sfont eq { 0 } { //slant height mul } ifelse def } bind def
+/font //lfont def newpath 0 0 moveto 4 index exec flattenpath pathbbox
+newpath 2 index sub 5 -1 roll 1 add mul -.5 mul 6 -1 roll add 3 -1 roll
+sub exch 2 index sub 4 -1 roll 1 add mul -.5 mul 4 -1 roll add 3 -1 roll
+sub exch moveto /putchar { show } bind def /chardim { } def /font //lfont
+def exec newpath } bind def /$ { /font //sfont def } bind def /# { font
+fsize scalefont setfont putchar currentpoint /y exch def /x exch def
+chardim /font //lfont def } bind def /_ { font fsize .66 mul scalefont
+setfont /super .5 def x .042 fsize mul add y .133 fsize mul sub moveto
+putchar /font //lfont def } bind def /^ { font fsize .66 mul scalefont
+setfont x .083 fsize mul add y super fsize mul add moveto putchar /font
+//lfont def } bind def /~ { font fsize scalefont setfont dup stringwidth
+height add .44 fsize mul sub y add exch -.8 mul width .45 mul sub icorr
+add x add exch moveto putchar /font //lfont def } bind def end
 %%EndResource
 %%EndProlog
 

@@ -2,7 +2,7 @@
 % LaTeX style file used with the "TeX" output format of FeynArts
 % works "as is" probably only with dvips
 % this file is part of FeynArts
-% last modified 8 Jun 05 th
+% last modified 12 Aug 09 th
 
 \special{!% FeynArts.texpro
 /FeynArtsDict 100 dict def FeynArtsDict begin /DiagramBorder 1 def
@@ -52,44 +52,46 @@ sinommc mul midy add /midy exch def h 1 gt { 1 } { -1 } ifelse } ifelse
 rad dup mul lab dup mul sub sqrt mul dup cosommc mul ctrx add /ctrx exch
 def sinommc mul ctry add /ctry exch def } ifelse /arrow exch def arrow 0
 eq { /damping { pop 1 } def } { /damping { ommc sub abs //Degree mul rad
-mul dup mul dup mul dup //DampingConst add div } bind def } ifelse /phi
-ommc dphi sub def /dphi dphi dup add 2 index length div def
-//PropagatorThickness setlinewidth 1 setlinecap fromx fromy moveto { cvx
-exec /phi phi dphi add def } forall stroke arrow 0 ne { newpath rad 20000
-ge { //ArrowLength arrow mul dup dir cos mul /x exch def dir sin mul /y
-exch def x .5 mul midx add y .5 mul midy add moveto x /x cosommc
-//ArrowHeight mul def x add neg y /y sinommc //ArrowHeight mul def y add
-neg rlineto x dup add y dup add rlineto } { ommc dir sub sin 0 le {
-/arrow arrow neg def } if /rad rad dup add def /ctrx ctrx dup add midx
-sub def /ctry ctry dup add midy sub def /dphi //ArrowLength .5 mul rad
-atan arrow mul def ommc dphi sub dup cos rad mul ctrx add /tipx exch def
-sin rad mul ctry add /tipy exch def ommc dphi add dup /sinommc exch sin
-def /cosommc exch cos def rad //ArrowHeight sub arrowarc arrow 1 eq { arc
-} { arcn } ifelse rad //ArrowHeight add arrowarc exch arrow 1 eq { arcn }
-{ arc } ifelse } ifelse closepath fill } if } bind def /arrowarc { dup
-cosommc mul ctrx add /tailx exch def sinommc mul ctry add /taily exch def
-tailx tipx sub tipy taily sub dup dup mul 2 index dup mul add dup .25 mul
-rad dup mul exch sub exch div sqrt arrow mul dup 3 -1 roll mul tailx tipx
-add .5 mul add /midx exch def mul taily tipy add .5 mul add /midy exch
-def midx midy rad tipy midy sub tipx midx sub atan taily midy sub tailx
-midx sub atan } bind def /Straight { rad 20000 lt { ctrx ctry rad phi phi
-dphi add dphi 0 ge { arc } { arcn } ifelse } { phi dphi add dup cos rad
-mul ctrx add exch sin rad mul ctry add lineto } ifelse } bind def /Dash {
-currentpoint stroke moveto 0 setdash Straight currentpoint stroke moveto
-[ ] 0 setdash } bind def /ScalarDash { //ScalarDashing Dash } bind def
-/GhostDash { //GhostDashing Dash } bind def /Sine { /a dphi abs //Degree
-mul rad mul def /omega //NCrestsSine a mul round dup 1 lt { pop 1 } if .5
-add dup add 180 mul def 0 1 //NPoints a mul floor div 1 { /n exch def /a
-phi n dphi mul add def rad a damping //SineAmp mul n omega mul sin mul
-sub dup a cos mul ctrx add exch a sin mul ctry add lineto } for } bind
-def /rshift CyclesAmp SineAmp sub def /phadj rshift CyclesAmp div acos
-def /sinphadj phadj sin def /Cycles { /a dphi abs //Degree mul rad mul
-def /omega //NCrestsCycles a mul round dup 1 lt { pop 1 } if 180 mul
-//phadj add dup add def /phamp //CyclesBreadth 180 mul rad div dphi 0 lt
-{ neg } if def 0 1 //NPoints a mul dup add floor div 1 { /n exch def n
-omega mul //phadj sub dup cos //CyclesAmp mul //rshift sub rad add /a
-exch def sin n dup add 1 sub //sinphadj mul sub phamp mul phi add n dphi
-mul add dup cos a mul ctrx add exch sin a mul ctry add lineto } for }
+mul dup mul dup mul dup //DampingConst add div } bind def } ifelse /pcs 0
+def dup { //FeynArtsDict exch known { /pcs pcs 1 add def } if } forall
+/phi ommc dphi sub def /dphi dphi dup add pcs div def
+//PropagatorThickness setlinewidth 1 setlinecap gsave fromx fromy moveto
+exec stroke arrow 0 ne { newpath rad 20000 ge { //ArrowLength arrow mul
+dup dir cos mul /x exch def dir sin mul /y exch def x .5 mul midx add y
+.5 mul midy add moveto x /x cosommc //ArrowHeight mul def x add neg y /y
+sinommc //ArrowHeight mul def y add neg rlineto x dup add y dup add
+rlineto } { ommc dir sub sin 0 le { /arrow arrow neg def } if /rad rad
+dup add def /ctrx ctrx dup add midx sub def /ctry ctry dup add midy sub
+def /dphi //ArrowLength .5 mul rad atan arrow mul def ommc dphi sub dup
+cos rad mul ctrx add /tipx exch def sin rad mul ctry add /tipy exch def
+ommc dphi add dup /sinommc exch sin def /cosommc exch cos def rad
+//ArrowHeight sub arrowarc arrow 1 eq { arc } { arcn } ifelse rad
+//ArrowHeight add arrowarc exch arrow 1 eq { arcn } { arc } ifelse }
+ifelse closepath fill } if grestore } bind def /arrowarc { dup cosommc
+mul ctrx add /tailx exch def sinommc mul ctry add /taily exch def tailx
+tipx sub tipy taily sub dup dup mul 2 index dup mul add dup .25 mul rad
+dup mul exch sub exch div sqrt arrow mul dup 3 -1 roll mul tailx tipx add
+.5 mul add /midx exch def mul taily tipy add .5 mul add /midy exch def
+midx midy rad tipy midy sub tipx midx sub atan taily midy sub tailx midx
+sub atan } bind def /Straight { rad 20000 lt { ctrx ctry rad phi phi dphi
+add dphi 0 ge { arc } { arcn } ifelse } { phi dphi add dup cos rad mul
+ctrx add exch sin rad mul ctry add lineto } ifelse /phi phi dphi add def
+} bind def /Dash { currentpoint stroke moveto 0 setdash Straight
+currentpoint stroke moveto [ ] 0 setdash } bind def /ScalarDash {
+//ScalarDashing Dash } bind def /GhostDash { //GhostDashing Dash } bind
+def /Sine { /a dphi abs //Degree mul rad mul def /omega //NCrestsSine a
+mul round dup 1 lt { pop 1 } if .5 add dup add 180 mul def 0 1 //NPoints
+a mul floor div 1 { /n exch def /a phi n dphi mul add def rad a damping
+//SineAmp mul n omega mul sin mul sub dup a cos mul ctrx add exch a sin
+mul ctry add lineto } for /phi phi dphi add def } bind def /rshift
+CyclesAmp SineAmp sub def /phadj rshift CyclesAmp div acos def /sinphadj
+phadj sin def /Cycles { /a dphi abs //Degree mul rad mul def /omega
+//NCrestsCycles a mul round dup 1 lt { pop 1 } if 180 mul //phadj add dup
+add def /phamp //CyclesBreadth 180 mul rad div dphi 0 lt { neg } if def 0
+1 //NPoints a mul dup add floor div 1 { /n exch def n omega mul //phadj
+sub dup cos //CyclesAmp mul //rshift sub rad add /a exch def sin n dup
+add 1 sub //sinphadj mul sub phamp mul phi add n dphi mul add dup cos a
+mul ctrx add exch sin a mul ctry add lineto } for /phi phi dphi add def }
 bind def /ctm matrix def TeXDict begin /texLayout { gsave //FeynArtsDict
 begin Layout end grestore } bind def /texAdvance { gsave //FeynArtsDict
 begin Advance end //ctm currentmatrix pop grestore } bind def /texVert {
@@ -162,7 +164,7 @@ bind def end end}
   \ignorespaces}
 
 \def\FAProp(#1,#2)(#3,#4)(#5,#6)#7#8{%
-  \special{ps::[ #7 ] #8 #5 #6 #1 #2 #3 #4 texProp}%
+  \special{ps::{ #7 } #8 #5 #6 #1 #2 #3 #4 texProp}%
   \ignorespaces}
 
 \newdimen\v@lx

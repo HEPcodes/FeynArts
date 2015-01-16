@@ -3,30 +3,36 @@
 		Addendum classes model file for MSSM.mod
 		to include the strong interactions
 		by Christian Schappacher
-		last modified 7 Nov 07 by Thomas Hahn
+		last modified 13 Aug 09 by Thomas Hahn
 
-Note: The 4-squark-couplings are part of MSSM.mod.
+Note: The four-squark couplings are part of MSSM.mod even though
+a part of their coupling is proportional to Alfas.
 
 This file introduces the following symbols in addition to the ones in
 MSSM.mod:
 
-	GS, the strong coupling constant
+	GS: the strong coupling constant
 
-	SUNT[a, i, j], the generators of SU(N)
+	MGl: the gluino mass
+	SqrtEGl: sqrt of the gluino phase (phase of M_3)
+
+	SUNT[a, i, j]: the generators of SU(N)
 		(half the Gell-Mann matrices)
 
 	SUNTSum[i, j, k, l] = \sum_g SUNT[g, i, j] SUNT[g, k, l]
 
-	SUNF[a, b, c], the structure constants of SU(N)
+	SUNF[a, b, c]: the structure constants of SU(N)
 
-	SUNF[a, b, c, d], a short-hand for the sum
+	SUNF[a, b, c, d]: a short-hand for the sum
 		\sum_i SUNF[a, b, i] SUNF[i, c, d]
+
+	GaugeXi[G]: gluon gauge parameter
 *)
 
 
 LoadModel["MSSM"]
 
-If[ $NoElectroweak === True, M$CouplingMatrices = {} ]
+If[ TrueQ[$NoElectroweak], M$CouplingMatrices = {} ]
 
 
 IndexRange[ Index[Gluon] ] = NoUnfold[Range[8]]
@@ -70,6 +76,9 @@ M$ClassesDescription = Join[ M$ClassesDescription, {
 
 
 MGl[_] = MGl
+
+GaugeXi[ V[5] ] = GaugeXi[G];
+GaugeXi[ U[5] ] = GaugeXi[G]
 
 
 M$CouplingMatrices = Join[ M$CouplingMatrices, {

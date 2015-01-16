@@ -3,7 +3,7 @@
 		Generic model file for QED
 		(simplex version of Lorentz.gen)
 		by A. Denner, H. Eck, O. Hahn, S. Kueblbeck
-		last modified 6 Mar 07 by Thomas Hahn
+		last modified 4 May 10 by Thomas Hahn
 *)
 
 
@@ -18,6 +18,12 @@ KinematicIndices[ V ] = {Lorentz}
 IndexStyle[ Index[Lorentz, i_Integer] ] := Greek[i + 11]
 
 Attributes[ MetricTensor ] = Attributes[ ScalarProduct ] = {Orderless}
+
+
+FourVector/: -FourVector[ mom_, mu___ ] := FourVector[Expand[-mom], mu]
+
+FourVector[ 0, ___ ] = 0
+
 
 M$GenericPropagators = {
 
@@ -160,4 +166,6 @@ Format[ MetricTensor ] = "g"
 Format[ ScalarProduct[a__] ] := Dot[a]
 
 Format[ FourVector[a_, b_] ] := a[b]
+
+Format[ FourVector[a_] ] := a
 

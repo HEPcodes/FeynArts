@@ -1,21 +1,37 @@
-Modifications and new features:
+Version 1.0 written 1991 by Hagen Eck and Sepp Kueblbeck
+========================================================
+fast and reliable diagram generator for renormalizable
+field theories (i.e. with 3- and 4-vertices only), but
+suffered from several restrictions:
+-- no counter term generation possible
+-- no fermion number violating theories possible
+-- only Lorentz formalism available
 
-Revision of 26 Nov 97:
-- Complete overhaul, corrected some minor errors, e.g. Conjugate for 
-  outgoing PolarizationVectors is now given correctly.
+Further modifications and enhancements:
+-- Nov 97: added X11 (`point-and-click') topology editor
 
-Revision of 17 Nov 97:
-- Added X11 topology editor
 
-Revision of 24 Jul 97:
-- Support for the background field method with model file model.SMbgf.
-- New TeXLabels.m extension module. Load after FeynArts, i.e.
-	<< FeynArts.m
-	<< TeXLabels.m
-  Alters output routines so that they produce labels in TeX style for
-  use e.g. with mma2ltx.
+Version 2.0 written in 1995 by Hagen Eck
+========================================
+introduces a completely new three-level concept of generation.
+Fills the above mentioned gaps in FA 1.
+Some extra points are:
+-- the Graphics routines now live in a separate context so as
+   to be reusable by other packages
 
-Revision of 23 Jun 97:
-- Adaptation for Mma 3.0 (required different GraphPoints handling)
 
-Please send bug reports etc. to hahn@particle.physik.uni-karlsruhe.de.
+current Version 2.2:
+====================
+-- completely overhauled: no new concepts, but most of the code was
+   rewritten entirely.
+-- known FA 2.1 bugs removed.
+-- much faster: e.g. model initialization is faster roughly by a
+   factor 3.
+-- includes a point-and-click topology editor together with a
+   sophisticated autoshaping algorithm.
+
+For a list of changes between 2.1 and 2.2 see the manual.
+
+Please send bugs reports etc. to
+Thomas Hahn <hahn@feynarts.de>
+

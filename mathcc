@@ -1,0 +1,25 @@
+#!/bin/sh
+
+# This script supplants the simple "cc" invocation by mcc.
+# mcc (currently) suffers from the problem that it puts linking
+# options (-L..., -l...) together with the compiler options *before*
+# the object files. As a consequence, Unix's ld (which is a one-pass
+# linker) cannot resolve symbols located in the libraries.
+
+linkopt=""
+otheropt=""
+
+for opt in $* ; do
+  case $opt in
+  -[Ll]*)
+    linkopt="$linkopt $opt"
+    ;;
+  *)
+    otheropt="$otheropt $opt"
+    ;;
+  esac
+done
+
+set -x
+gcc $otheropt $linkopt
+

@@ -1,0 +1,124 @@
+(*
+	SMbgf.mod
+		Classes model file for the Standard Model in
+		the background field formalism
+		last modified 27 Mar 00 by Thomas Hahn
+
+Reference:
+	A. Denner, S. Dittmaier, and G. Weiglein
+	Nucl. Phys. B440 (1995) 95
+
+This file introduces the following symbols in addition to the ones in
+SM.mod:
+
+	GaugeXi[Q, bg]:		gauge parameters
+
+V[10, 20, 30] and S[10, 20, 30] are the background fields respectively of
+V[1, 2, 3] and S[1, 2, 3].
+
+*)
+
+
+IndexRange[ Index[Generation] ] = {1, 2, 3}
+
+Appearance[ Index[Generation, i_Integer] ] := Alph[i + 8]
+
+MaxGenerationIndex = 3
+
+
+ViolatesQ[ q__ ] := Plus[q] =!= 0
+
+
+(* the leptonic field RCs are diagonal: *)
+
+dZfL1[ type:1 | 2, j1_, j2_ ] :=
+  IndexDelta[j1, j2] dZfL1[type, j1, j1] /; j1 =!= j2
+
+dZfR1[ type:1 | 2, j1_, j2_ ] :=
+  IndexDelta[j1, j2] dZfR1[type, j1, j1] /; j1 =!= j2
+
+
+
+M$ClassesDescription =
+<* M$ClassesDescription *>
+
+M$CouplingMatrices =
+<* M$CouplingMatrices *>
+
+
+GaugeXi[ V[1 | 2 | 3] ] = GaugeXi[Q];
+GaugeXi[ V[10 | 30 | 30] ] = GaugeXi[bg];
+GaugeXi[ S[1 | 10] ] = 1;
+GaugeXi[ S[2 | 3] ] = GaugeXi[Q];   
+GaugeXi[ S[20 | 30] ] = GaugeXi[bg];
+GaugeXi[ U[1] ] = 1;
+GaugeXi[ U[2 | 3 | 4] ] = GaugeXi[Q]
+
+
+TheMass[ F[2, {1}] ] = MLE[1] = ME;
+TheMass[ F[2, {2}] ] = MLE[2] = MM;
+TheMass[ F[2, {3}] ] = MLE[3] = ML;
+TheMass[ F[3, {1}] ] = MQU[1] = MU;
+TheMass[ F[3, {2}] ] = MQU[2] = MC;
+TheMass[ F[3, {3}] ] = MQU[3] = MT;
+TheMass[ F[4, {1}] ] = MQD[1] = MD;
+TheMass[ F[4, {2}] ] = MQD[2] = MS;
+TheMass[ F[4, {3}] ] = MQD[3] = MB
+
+TheLabel[ F[1, {1}] ] = ComposedChar["\\nu", "e"];
+TheLabel[ F[1, {2}] ] = ComposedChar["\\nu", "\\mu"];
+TheLabel[ F[1, {3}] ] = ComposedChar["\\nu", "\\tau"];
+TheLabel[ F[2, {1}] ] = "e";
+TheLabel[ F[2, {2}] ] = "\\mu";
+TheLabel[ F[2, {3}] ] = "\\tau";
+TheLabel[ F[3, {1}] ] = "u";
+TheLabel[ F[3, {2}] ] = "c";
+TheLabel[ F[3, {3}] ] = "t";
+TheLabel[ F[4, {1}] ] = "d";
+TheLabel[ F[4, {2}] ] = "s";
+TheLabel[ F[4, {3}] ] = "b"
+
+
+M$LastModelRules = {}
+
+
+(* some short-hands for excluding classes of particles *)
+
+QEDOnly = ExcludeParticles -> {F[1], V[2], V[3], S, SV, U[2], U[3], U[4]}
+
+NoGeneration1 = ExcludeParticles -> F[_, {1}]
+
+NoGeneration2 = ExcludeParticles -> F[_, {2}]
+
+NoGeneration3 = ExcludeParticles -> F[_, {3}]
+
+NoElectronHCoupling =
+  ExcludeFieldPoints -> {
+    FieldPoint[_][-F[2, {1}], F[2, {1}], S],
+    FieldPoint[_][-F[2, {1}], F[1, {1}], S] }
+
+NoLightFHCoupling =
+  ExcludeFieldPoints -> {
+    FieldPoint[_][-F[2], F[2], S],
+    FieldPoint[_][-F[2], F[1], S],
+    FieldPoint[_][-F[3, {1}], F[3, {1}], S],
+    FieldPoint[_][-F[3, {2}], F[3, {2}], S],
+    FieldPoint[_][-F[4], F[4], S],
+    FieldPoint[_][-F[4], F[3, {1, ___}], S],
+    FieldPoint[_][-F[4], F[3, {2, ___}], S] }
+
+NoQuarkMixing =
+  ExcludeFieldPoints -> {
+    FieldPoint[_][-F[4, {1}], F[3, {2}], S[3 | 30]],
+    FieldPoint[_][-F[4, {1}], F[3, {2}], V[3 | 30]],
+    FieldPoint[_][-F[4, {1}], F[3, {3}], S[3 | 30]],
+    FieldPoint[_][-F[4, {1}], F[3, {3}], V[3 | 30]],
+    FieldPoint[_][-F[4, {2}], F[3, {1}], S[3 | 30]],
+    FieldPoint[_][-F[4, {2}], F[3, {1}], V[3 | 30]],
+    FieldPoint[_][-F[4, {2}], F[3, {3}], S[3 | 30]],
+    FieldPoint[_][-F[4, {2}], F[3, {3}], V[3 | 30]],
+    FieldPoint[_][-F[4, {3}], F[3, {1}], S[3 | 30]],
+    FieldPoint[_][-F[4, {3}], F[3, {1}], V[3 | 30]],
+    FieldPoint[_][-F[4, {3}], F[3, {2}], S[3 | 30]],
+    FieldPoint[_][-F[4, {3}], F[3, {2}], V[3 | 30]] }
+

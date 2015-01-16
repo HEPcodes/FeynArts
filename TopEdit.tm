@@ -1,8 +1,8 @@
 :Begin:
 :Function:	topedit
-:Pattern:	TopEdit[vert_List, prop_List, pscaling_Integer]
-:Arguments:	{ToString[vert], ToString[prop], pscaling}
-:ArgumentTypes:	{String, String, Integer}
+:Pattern:	TopEdit[vert_List, prop_List]
+:Arguments:	{ToString[CForm[vert]], ToString[CForm[prop]]}
+:ArgumentTypes:	{String, String}
 :ReturnType:	Manual
 :End:
 
@@ -29,21 +29,26 @@
 	|B|         |          |B|             |B|
 	|O|                    |O|             |O|
 	|R|<--   DRAWAREA   -->|R| /---------\ |R|
-	|D|      (400x400)     |D| | button  | |D|
+	|D|     (400 x 400)    |D| | button  | |D|
 	|E|                    |E| \---------/ |E|
 	|R|         |          |R| BUTTONWIDTH |R|
-	| |         |          | |    (120)    | |
+	| |         |          | |    (126)    | |
 	| |         v          | |             | |
 	|_|____________________|_|_____________|_|
 	__________________________________________  BORDER	*/
 
 #define BORDER 10
 #define DRAWAREA 400
-#define BUTTONWIDTH 120
+#define BUTTONWIDTH 126
 #define BUTTONHEIGHT 35
 #define BUTTONSEP BORDER
 #define NBUTTONS 6
 #define SCREENFONT "9x15"
+#define TEXTHEIGHT 17
+#define DEFAULT_DR 1.3
+
+#define XSCALED(x) BORDER + (int)rint(xscale*(x))
+#define YSCALED(y) ybase - (int)rint(yscale*(y))
 
 int drawarea = DRAWAREA;
 int ybase = BORDER + DRAWAREA;
@@ -51,7 +56,7 @@ char *winname = "FeynArts Topology Editor";
 char *iconname = "FA TopEdit";
 
 static char copyleft[] =
-  "@(#) FeynArts 1.2 Topology Editor, 27 May 98 Thomas Hahn";
+  "@(#) FeynArts 2.2 Topology Editor, 14 Jun 98 Thomas Hahn";
 
 typedef struct {
   char name[30];
@@ -61,9 +66,10 @@ typedef struct {
 
 typedef struct {
   vertexinfo *from, *to;
-  double xc, yc;
-  double xm, ym, om1, om2, step, rad;
-  int xs, ys, tad;
+  double height, xc, yc;
+  double dr, dphi;
+  double xm, ym, ommc, rad;
+  int om1, om2, xs, ys, xl, yl, tad, circ;
 } propinfo;
 
 typedef unsigned long color;
@@ -71,23 +77,23 @@ typedef unsigned long color;
 propinfo propagators[20], *pp;
 vertexinfo vertices[50], *vp;
 double xscale, yscale;
-int paintscaling;
 const char *tok;
 
 Display *disp;
 Window win;
 GC gc;
-color black, white, red, blue;
+color black, white, red, blue, green;
 Colormap cmap;
 XFontStruct *font;
 int buttonc;
+char snapbut[] = "unSnap grid";
 char *buttonlabels[NBUTTONS] = {
   "Finished",
   "Abort",
   "Revert",
   "shift Up",
   "shift Down",
-  "unSnap grid" };
+  snapbut };
 char allowedkeys[NBUTTONS] = { 'f', 'a', 'r', 'u', 'd', 's' };
 
 void report_error(MLCONST char *);
@@ -98,11 +104,12 @@ char *getitem(char *);
 void analyse_topology(const char *, const char *);
 void return_graphpoints(void);
 void calcdrawinfo(propinfo *);
-void drawprop(propinfo *, color, color);
+void drawprop(propinfo *, color, color, color);
 void redraw(Bool);
 void redrawprop(propinfo *, double, double);
 void redrawvertex(vertexinfo *, double, double);
-void topedit(MLCONST char *, MLCONST char *, int);
+void redrawlabel(propinfo *, double, double);
+void topedit(MLCONST char *, MLCONST char *);
 
 void report_error(MLCONST char *tag)
 {
@@ -135,7 +142,7 @@ int Xini()
   black = BlackPixel(disp, screen);
   white = WhitePixel(disp, screen);
 
-  col.flags = DoRed | DoBlue;
+  col.flags = DoRed | DoBlue | DoGreen;
   col.red = 0xffff;
   col.blue = col.green = 0;
   XAllocColor(disp, cmap, &col);
@@ -146,8 +153,12 @@ int Xini()
   XAllocColor(disp, cmap, &col);
   blue = col.pixel;
 
+  col.red = col.blue = 0;
+  col.green = 0xffff;
+  XAllocColor(disp, cmap, &col);
+  green = col.pixel;
+
   gc = XCreateGC(disp, DefaultRootWindow(disp), 0, 0);
-  XSetForeground(disp, gc, black);
   XSetBackground(disp, gc, white);
 
   if(!(sizehints = XAllocSizeHints()) ||
@@ -173,11 +184,8 @@ int Xini()
   wmhints->input = True;
   wmhints->flags = StateHint | InputHint;
 
-  sizehints->min_width =
-    BORDER + NBUTTONS*(BUTTONHEIGHT + BUTTONSEP) + BORDER +
-      BUTTONWIDTH + BORDER;
-  sizehints->min_height =
-    BORDER + NBUTTONS*(BUTTONHEIGHT + BUTTONSEP) + BORDER;
+  sizehints->min_width = DRAWAREA + BUTTONWIDTH + 3*BORDER;
+  sizehints->min_height = DRAWAREA + 2*BORDER;
   sizehints->flags = PMinSize;
 
   XSetWMProperties(disp, win,
@@ -194,24 +202,51 @@ int Xini()
 void redrawbuttons()
 {
   char **s;
-  int l, buttony = BORDER;
+  int l, y = BORDER;
 
   XSetLineAttributes(disp, gc, 0, LineSolid, CapButt, JoinMiter);
+  XSetForeground(disp, gc, black);
   for(s = buttonlabels; s < &buttonlabels[NBUTTONS]; ++s) {
     XDrawRectangle(disp, win, gc,
-      drawarea + 2*BORDER, buttony, BUTTONWIDTH, BUTTONHEIGHT);
+      drawarea + 2*BORDER, y, BUTTONWIDTH, BUTTONHEIGHT);
     XDrawLine(disp, win, gc,
-      drawarea + 2*BORDER + 5, buttony + BUTTONHEIGHT - 5,
-      drawarea + 2*BORDER + BUTTONWIDTH - 5, buttony + BUTTONHEIGHT - 5);
+      drawarea + 2*BORDER + 5, y + BUTTONHEIGHT - 5,
+      drawarea + 2*BORDER + BUTTONWIDTH - 5, y + BUTTONHEIGHT - 5);
     XDrawLine(disp, win, gc,
-      drawarea + 2*BORDER + BUTTONWIDTH - 5, buttony + BUTTONHEIGHT - 5,
-      drawarea + 2*BORDER + BUTTONWIDTH - 5, buttony + 5);
+      drawarea + 2*BORDER + BUTTONWIDTH - 5, y + BUTTONHEIGHT - 5,
+      drawarea + 2*BORDER + BUTTONWIDTH - 5, y + 5);
     l = strlen(*s);
     XDrawString(disp, win, gc,
       drawarea + 2*BORDER + BUTTONWIDTH/2 - (XTextWidth(font, *s, l) >> 1),
-      buttony + buttonc, *s, l);
-    buttony += BUTTONHEIGHT + BUTTONSEP;
+      y + buttonc, *s, l);
+    y += BUTTONHEIGHT + BUTTONSEP;
   }
+
+  l = drawarea + 2*BORDER + 5;
+  XDrawString(disp, win, gc,
+    l, y += BORDER + 1, "left button", 11);
+  XDrawString(disp, win, gc,
+    l + 46, y += TEXTHEIGHT, "move", 4);
+  XDrawString(disp, win, gc,
+    l, y += TEXTHEIGHT + 8, "middle button", 13);
+  XDrawString(disp, win, gc,
+    l + 16, y += TEXTHEIGHT, "straight", 8);
+  XDrawString(disp, win, gc,
+    l + 16, y += TEXTHEIGHT, "default pos.", 12);
+  XDrawString(disp, win, gc,
+    l, y += TEXTHEIGHT + 8, "right button", 12);
+  XDrawString(disp, win, gc,
+    l + 31, y += TEXTHEIGHT, "opposite", 8);
+  XSetForeground(disp, gc, red);
+  XFillRectangle(disp, win, gc, l, y - 5*TEXTHEIGHT - 27, 10, 12);
+  XSetForeground(disp, gc, blue);
+  XFillRectangle(disp, win, gc, l + 15, y - 5*TEXTHEIGHT - 27, 10, 12);
+  XFillRectangle(disp, win, gc, l, y - 3*TEXTHEIGHT - 19, 10, 12);
+  XFillRectangle(disp, win, gc, l, y - 11, 10, 12);
+  XSetForeground(disp, gc, green);
+  XFillRectangle(disp, win, gc, l + 30, y - 5*TEXTHEIGHT - 27, 10, 12);
+  XFillRectangle(disp, win, gc, l, y - 2*TEXTHEIGHT - 19, 10, 12);
+  XFillRectangle(disp, win, gc, l + 15, y - 11, 10, 12);
 }
 
 char buttonkey(int n)
@@ -227,7 +262,6 @@ char buttonkey(int n)
   XDrawRectangle(disp, win, gc,
     drawarea + 2*BORDER + 5, y, BUTTONWIDTH - 10, BUTTONHEIGHT - 10);
   XSetFunction(disp, gc, GXcopy);
-  XSetForeground(disp, gc, black);
   return allowedkeys[n];
 }
 
@@ -239,16 +273,12 @@ char *getitem(char *dest)
   for( ; ; ++tok) {
     switch(*tok) {
     case '(':
-    case '[':
-    case '{':
       ++bracket;
-      break;
+      *d++ = '[';
+      continue;
     case ')':
-    case ']':
-    case '}':
-      if(bracket == 0) continue;
-      --bracket;
-      break;
+      if(bracket) --bracket, *d++ = ']';
+      continue;
     case ',':
       if(bracket) break;
       ++tok;
@@ -265,24 +295,36 @@ void analyse_topology(const char *vert, const char *prop)
   char s[100], *p;
   int i;
 
-  tok = vert + 1;
+  tok = vert + 5;
   for(vp = vertices; *tok; ++vp) {
     getitem(vp->name);
     vp->x = atof(getitem(s));
     vp->y = atof(getitem(s));
   }
 
-  tok = prop + 1;
+  tok = prop + 5;
   for(pp = propagators; *tok; ++pp) {
     pp->from = vertices + atoi(getitem(s)) - 1;
     pp->to = vertices + atoi(getitem(s)) - 1;
-    pp->tad = (pp->from == pp->to);
-    if(*getitem(s) == '{') {
-      pp->xc = atof(s + 1);
-      pp->yc = atof(strchr(s + 1, ',') + 1);
-      calcdrawinfo(pp);
+    if(pp->tad = (pp->from == pp->to)) {
+      pp->circ = 1;
+      if(*getitem(s) == 'L')
+        pp->xc = atof(s + 5),
+        pp->yc = atof(strchr(s + 5, ',') + 1);
+      else
+        pp->xc = pp->from->x,
+        pp->yc = pp->from->y + 2.;
     }
-    else pp->xc = -1.;
+    else {
+      pp->height = atof(getitem(s));
+      pp->circ = (pp->height != 0.);
+    }
+    if(*getitem(s) == 'L') {
+      pp->dr = atof(s + 5);
+      pp->dphi = atof(strchr(s + 5, ',') + 1);
+    }
+    else pp->dr = DEFAULT_DR, pp->dphi = 0.;
+    calcdrawinfo(pp);
   }
 }
 
@@ -291,15 +333,7 @@ void return_graphpoints()
   propinfo *pp2;
   vertexinfo *vp2;
 
-  MLPutFunction(stdlink, "List", 2);
-  MLPutFunction(stdlink, "List", pp - propagators);
-  for(pp2 = propagators; pp2 < pp; ++pp2)
-    if(pp2->xc < 0.) MLPutInteger(stdlink, 0);
-    else {
-      MLPutFunction(stdlink, "List", 2);
-      MLPutReal(stdlink, pp2->xc);
-      MLPutReal(stdlink, pp2->yc);
-    }
+  MLPutFunction(stdlink, "List", 3);
   MLPutFunction(stdlink, "List", vp - vertices);
   for(vp2 = vertices; vp2 < vp; ++vp2) {
     MLPutFunction(stdlink, "Rule", 2);
@@ -309,172 +343,220 @@ void return_graphpoints()
     MLPutReal(stdlink, vp2->x);
     MLPutReal(stdlink, vp2->y);
   }
+  MLPutFunction(stdlink, "List", pp - propagators);
+  for(pp2 = propagators; pp2 < pp; ++pp2)
+    if(pp2->tad) {
+      MLPutFunction(stdlink, "List", 2);
+      MLPutReal(stdlink, pp2->xc);
+      MLPutReal(stdlink, pp2->yc);
+    }
+    else MLPutReal(stdlink, pp2->height);
+  MLPutFunction(stdlink, "List", pp - propagators);
+  for(pp2 = propagators; pp2 < pp; ++pp2)
+    if(pp2->dr == DEFAULT_DR && pp2->dphi == 0.)
+      MLPutInteger(stdlink, 0);
+    else {
+      MLPutFunction(stdlink, "List", 2);
+      MLPutReal(stdlink, pp2->dr);
+      MLPutReal(stdlink, pp2->dphi);
+    }
   MLEndPacket(stdlink);
 }
 
 void calcdrawinfo(propinfo *pr)
 {
-  double dx, dy, lab, lac, omab, omac, mid, h, a, r;
+  double dx, dy, lab, omab, m, a, r;
 
-  if(pr->xc == -1) return;
-  dx = pr->xc - pr->from->x;
-  dy = pr->yc - pr->from->y;
-  lac = hypot(dx, dy);
   if(pr->tad) {
     pr->xm = .5*(pr->from->x + pr->xc);
     pr->ym = .5*(pr->from->y + pr->yc);
-    pr->rad = .5*lac;
-    pr->om1 = 0.;
-    pr->om2 = 2.*M_PI;
-    pr->step = 5.*M_PI/180.;
+    dx = pr->xm - pr->from->x;
+    dy = pr->ym - pr->from->y;
+    pr->rad = hypot(dx, dy);
+    pr->ommc = atan2(dy, dx);
+    pr->om1 = 0;
+    pr->om2 = 64*360;
+    return;
   }
-  else {
-    omac = atan2(dy, dx);
-    dx = pr->to->x - pr->from->x;
-    dy = pr->to->y - pr->from->y;
-    lab = hypot(dx, dy);
-    omab = atan2(dy, dx);
-    mid = omab - copysign(M_PI/2.,
-      omac > -M_PI/2. && omac < M_PI/2. ?
-        omab - omac : (omab - omac)*omac*omab );
-    mid = fmod(mid + M_PI, 2.*M_PI) - M_PI;
-    h = sqrt(lac*lac - .25*lab*lab);
-    a = 2.*atan((h + h)/lab);
-    r = .5*lab/sin(a);
-    h += r*cos(a);
-    pr->xm = pr->xc - h*cos(mid);
-    pr->ym = pr->yc - h*sin(mid);
-    pr->rad = r;
-    pr->om1 = mid - fabs(a);
-    pr->om2 = mid + fabs(a);
-    h = 2.*fabs(a);
-    pr->step = h/ceil(h/(5.*M_PI/180.)) - 1e-10;
+  dx = pr->to->x - pr->from->x;
+  dy = pr->to->y - pr->from->y;
+  lab = .5*hypot(dx, dy);
+  m = atan2(dy, dx) - .5*M_PI;
+  pr->xm = pr->xc = .5*(pr->from->x + pr->to->x);
+  pr->ym = pr->yc = .5*(pr->from->y + pr->to->y);
+  if(pr->circ) {
+    if(pr->height < 0.) m += M_PI;
+    a = 2.*atan(r = fabs(pr->height));
+    pr->xc += r*lab*cos(m);
+    pr->yc += r*lab*sin(m);
+    pr->rad = r = lab/sin(a);
   }
+  else a = asin(lab/(pr->rad = r = 2000.));
+  r = sqrt(r*r - lab*lab);
+  if(fabs(pr->height) > 1.) r = -r;
+  pr->xm -= r*cos(m);
+  pr->ym -= r*sin(m);
+  pr->ommc = m;
+  pr->om1 = (int)((m - a)*64.*180./M_PI);
+  pr->om2 = (int)(a*2.*64.*180./M_PI);
 }
 
-void drawprop(propinfo *pp2, color linecolor, color boxcolor)
+void drawprop(propinfo *pr, color line, color centerbox, color labelbox)
 {
-  double om;
-  int x, y, xold, yold;
+  double r, m;
 
-  XSetForeground(disp, gc, linecolor);
-  if(pp2->xc < 0.) {
-    pp2->xs = BORDER - 5 + (int)(xscale*.5*(pp2->from->x + pp2->to->x));
-    pp2->ys = ybase - 6 - (int)(yscale*.5*(pp2->from->y + pp2->to->y));
+  XSetLineAttributes(disp, gc, 3, LineSolid, CapButt, JoinMiter);
+  XSetForeground(disp, gc, line);
+  if(pr->circ)
+    XDrawArc(disp, win, gc,
+      XSCALED(pr->xm - pr->rad), YSCALED(pr->ym + pr->rad),
+      (int)rint(xscale*2.*pr->rad),
+      (int)rint(yscale*2.*pr->rad),
+      pr->om1, pr->om2);
+  else
     XDrawLine(disp, win, gc,
-      BORDER + (int)(xscale*pp2->from->x),
-      ybase - (int)(yscale*pp2->from->y),
-      BORDER + (int)(xscale*pp2->to->x),
-      ybase - (int)(yscale*pp2->to->y));
-  }
-  else {
-    pp2->xs = BORDER - 5 + (int)(xscale*pp2->xc);
-    pp2->ys = ybase - 6 - (int)(yscale*pp2->yc);
-    xold = -1;
-    for(om = pp2->om1; om <= pp2->om2; om += pp2->step) {
-      x = BORDER + (int)(xscale*(pp2->xm + pp2->rad*cos(om)));
-      y=ybase - (int)(yscale*(pp2->ym + pp2->rad*sin(om)));
-      if(xold != -1) XDrawLine(disp, win, gc, xold, yold, x, y);
-      xold = x;
-      yold = y;
-    }
-  }
-  XSetForeground(disp, gc, boxcolor);
-  XFillRectangle(disp, win, gc, pp2->xs, pp2->ys, 10, 12);
+      XSCALED(pr->from->x), YSCALED(pr->from->y),
+      XSCALED(pr->to->x), YSCALED(pr->to->y));
+
+  r = pr->rad + pr->dr;
+  m = pr->ommc + pr->dphi;
+  pr->xl = XSCALED(pr->xm + r*cos(m)) - 5;
+  pr->yl = YSCALED(pr->ym + r*sin(m)) - 6;
+  pr->xs = XSCALED(pr->xc) - 5;
+  pr->ys = YSCALED(pr->yc) - 6;
+  XSetLineAttributes(disp, gc, 0, LineSolid, CapButt, JoinMiter);
+  XDrawLine(disp, win, gc,
+    pr->xs + 5, pr->ys + 6, pr->xl + 5, pr->yl + 6);
+  XSetForeground(disp, gc, labelbox);
+  XFillRectangle(disp, win, gc, pr->xl, pr->yl, 10, 12);
+
+  XSetForeground(disp, gc, centerbox);
+  XFillRectangle(disp, win, gc, pr->xs, pr->ys, 10, 12);
 }
 
 void redraw(Bool clearbefore)
 {
   double xd, yd;
-  int i, j;
+  int i, j, i5, x, y;
   propinfo *pp2;
   vertexinfo *vp2;
 
   if(clearbefore)
     XClearArea(disp, win,
       0, 0, drawarea + 2*BORDER, ybase + BORDER, False);
-  XSetLineAttributes(disp, gc, 3, LineSolid, CapButt, JoinMiter);
-  for(xd = BORDER, i = paintscaling; i-- >= 0; xd += xscale)
-    for(yd = ybase, j = paintscaling; j-- >= 0; yd -= yscale)
-      XDrawPoint(disp, win, gc, (int)xd, (int)yd);
-  for(pp2 = propagators; pp2 < pp; ++pp2)
-    drawprop(pp2, black, blue);
-  XSetForeground(disp, gc, red);
-  for(vp2 = vertices; vp2 < vp; ++vp2) {
-    vp2->xs = BORDER - 5 + (int)(xscale*vp2->x);
-    vp2->ys = ybase - 6 - (int)(yscale*vp2->y);
-    XFillRectangle(disp, win, gc, vp2->xs, vp2->ys, 10, 12);
-  }
+
   XSetForeground(disp, gc, black);
-}
-
-void redrawprop(propinfo *pp2, double nx, double ny)
-{
-  double om, xm, ym, dx, dy;
-  int i, j, x, y;
-
-  XSetLineAttributes(disp, gc, 3, LineSolid, CapButt, JoinMiter);
-  drawprop(pp2, white, white);
-  XFlush(disp);
-  if(pp2->tad) pp2->xc = nx, pp2->yc = ny;
-  else {
-    xm = .5*(pp2->to->x + pp2->from->x);
-    ym = .5*(pp2->to->y + pp2->from->y);
-    if((dx = pp2->to->x - pp2->from->x) == 0.)
-      pp2->xc = nx, pp2->yc = ym;
-    else if((dy = pp2->to->y - pp2->from->y) == 0.)
-      pp2->yc = ny, pp2->xc = xm;
-    else {
-      om = dy/dx;
-      dx = om + dx/dy;
-      pp2->xc = (xm/om + ym - ny + om*nx)/dx;
-      pp2->yc = (xm + ym*om - nx + ny/om)/dx;
-    }
-    if(hypot(xm - pp2->xc, ym - pp2->yc) < .3) pp2->xc = -1.;
-  }
-  calcdrawinfo(pp2);
-  drawprop(pp2, black, blue);
-}
-
-void redrawvertex(vertexinfo *vp2, double nx, double ny)
-{
-  propinfo *pp2;
-  int i, j, x, y;
-  double om, xf, yf, xt, yt, xv, yv, xm, ym, l;
-
-  XSetLineAttributes(disp, gc, 3, LineSolid, CapButt, JoinMiter);
-  XSetForeground(disp, gc, white);
-  XFillRectangle(disp, win, gc, vp2->xs, vp2->ys, 10, 12);
-  for(pp2 = propagators; pp2 < pp; ++pp2)
-    if(pp2->from == vp2 || pp2->to == vp2) {
-      drawprop(pp2, white, white);
-      if(pp2->tad) pp2->xc += nx - vp2->x, pp2->yc += ny - vp2->y;
-      else if(pp2->xc >= 0) {
-        if(vp2 == pp2->from)
-          xf = nx, yf = ny, xt = pp2->to->x, yt = pp2->to->y;
-        else xf = pp2->from->x, yf = pp2->from->y, xt = nx, yt = ny;
-        xm = pp2->xc - .5*(pp2->from->x + pp2->to->x);
-        ym = pp2->yc - .5*(pp2->from->y + pp2->to->y);
-        l = copysign(hypot(xm, ym)/hypot(xv = -yt + yf, yv = xt - xf),
-          ym*(pp2->to->x - pp2->from->x) -
-          xm*(pp2->to->y - pp2->from->y));
-        pp2->xc = .5*(xt + xf) + xv*l;
-        pp2->yc = .5*(yt + yf) + yv*l;
+  XSetLineAttributes(disp, gc, 0, LineSolid, CapButt, JoinMiter);
+  for(xd = BORDER, i = 20; i >= 0; --i, xd += xscale) {
+    i5 = i % 5;
+    for(yd = ybase, j = 20; j >= 0; --j, yd -= yscale) {
+      x = (int)xd;
+      y = (int)yd;
+      if(i5 || j % 5) XDrawPoint(disp, win, gc, x, y);
+      else {
+        XDrawLine(disp, win, gc, x - 2, y, x + 2, y);
+        XDrawLine(disp, win, gc, x, y - 2, x, y + 2);
       }
     }
-  vp2->xs = BORDER - 5 + (int)(xscale*(vp2->x = nx));
-  vp2->ys = ybase - 6 - (int)(yscale*(vp2->y = ny));
+  }
+
   for(pp2 = propagators; pp2 < pp; ++pp2)
-    if(pp2->from == vp2 || pp2->to == vp2) {
-      calcdrawinfo(pp2);
-      drawprop(pp2, black, blue);
-    }
+    drawprop(pp2, black, blue, green);
   XSetForeground(disp, gc, red);
-  XFillRectangle(disp, win, gc, vp2->xs, vp2->ys, 10, 12);
-  XSetForeground(disp, gc, black);
+  for(vp2 = vertices; vp2 < vp; ++vp2) {
+    vp2->xs = XSCALED(vp2->x) - 5;
+    vp2->ys = YSCALED(vp2->y) - 6;
+    XFillRectangle(disp, win, gc, vp2->xs, vp2->ys, 10, 12);
+  }
 }
 
-void topedit(MLCONST char *vert, MLCONST char *prop, int pscaling)
+void redrawprop(propinfo *pr, double nx, double ny)
+{
+  double h, xm, ym, dx, dy, d;
+
+  if(pr->xc == nx && pr->yc == ny) return;
+  if(pr->tad) {
+    drawprop(pr, white, white, white);
+    pr->xc = nx;
+    pr->yc = ny;
+  }
+  else {
+    xm = .5*(pr->to->x + pr->from->x);
+    ym = .5*(pr->to->y + pr->from->y);
+    dx = pr->to->x - pr->from->x;
+    dy = pr->to->y - pr->from->y;
+    if(dx == 0.) ny = ym;
+    else if(dy == 0.) nx = xm;
+    else {
+      h = dy/dx;
+      d = h + dx/dy;
+      nx = (xm/h + ym - ny + h*nx)/d;
+      ny = (xm + ym*h - nx + ny/h)/d;
+    }
+    h = hypot(xm - nx, ym - ny);
+    h = h < .3 ? 0. :
+      copysign(2.*h/hypot(dx, dy),
+        dy*(nx - pr->from->x) - dx*(ny - pr->from->y));
+    if(h == pr->height) return;
+    drawprop(pr, white, white, white);
+    pr->height = h;
+    pr->circ = h != 0.;
+  }
+  calcdrawinfo(pr);
+  drawprop(pr, black, blue, green);
+}
+
+void redrawvertex(vertexinfo *vx, double nx, double ny)
+{
+  propinfo *pp2;
+
+  if(vx->x == nx && vx->y == ny) return;
+  XSetForeground(disp, gc, white);
+  XFillRectangle(disp, win, gc, vx->xs, vx->ys, 10, 12);
+  for(pp2 = propagators; pp2 < pp; ++pp2)
+    if(pp2->from == vx || pp2->to == vx) {
+      drawprop(pp2, white, white, white);
+      if(pp2->tad) pp2->xc += nx - vx->x, pp2->yc += ny - vx->y;
+    }
+  vx->x = nx;
+  vx->y = ny;
+  for(pp2 = propagators; pp2 < pp; ++pp2)
+    if(pp2->from == vx || pp2->to == vx) {
+      calcdrawinfo(pp2);
+      drawprop(pp2, black, blue, green);
+    }
+  XSetForeground(disp, gc, red);
+  XFillRectangle(disp, win, gc, 
+    vx->xs = XSCALED(nx) - 5, vx->ys = YSCALED(ny) - 6, 10, 12);
+}
+
+void redrawlabel(propinfo *pr, double nx, double ny)
+{
+  double dx, dy, dr, dphi;
+
+  dx = nx - pr->xm;
+  dy = ny - pr->ym;
+  dr = hypot(dx, dy) - pr->rad;
+  dphi = atan2(dy, dx) - pr->ommc;
+  if(fabs(dphi) < 1e-10) dphi = 0.;
+  if(dr == pr->dr && dphi == pr->dphi) return;
+  XSetLineAttributes(disp, gc, 0, LineSolid, CapButt, JoinMiter);
+  XSetForeground(disp, gc, white);
+  XDrawLine(disp, win, gc,
+    pr->xs + 5, pr->ys + 6, pr->xl + 5, pr->yl + 6);
+  XFillRectangle(disp, win, gc, pr->xl, pr->yl, 10, 12);
+  pr->dr = dr;
+  pr->dphi = dphi;
+  pr->xl = XSCALED(nx) - 5;
+  pr->yl = YSCALED(ny) - 6;
+  XSetForeground(disp, gc, black);
+  XDrawLine(disp, win, gc,
+    pr->xs + 5, pr->ys + 6, pr->xl + 5, pr->yl + 6);
+  XSetForeground(disp, gc, green);
+  XFillRectangle(disp, win, gc, pr->xl, pr->yl, 10, 12);
+}
+
+void topedit(MLCONST char *vert, MLCONST char *prop)
 {
   XEvent ev;
   Region region;
@@ -487,7 +569,6 @@ void topedit(MLCONST char *vert, MLCONST char *prop, int pscaling)
   double off, nx, ny;
 
   if(Xini()) return;
-  paintscaling = pscaling;
   analyse_topology(vert, prop);
 
   for( ; ; ) {
@@ -516,8 +597,8 @@ ignore:
     case ConfigureNotify:
       drawarea = ev.xconfigure.width - 3*BORDER - BUTTONWIDTH;
       ybase = ev.xconfigure.height - BORDER;
-      xscale = (double)drawarea/pscaling;
-      yscale = (double)(ev.xconfigure.height - 2*BORDER)/pscaling;
+      xscale = (double)drawarea/20.;
+      yscale = (double)(ev.xconfigure.height - 2*BORDER)/20.;
       break;
     case MappingNotify: 
       if(ev.xmapping.request == MappingKeyboard)
@@ -530,6 +611,7 @@ dispatch:
       case 'f':
         return_graphpoints();
 quit:
+        buttonlabels[5] = snapbut;
         XFreeFont(disp, font);
         XDestroyWindow(disp, win);
         XFreeGC(disp, gc);
@@ -544,23 +626,23 @@ quit:
         break;
       case 'u':
         off = .5;
-        for(pp2 = propagators; pp2 < pp; ++pp2)
-          if(pp2->xc >= 0. && pp2->yc + off > paintscaling) goto ignore;
         for(vp2 = vertices; vp2 < vp; ++vp2)
-          if(vp2->y + off > paintscaling) goto ignore;
+          if(vp2->y + off > 20.) goto ignore;
+        for(pp2 = propagators; pp2 < pp; ++pp2)
+          if(pp2->circ && pp2->yc + off > 20.) goto ignore;
 shift:
         for(pp2 = propagators; pp2 < pp; ++pp2)
-          if(pp2->xc >= 0.) pp2->yc += off, pp2->ym += off;
+          pp2->yc += off, pp2->ym += off;
         for(vp2 = vertices; vp2 < vp; ++vp2)
           vp2->y += off;
         redraw(True);
         break;
       case 'd':
         off = -.5;
-        for(pp2 = propagators; pp2 < pp; ++pp2)
-          if(pp2->xc >= 0. && pp2->yc + off < 0.) goto ignore;
         for(vp2 = vertices; vp2 < vp; ++vp2)
           if(vp2->y + off < 0.) goto ignore;
+        for(pp2 = propagators; pp2 < pp; ++pp2)
+          if(pp2->circ && pp2->yc + off < 0.) goto ignore;
         goto shift;
       case 's':
         buttonlabels[5] -= (snap ^= 4) - 2;
@@ -576,23 +658,44 @@ shift:
       break;
     case ButtonPress:
       if(ev.xbutton.x >= BORDER && ev.xbutton.x <= drawarea + BORDER) {
-        for(pp2 = propagators; pp2 < pp; ++pp2)
+        if(ev.xbutton.button == 1)
+          for(vp2 = vertices; vp2 < vp; ++vp2)
+            if((unsigned)(ev.xbutton.x - vp2->xs) <= 10 &&
+               (unsigned)(ev.xbutton.y - vp2->ys) <= 12) {
+              sel = 2;
+              goto selection;
+            }
+        for(pp2 = propagators; pp2 < pp; ++pp2) {
           if((unsigned)(ev.xbutton.x - pp2->xs) <= 10 &&
              (unsigned)(ev.xbutton.y - pp2->ys) <= 12) {
             if(ev.xbutton.button == 1) sel = 1;
-            else if(!pp2->tad && pp2->xc > 0.) {
-              pp2->xc = -1.;
+            else if(!pp2->tad && pp2->circ) {
+              if(ev.xbutton.button == 3) pp2->height = -pp2->height;
+              else pp2->circ = 0, pp2->height = 0.;
+              calcdrawinfo(pp2);
               redraw(True);
             }
             goto selection;
           }
-        if(ev.xbutton.button != 1) break;
-        for(vp2 = vertices; vp2 < vp; ++vp2)
-          if((unsigned)(ev.xbutton.x - vp2->xs) <= 10 &&
-             (unsigned)(ev.xbutton.y - vp2->ys) <= 12) {
-            sel = 2;
+          if((unsigned)(ev.xbutton.x - pp2->xl) <= 10 &&
+             (unsigned)(ev.xbutton.y - pp2->yl) <= 12) {
+            switch(ev.xbutton.button) {
+            case 1:
+              sel = 3;
+              break;
+            case 2:
+              pp2->dr = DEFAULT_DR;
+              pp2->dphi = 0.;
+              redraw(True);
+              break;
+            case 3:
+              pp2->dr = -pp2->dr;
+              redraw(True);
+              break;
+            }
             goto selection;
           }
+        }
       }
       else if(ev.xbutton.button == 1 &&
           ev.xbutton.x >= drawarea + 2*BORDER &&
@@ -614,9 +717,18 @@ selection:
       if(y > ybase - BORDER) y = ybase - BORDER;
       nx = (double)x/xscale;
       ny = (double)y/yscale;
-      if(snap) nx = rint(nx), ny = rint(ny);
-      if(sel == 1) redrawprop(pp2, nx, ny);
-      else redrawvertex(vp2, nx, ny);
+      if(snap) nx = .5*rint(2.*nx), ny = .5*rint(2.*ny);
+      switch(sel) {
+      case 1:
+        redrawprop(pp2, nx, ny);
+        break;
+      case 2:
+        redrawvertex(vp2, nx, ny);
+        break;
+      default:
+        redrawlabel(pp2, nx, ny);
+        break;
+      }
       break;
     case ButtonRelease:
       if(ev.xbutton.button == 1 && sel) {

@@ -1,0 +1,92 @@
+Inc2Out2Int1Loop3[Topology[Propagator[Incoming][Vertex[1][1], Vertex[3][2]], 
+    Propagator[Incoming][Vertex[1][2], Vertex[3][101]], 
+    Propagator[Outgoing][Vertex[1][3], Vertex[3][103]], 
+    Propagator[Outgoing][Vertex[1][4], Vertex[3][103]], 
+    Propagator[Internal][Vertex[3][102], Vertex[3][103]], 
+    Propagator[Loop[1]][Vertex[3][2], Vertex[3][101]], 
+    Propagator[Loop[1]][Vertex[3][2], Vertex[3][102]], 
+    Propagator[Loop[1]][Vertex[3][101], Vertex[3][102]]]] = 
+  {{Vertex[1][1] -> {0., 15.}, Vertex[1][2] -> {0., 5.}, 
+    Vertex[1][3] -> {20., 15.}, Vertex[1][4] -> {20., 5.}, 
+    Vertex[3][103] -> {16., 10.}, Vertex[3][2] -> {4., 13.99999999999999}, 
+    Vertex[3][101] -> {4., 6.}, Vertex[3][102] -> {10.5, 10.}}, 
+   {0., 0., 0., 0., 0., 0., 0., 0.}, 
+   {{-1.3, 0.}, 0, 0, 0, 0, 0, {-1.3, 0.}, 0}}
+ 
+Inc2Out2Int1Loop3[Topology[Propagator[Incoming][Vertex[1][1], Vertex[3][2]], 
+    Propagator[Incoming][Vertex[1][2], Vertex[3][102]], 
+    Propagator[Outgoing][Vertex[1][3], Vertex[3][102]], 
+    Propagator[Outgoing][Vertex[1][4], Vertex[3][103]], 
+    Propagator[Internal][Vertex[3][101], Vertex[3][102]], 
+    Propagator[Loop[1]][Vertex[3][2], Vertex[3][101]], 
+    Propagator[Loop[1]][Vertex[3][2], Vertex[3][103]], 
+    Propagator[Loop[1]][Vertex[3][101], Vertex[3][103]]]] = 
+  {{Vertex[1][1] -> {0., 15.}, Vertex[1][2] -> {0., 5.}, 
+    Vertex[1][3] -> {20., 15.}, Vertex[1][4] -> {20., 5.}, 
+    Vertex[3][102] -> {10., 5.5}, Vertex[3][2] -> {6.5, 14.5}, 
+    Vertex[3][101] -> {10., 8.5}, 
+    Vertex[3][103] -> {13.99999999999999, 14.5}}, 
+   {0., 0., 0., 0., 0., 0., 0., 0.}, 
+   {0, 0, {-1.111885270814932, 6.284652467940425}, 
+    {1.157309984063932, -0.0008945774447393372}, 0, 0, {-1.3, 0.}, 0}}
+ 
+Inc2Out2Int1Loop3[Topology[Propagator[Incoming][Vertex[1][1], Vertex[3][2]], 
+    Propagator[Incoming][Vertex[1][2], Vertex[3][103]], 
+    Propagator[Outgoing][Vertex[1][3], Vertex[3][102]], 
+    Propagator[Outgoing][Vertex[1][4], Vertex[3][103]], 
+    Propagator[Internal][Vertex[3][101], Vertex[3][103]], 
+    Propagator[Loop[1]][Vertex[3][2], Vertex[3][101]], 
+    Propagator[Loop[1]][Vertex[3][2], Vertex[3][102]], 
+    Propagator[Loop[1]][Vertex[3][101], Vertex[3][102]]]] = 
+  {{Vertex[1][1] -> {0., 15.}, Vertex[1][2] -> {0., 5.}, 
+    Vertex[1][3] -> {20., 15.}, Vertex[1][4] -> {20., 5.}, 
+    Vertex[3][103] -> {10., 5.5}, Vertex[3][2] -> {6.5, 14.5}, 
+    Vertex[3][101] -> {10., 8.5}, Vertex[3][102] -> {13.5, 14.5}}, 
+   {0., 0., 0., 0., 0., 0., 0., 0.}, {0, 0, 0, 0, 0, 0, {-1.3, 0.}, 0}}
+ 
+Inc2Out2Int1Loop3[Topology[Propagator[Incoming][Vertex[1][1], 
+     Vertex[3][101]], Propagator[Incoming][Vertex[1][2], Vertex[3][101]], 
+    Propagator[Outgoing][Vertex[1][3], Vertex[3][102]], 
+    Propagator[Outgoing][Vertex[1][4], Vertex[3][103]], 
+    Propagator[Internal][Vertex[3][2], Vertex[3][101]], 
+    Propagator[Loop[1]][Vertex[3][2], Vertex[3][102]], 
+    Propagator[Loop[1]][Vertex[3][2], Vertex[3][103]], 
+    Propagator[Loop[1]][Vertex[3][102], Vertex[3][103]]]] = 
+  {{Vertex[1][1] -> {0., 15.}, Vertex[1][2] -> {0., 5.}, 
+    Vertex[1][3] -> {20., 15.}, Vertex[1][4] -> {20., 5.}, 
+    Vertex[3][101] -> {4., 10.}, Vertex[3][2] -> {9.5, 10.}, 
+    Vertex[3][102] -> {16., 13.99999999999999}, Vertex[3][103] -> {16., 6.}}, 
+   {0., 0., 0., 0., 0., 0., 0., 0.}, 
+   {0, 0, 0, {-1.3, 0.}, 0, {-1.3, 0.}, 0, {-1.3, 0.}}}
+ 
+Inc2Out2Int1Loop3[Topology[Propagator[Incoming][Vertex[1][1], 
+     Vertex[3][102]], Propagator[Incoming][Vertex[1][2], Vertex[3][101]], 
+    Propagator[Outgoing][Vertex[1][3], Vertex[3][102]], 
+    Propagator[Outgoing][Vertex[1][4], Vertex[3][103]], 
+    Propagator[Internal][Vertex[3][2], Vertex[3][102]], 
+    Propagator[Loop[1]][Vertex[3][2], Vertex[3][101]], 
+    Propagator[Loop[1]][Vertex[3][2], Vertex[3][103]], 
+    Propagator[Loop[1]][Vertex[3][101], Vertex[3][103]]]] = 
+  {{Vertex[1][1] -> {0., 15.}, Vertex[1][2] -> {0., 5.}, 
+    Vertex[1][3] -> {20., 15.}, Vertex[1][4] -> {20., 5.}, 
+    Vertex[3][102] -> {10., 14.5}, Vertex[3][2] -> {10., 11.49999999999999}, 
+    Vertex[3][101] -> {6., 5.5}, Vertex[3][103] -> {13.99999999999999, 5.5}}, 
+   {0., 0., 0., 0., 0., 0., 0., 0.}, 
+   {0, 0, 0, {-1.3, 0.}, 0, 0, {-1.3, 0.}, 0}}
+ 
+Inc2Out2Int1Loop3[Topology[Propagator[Incoming][Vertex[1][1], 
+     Vertex[3][103]], Propagator[Incoming][Vertex[1][2], Vertex[3][101]], 
+    Propagator[Outgoing][Vertex[1][3], Vertex[3][102]], 
+    Propagator[Outgoing][Vertex[1][4], Vertex[3][103]], 
+    Propagator[Internal][Vertex[3][2], Vertex[3][103]], 
+    Propagator[Loop[1]][Vertex[3][2], Vertex[3][101]], 
+    Propagator[Loop[1]][Vertex[3][2], Vertex[3][102]], 
+    Propagator[Loop[1]][Vertex[3][101], Vertex[3][102]]]] = 
+  {{Vertex[1][1] -> {0., 15.}, Vertex[1][2] -> {0., 5.}, 
+    Vertex[1][3] -> {20., 15.}, Vertex[1][4] -> {20., 5.}, 
+    Vertex[3][103] -> {10., 14.5}, Vertex[3][2] -> {10., 11.}, 
+    Vertex[3][101] -> {6.5, 5.5}, Vertex[3][102] -> {13.5, 5.5}}, 
+   {0., 0., 0., 0., 0., 0., 0., 0.}, 
+   {0, 0, {-1.028409950595613, 6.282381305021988}, 
+    {0.9509549594505021, 0.001490072141249224}, {-1.199999999999999, 0.}, 0, 
+    {-1.3, 0.}, 0}}

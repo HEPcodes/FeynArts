@@ -2,7 +2,7 @@
 	Insert.m
 		Insertion of fields into topologies created by 
 		CreateTopologies.
-		last modified 21 Dec 10 th
+		last modified 9 Jan 12 th
 
 The insertion is done in 3 levels: insertion of generic fields (Generic),
 of classes of a certain model (Classes) or of the members of the classes
@@ -286,7 +286,7 @@ VFAllowed[ fp_ ] :=
 (* Insert compatible particles in 1 propagator for 1 set of rules: *)
 
 Ins11[ vert12_, ru_, i_ ] := 
-Block[ {vx, p = ru[[i, 2]], leftallowed, rightallowed, allowed, ckfp},
+Block[ {vx, p = ru[[i, 2]], leftallowed, rightallowed, allowed, ckfp, prop},
 
   vx = Map[ RightPartner,
     If[ SameQ@@ vert12,		(* tadpole *)
@@ -308,18 +308,20 @@ Block[ {vx, p = ru[[i, 2]], leftallowed, rightallowed, allowed, ckfp},
       ckfp[1, #] && ckfp[2, #] & ]
   ];
 
+  prop = ResolveType[ vert12[[0, 1]] ];
+
   If[ TrueQ[$FADebug],
     Print["Ins11: inserting field ", p];
-    Print["Ins11: L-vertex  = ", vert12[[1]]];
-    Print["Ins11: R-vertex  = ", vert12[[2]]];
-    Print["Ins11: L-allowed = ", leftallowed];
-    Print["Ins11: R-allowed = ", rightallowed];
-    Print["Ins11: allowed   = ", allowed];
+    Print["Ins11: L-vertex   = ", vert12[[1]]];
+    Print["Ins11: R-vertex   = ", vert12[[2]]];
+    Print["Ins11: L-allowed  = ", leftallowed];
+    Print["Ins11: R-allowed  = ", rightallowed];
+    Print["Ins11: allowed    = ", allowed];
+    Print["Ins11: propagator = ", prop];
   ];
 
-  p = ResolveType[ vert12[[0, 1]] ];
   (ru /. (Field[i] -> _) -> (Field[i] -> #))&/@
-    Select[allowed, MemberQ[InsertOnly[#], p]&]
+    Select[allowed, !FreeQ[InsertOnly[#], prop]&]
 ]
 
 
@@ -514,7 +516,7 @@ Block[ {intp, loo, all, disj, fno},
   loo[ _ ] = 0;
   Cases[top, Propagator[Loop[n_]][_, _, fi_] :> (loo[n] += fi)];
   all = {intp, Times@@ Cases[DownValues[loo], (_ :> p_Plus) -> p]} /.
-    (Apply[List, ins, 1] /. s_?Negative -> -s);
+    (List@@@ ins /. s_?Negative -> -s);
   disj = Apply[List, ins[[ Flatten[Position[all, #, 1]] ]], {0, 1}]&/@ 
     Union[all];
   all = TopologyList@@ (Compare[TopologyList@@ (top /. #)]&)/@ disj;

@@ -1,7 +1,7 @@
 (*
 	Graphics.m
 		Graphics routines for FeynArts
-		last modified 21 Dec 10 th
+		last modified 2 Jun 12 th
 *)
 
 Begin["`Graphics`"]
@@ -192,7 +192,7 @@ Block[ {shapedata, gtop, vertexplot},
   ++topnr;
   FAPrint[2, "> Top. ", topnr, ": ", Pluralize[{Length[gr]}, " diagram"]];
   dhead[#]@@ Flatten[{
-    Apply[PGraphics, gtop /. List@@ # /. Field[_] -> 0, 1],
+    PGraphics@@@ (gtop /. List@@ # /. Field[_] -> 0),
     vertexplot }]&/@ List@@ gr
 ]
 
@@ -238,7 +238,8 @@ Block[ {rg},
     {FilePerSheet[chan, Length[rg]], rg}]
 ]
 
-Display[ chan_, s_String, ___ ] := (WriteString[chan, s]; Close[chan])
+Display[ chan_, s_String, ___ ] := (WriteString[#, s]; Close[#])& @
+  OpenWrite[chan, CharacterEncoding -> "ISO8859-1"]
 
 Export[ chan_, g:FeynArtsGraphics[___][___], format___String,
   opt:P$Options ] :=
@@ -250,7 +251,8 @@ Block[ {rg},
     {FilePerSheet[chan, Length[rg]], rg}]
 ]
 
-Export[ chan_, s_String, ___ ] := (WriteString[chan, s]; Close[chan])
+Export[ chan_, s_String, ___ ] := (WriteString[#, s]; Close[#])& @
+  OpenWrite[chan, CharacterEncoding -> "ISO8859-1"]
 
 	(* we have to play some tricks to get our definitions
 	   for Export before Mma's ones *)
@@ -797,7 +799,7 @@ vars, tadbr, tad, min, ok, c, ct, pt, shrink = {}, rev = {}, loops = {}},
   loops = Union[loops];
 
   Off[FindMinimum::fmmp, FindMinimum::fmcv, FindMinimum::precw,
-    FindMinimum::fmgz];
+    FindMinimum::fmgz, FindMinimum::sdprec, FindMinimum::lstol];
 
 	(* a) fix the incoming and outgoing propagators on the left and
 	      right side, respectively *)
@@ -825,24 +827,23 @@ vars, tadbr, tad, min, ok, c, ct, pt, shrink = {}, rev = {}, loops = {}},
 
 	(* c) cut tadpole-like parts and minimize the length of the
 	      remaining mesh of propagators *)
-  mesh2 = Leaves@@ Apply[twig, tree /. shapedata, 1] /. twig -> List;
-  tadbr[ _ ] = {};
+  mesh2 = Leaves@@ twig@@@ (tree /. shapedata) /. twig -> List;
+  _tadbr = {};
   Cases[mesh2, branch[ctr:center[_][_], v_, ___] :>
     (tadbr[ctr] = Flatten[{tadbr[ctr], v /. rev}]), Infinity];
   mesh = mesh2 /. branch[__] :> Seq[];
   vert = Cases[mesh, leaf[a_] -> a];
-  mesh = mesh /. leaf[___] :> Seq[];
+  mesh = mesh /. _leaf :> Seq[];
   mesh = List@@ Fold[
-    #1 /. {
-      Leaves[{a___, #2, b___}, {#2, c_}] :> Leaves[{a, b, #2, c}],
-      Leaves[{a___, #2, b___}, {c_, #2}] :> Leaves[{a, b, #2, c}] } &,
+    Replace[#1, x:{__, #2} :> Reverse[x], {1}] /.
+      Leaves[x:{#2, __}, {#2, b__}] :> Leaves[{Sequence@@ Reverse[x], b}]&,
     mesh,
-    vert = Union[Join[ vert, Cases[mesh, _[2, ___][_], {2}] ]] ] /.
-    twig -> List;
+    vert = Union[vert, Cases[mesh, _[2, ___][_], {2}]]
+  ] /. twig -> List;
   vert = (# -> CartesianVar[#])&/@
     Complement[Cases[mesh, _[__][_], {2}], vert];
   If[ Length[vert] =!= 0,
-    dist = Apply[Distance2, mesh /. vert, {1}];
+    dist = Distance2@@@ (mesh /. vert);
     dist = Expand[Apply[Plus, Outer[(#1 - #2)^2 &, dist, dist], {0, 1}]];
     vars = Flatten[Last/@ vert];
     min := FindMinimum@@ Prepend[{#, 10 + Random[]}&/@ vars, dist];
@@ -900,7 +901,7 @@ vars, tadbr, tad, min, ok, c, ct, pt, shrink = {}, rev = {}, loops = {}},
   ];
 
   On[FindMinimum::fmmp, FindMinimum::fmcv, FindMinimum::precw,
-    FindMinimum::fmgz];
+    FindMinimum::fmgz, FindMinimum::sdprec, FindMinimum::lstol];
 
   { Select[shapedata, FreeQ[#, center]&],
     pt[#, ct[#]--]&/@ List@@ top,
@@ -990,7 +991,7 @@ Block[ {vert, vars, rad, angle, off, min, c = 0},
     vars = (# ->
       ctr + rad Through[{Cos, Sin}[++c angle + off]])&/@ vert;
     min = FindMinimum@@ {
-      -Plus@@ Apply[Distance, loop /. vars, {1}],
+      -Plus@@ Distance@@@ (loop /. vars),
       {off, 2. NPi Random[]} };
     shapedata = Join[ shapedata,
       If[ Head[min] === FindMinimum, vars /. off -> 2. NPi Random[],
@@ -1026,7 +1027,7 @@ Block[ {adj, max, new, a1, a2},
   If[ Length[adj] === 1,
     new = 2.6 xy - .8 Plus@@ adj[[1]],
   (* else *)
-    adj = Apply[Orientation, adj /. {a_, xy} -> {xy, a}, {1}];
+    adj = Orientation@@@ (adj /. {a_, xy} -> {xy, a});
     max = -1;
     Outer[
       If[ (new = Abs[#2 - #1]) > max, max = new; a1 = #1; a2 = #2 ]&,

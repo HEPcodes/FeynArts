@@ -2,7 +2,7 @@
 	Analytic.m
 		Translation of InsertFields output into
 		analytic expressions
-		last modified 28 Mar 11 th
+		last modified 8 Oct 12 th
 *)
 
 Begin["`Analytic`"]
@@ -12,7 +12,8 @@ Options[ CreateFeynAmp ] = {
   GaugeRules -> {_GaugeXi -> 1},
   PreFactor -> -I (2 Pi)^(-4 LoopNumber),
   Truncated -> False,
-  MomentumConservation -> True
+  MomentumConservation -> True,
+  GraphInfoFunction -> (1 &)
 }
 
 (* for D dimensions use
@@ -54,8 +55,8 @@ CreateFeynAmp[ TopologyList[tops__], opt___Rule ] :=
   CreateFeynAmp[ TopologyList[][tops], opt ]
 
 CreateFeynAmp[ tops:TopologyList[info___][___], options___Rule ] :=
-Block[ {alevel, pref, next, gaugeru, truncru, momcons, amps, head,
-topnr = 1, opt = ActualOptions[CreateFeynAmp, options]},
+Block[ {alevel, pref, next, gaugeru, truncru, momcons, graphinfo, toplist,
+amps, head, topnr = 1, opt = ActualOptions[CreateFeynAmp, options]},
 
   If[ (alevel = ResolveLevel[AmplitudeLevel /. opt /. {info} /.
         Options[InsertFields]]) === $Failed,
@@ -73,6 +74,8 @@ topnr = 1, opt = ActualOptions[CreateFeynAmp, options]},
   gaugeru = GaugeRules /. opt;
   truncru = If[ TrueQ[Truncated /. opt], M$TruncationRules, {} ];
   momcons = TrueQ[MomentumConservation /. opt];
+  graphinfo = GraphInfoFunction /. opt;
+  toplist = TopologyList[info];
 
   amps = PickLevel[alevel][tops];
   Scan[ If[FreeQ[amps, #], Message[CreateFeynAmp::nolevel, #]]&, alevel ];
@@ -85,7 +88,8 @@ topnr = 1, opt = ActualOptions[CreateFeynAmp, options]},
 
   head = FeynAmpList[info] /.
     (Process -> iorule_) :> (Process ->
-      MapIndexed[{#1, iomom@@ #2, TheMass[#1, External]}&, iorule, {2}]) /.
+      MapIndexed[{#1, iomom@@ #2, TheMass[#1, External],
+        QuantumNumbers[ToClasses[#1]]}&, iorule, {2}]) /.
     (InsertionLevel -> _) :> (AmplitudeLevel -> alevel);
 
   amps = head@@ amps /. _MTF -> 1 /. gaugeru //. M$LastModelRules;
@@ -124,7 +128,7 @@ Block[ {momtop, imom, oldmom, amp, c, toppref, mtf, mc = 0, gennr = 0},
   ];
 	(* renumber the internal momenta *)
   oldmom = Union[ Cases[momtop, FourMomentum[_ZZZ, _], Infinity] ];
-  imom = Apply[RenumberMom, oldmom, 1];
+  imom = RenumberMom@@@ oldmom;
   momtop = momtop /. Thread[oldmom -> imom];
 
   toppref = pref /. LoopNumber :> Genus[top];
@@ -226,7 +230,7 @@ Block[ {amp, gm, rawgm, orig, anti},
   rawgm = gm /.
     s1_. _[__, orig[s2_, fi_], k___] :>
       app[ If[s1 === s2, fi, anti[fi]], k ];
-  Append[amp, gm -> (CreateAmpIns[rawgm, s mtf, #]&)/@ ins] /.
+  Append[amp, gm -> (CreateAmpIns[top, rawgm, s mtf, #]&)/@ ins] /.
     orig[__] :> Seq[]
 ]
 
@@ -514,10 +518,11 @@ SumOver[ i_, r:{___, l_Integer}, ext___ ] :=
   SumOver[i, l, ext] /; r === Range[l]
 
 
-CreateAmpIns[ gm_, sgen_, gr_ -> ins_ ] :=
-  CreateAmpIns[gm, sgen, gr] -> (CreateAmpIns[gm, sgen, #]&)/@ ins
+CreateAmpIns[ top_, gm_, sgen_, gr_ -> ins_ ] :=
+  CreateAmpIns[top, gm, sgen, gr] ->
+    (CreateAmpIns[top, gm, sgen, #]&)/@ ins
 
-CreateAmpIns[ gm_, sgen_, gr:FeynmanGraph[s_, ___][ru__] ] :=
+CreateAmpIns[ top_, gm_, sgen_, gr:FeynmanGraph[s_, ___][ru__] ] :=
 Block[ {ext, int, ins, deltas},
   ins = ReplacePart[gm, sgen/s, -1] /. {ru} /.
     anti -> AntiParticle /.
@@ -530,6 +535,7 @@ Block[ {ext, int, ins, deltas},
   ext = Union[Cases[Take[{ru}, next], _Index, Infinity]];
   int = Complement[Cases[Drop[{ru}, next], _Index, Infinity], ext];
   ins[[-1]] *=
+    graphinfo[FeynmanGraph[ru], top, toplist] *
     Times@@ deltas *
     Times@@ (SumOver[#, IndexRange[Take[#, 1]], External]&)/@ ext *
     Times@@ (SumOver[#, IndexRange[Take[#, 1]]]&)/@ int;
@@ -554,7 +560,7 @@ Block[ {vert, perm, ferm, kin, cv, cvr},
   ferm = Cases[vert, _. _F];
   vert = vert[[perm]];
   kin = k /. MapIndexed[KinRule, perm];
-  If[ ferm =!= Cases[vert, _. _F],
+  If[ Length[M$FlippingRules] > 0 && ferm =!= Cases[vert, _. _F],
     If[ Length[ferm] > 2, Message[CreateFeynAmp::ambig, vert] ];
     kin = kin /. M$FlippingRules ];
 

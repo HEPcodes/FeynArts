@@ -1,7 +1,7 @@
 (*
 	Topology.m
 		Creation of topologies for Feynman graphs
-		last modified 12 Aug 09 th
+		last modified 27 Mar 12 th
 *)
 
 Begin["`Topology`"]
@@ -726,7 +726,7 @@ Block[ {l, v, props, loops = {}},
   props[_] = {};
   tree = top /. Propagator[Loop[l_]][from_, to_, ___] :>
     (loops = {loops, l}; props[l] = {props[l], from, to}; Seq[]);
-  v = Apply[Sequence, tree, 1];
+  v = Sequence@@@ tree;
   tree = Fold[
     ( l = Cases[ v, Alternatives@@ Flatten[props[#2]] ];
       #1 /. Thread[ Union[l] -> Centre[Length[l]][#2] ] )&,
@@ -739,7 +739,7 @@ FreeWFQ[ top:P$Topology, patt1_, patt2_ ] :=
 
 
 LoopFields[ gr_:{}, top:P$Topology, ___ ] :=
-  Cases[AddFieldNo[top] /. List@@ gr, _[_Loop][_, _, f_] -> f]
+  Cases[AddFieldNo[top] /. List@@ gr, _[_Loop][_, _, f_, ___] -> f]
 
 
 WFCorrectionFields[ gr_:{}, top:P$Topology, ___ ] :=
@@ -750,7 +750,7 @@ WFCorrectionCTFields[ gr_:{}, top:P$Topology, ___ ] :=
   WFFields[ AddFieldNo[top] /. List@@ gr,
     Vertex[1, _], Vertex[2, _] ]
 
-WFFields[ args__ ] := Flatten[ MapWF[Apply[#3 &, #, 1]&, args] ]
+WFFields[ args__ ] := Flatten[ MapWF[((#3&)@@@ #)&, args] ]
 
 
 MapWF[ foo_, top_, patt1_, patt2_ ] :=
@@ -760,7 +760,7 @@ Block[ {etop, res, pos, br},
   pos = Position[etop, patt1[_], {2}];
   If[ Length[pos] =!= 0,
     br = List@@ Curtail@@ MapAt[ branch[ #[[1]] ]&,
-      Delete[etop, pos], Apply[{#1}&, pos, 1] ];
+      Delete[etop, pos], {#1}&@@@ pos ];
     res = {res, DoWF[foo, br]/@ Cases[br, branch[v_] -> v]} ];
   res
 ]

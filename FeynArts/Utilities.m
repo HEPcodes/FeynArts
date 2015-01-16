@@ -1,7 +1,7 @@
 (*
 	Utilities.m
 		diverse utility functions for other parts of FA
-		last modified 18 Oct 09 th
+		last modified 4 Dec 12 th
 *)
 
 Begin["`Utilities`"]
@@ -52,7 +52,7 @@ ResolveType[ Outgoing ] = External
 
 ResolveType[ _Loop ] = Loop
 
-ResolveType[ other_] = other
+ResolveType[ other_ ] = other
 
 
 ContainsQ[ expr_, {} ] = True
@@ -111,7 +111,7 @@ PSort[ Propagator[type_][from_, to_, part_] ] :=
 
 SortCrit[ a:s_. (f:P$Generic)[t_, i___] ] := {s f[t], {i}, a}
 
-SortCrit[ a:s_. f:P$Generic ] := {s f[0], {}, a}
+SortCrit[ a:s_. (f:P$Generic) ] := {s f[0], {}, a}
 
 VSort[ vert_ ] := Last/@ Sort[SortCrit/@ vert]
 

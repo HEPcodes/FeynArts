@@ -3,7 +3,7 @@
 		Addendum classes model file for SM.mod
 		to include the strong interactions
 		by Christian Schappacher
-		last modified 13 Aug 09 by Thomas Hahn
+		last modified 15 Jun 12 by Thomas Hahn
 
 This file introduces the following symbols in addition to the ones in
 SM.mod:
@@ -18,7 +18,7 @@ SM.mod:
 	SUNF[a, b, c, d]: a short-hand for the sum
 		\sum_i SUNF[a, b, i] SUNF[i, c, d]
 
-	GaugeXi[G]: gluon gauge parameter
+	GaugeXi[g]: gluon gauge parameter
 
 	dZGG1: gluon field RC
         dZg1: strong coupling-constant RC
@@ -53,8 +53,8 @@ M$ClassesDescription = Join[ M$ClassesDescription, {
 } ]
 
 
-GaugeXi[ V[5] ] = GaugeXi[G];
-GaugeXi[ U[5] ] = GaugeXi[G]
+GaugeXi[ V[5, ___] ] = GaugeXi[g];
+GaugeXi[ U[5, ___] ] = GaugeXi[g]
 
 
 M$CouplingMatrices = Join[ M$CouplingMatrices, {

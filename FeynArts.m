@@ -1,8 +1,8 @@
 (*
 
-This is FeynArts, Version 3.6
-Copyright by Sepp Kueblbeck, Hagen Eck, and Thomas Hahn 1991-2011
-last modified 28 Mar 11 by Thomas Hahn
+This is FeynArts, Version 3.7
+Copyright by Sepp Kueblbeck, Hagen Eck, and Thomas Hahn 1991-2012
+last modified 4 Dec 12 by Thomas Hahn
 
 Release notes:
 
@@ -44,9 +44,9 @@ Have fun!
 
 
 Print[""];
-Print["FeynArts 3.6"];
+Print["FeynArts 3.7"];
 Print["by Hagen Eck, Sepp Kueblbeck, and Thomas Hahn"];
-Print["last revised 28 Mar 11"]
+Print["last revised 4 Dec 12"]
 
 
 BeginPackage["FeynArts`"]
@@ -702,6 +702,11 @@ vector."
 
 KIs = {KI1, KI2, KI3, KI4}
 
+SI::usage = "SI[n] is the nth summation index in a component of the
+kinematic vector."
+
+SIs = {SI1_, SI2_, SI3_, SI4}
+
 CI::usage = "CI[n] is the classes index of the nth field in the
 kinematic vector."
 
@@ -986,6 +991,16 @@ must not be conjugated because it derives from the exponent of the path
 integral.  If no definition is made for ConjugateCoupling, the final
 amplitudes will contain this symbol."
 
+GetCouplings::usage =
+"GetCouplings[C[fi], ...] returns all couplings of the form C[fi] == _
+in M$CouplingMatrices."
+
+ReplaceCouplings::usage =
+"ReplaceCouplings[C[fi] == coup] replaces all couplings matching C[fi]
+in M$CouplingMatrices.  All couplings in M$CouplingMatrices, including
+the former versions of the ones being replaced, may be used on the
+r.h.s. in the form C[fields]."
+
 G::usage =
 "G[sym][cto][fields][kinpart] is a generic coupling matrix of
 counter-term order cto for fields corresponding to the kinematical
@@ -1026,6 +1041,13 @@ MomentumConservation::usage =
 "MomentumConservation is an option of CreateFeynAmp.  It specifies
 whether momentum conservation at each vertex is enforced.  If set to
 False, every propagator will carry its own momentum."
+
+GraphInfoFunction::usage =
+"GraphInfoFunction is an option of CreateFeynAmp.  It specifies a
+function with which every diagram is multiplied.  The function receives
+two arguments, f[rul, top], where rul are the insertion rules and top
+the corresponding topology of the diagram.  This function can be used
+to add graph information to the amplitude."
 
 VertexDebug::usage =
 "VertexDebug[debuginfo] is a function invoked whenever a vertex cannot
@@ -1113,15 +1135,25 @@ FeynArts 1 at all."
 
 $FermionLines::usage =
 "$FermionLines is a FeynArts system constant that can be True or False
-indicating whether CreateFeynAmp should collect fermion fields F in
-lines or not.  Fermion line construction has to be turned off for
-generic models that contain couplings involving more than two fermions
-(it is for example impossible to reliably determine how two fermion
-lines run through a 4-fermion vertex).  In such a case the fermions
-should carry a kinematical (e.g. Dirac) index.  Note that if
-$FermionLines = False the classes option MatrixTraceFactor has no effect
-on fermionic classes and also no additional minus signs are inserted for
-odd permutations of external fermions."
+indicating whether CreateFeynAmp should collect Grassmann-valued fields
+(typically F and U) in lines or not.
+Fermion line construction has to be turned off for generic models that
+contain couplings involving more than two fermions (it is for example
+impossible to reliably determine how two fermion lines run through a
+four-fermion vertex).  In such a case the fermions should carry a
+kinematical (e.g. Dirac) index.
+Note that if $FermionLines = False, the M$ClassesDescription option
+MatrixTraceFactor has no effect on fermionic classes and also no
+additional minus signs are inserted for odd permutations of external
+fermions."
+
+$SparseCouplings::usage =
+"$SparseCouplings is a FeynArts system constant.  If set to True, a
+model is initialized such that all zero-components of the coupling
+vector are handled by a single default rule, which speeds up lookup of
+Feynman rules in the presence of large but sparse coupling vectors.
+Use with care, as individual checks of the kinematical components are
+not possible anymore then."
 
 FeynAmp::usage =
 "FeynAmp is the head of a data structure that represents the analytical
@@ -1326,7 +1358,7 @@ P$InsertionObjects = G[_][_][__][__] | _Mass | _GaugeXi |
 P$Options = (_Rule | _RuleDelayed)...
 
 
-$FeynArts = 3.6
+$FeynArts = 3.7
 
 $FeynArtsDir = DirectoryName[ File /.
   FileInformation[System`Private`FindFile[$Input]] ]

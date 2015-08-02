@@ -1,7 +1,7 @@
 (*
 	Graphics.m
 		Graphics routines for FeynArts
-		last modified 11 Jul 14 th
+		last modified 8 Jul 15 th
 *)
 
 Begin["`Graphics`"]
@@ -74,7 +74,7 @@ Options[ Paint ] = {
   Numbering -> Full,
   FieldNumbers -> False,
   If[ $VersionNumber >= 6 && $Notebooks,
-    DisplayFunction :> (Print/@ Render[#] &),
+    DisplayFunction :> (Print/@ Render[##] &),
     DisplayFunction :> $DisplayFunction ]
 }
 
@@ -91,7 +91,7 @@ Paint[ top:(P$Topology -> _), opt:P$Options ] :=
   Paint[ TopologyList[][top], opt ]
 
 Paint[ tops_TopologyList, options:P$Options ] :=
-Block[ {fnum, ghead, opt = ActualOptions[Paint, options]},
+Block[ {fnum, ghead, opt = ActualOptions[Paint, Display, options]},
   fnum = FieldNumbers /. opt;
   ghead = Switch[ ghead = SheetHeader /. opt,
     None | False,
@@ -104,12 +104,12 @@ Block[ {fnum, ghead, opt = ActualOptions[Paint, options]},
       FeynArtsGraphics[ghead]
   ];
 
-  PaintSheet[tops]
+  PaintSheet[tops, options]
 ]
 
 Paint[ tops:TopologyList[info___][___], options:P$Options ] :=
 Block[ {plevel, ins, ghead,
-fnum = False, opt = ActualOptions[Paint, options]},
+fnum = False, opt = ActualOptions[Paint, Display, options]},
   If[ (plevel = ResolveLevel[PaintLevel /. opt /. {info} /.
         Options[InsertFields]]) === $Failed,
     Return[$Failed] ];
@@ -140,12 +140,13 @@ fnum = False, opt = ActualOptions[Paint, options]},
       FeynArtsGraphics[ghead]
   ];
 
-  PaintSheet[ ins //.
-    (x:FeynmanGraph[___][__] -> Insertions[_][gr___]) :> Seq[x, gr] ]
+  PaintSheet[
+    ins //. (x:FeynmanGraph[___][__] -> Insertions[_][gr___]) :> Seq[x, gr],
+    options ]
 ]
 
 
-PaintSheet[ tops_ ] :=
+PaintSheet[ tops_, options___ ] :=
 Block[ {auto, disp, cols, rows, dhead, g, topnr = 0, runnr = 0},
   auto = AutoEdit /. opt /. {False -> 2, _ -> 1};
   Switch[ cols = ColumnsXRows /. opt,
@@ -168,15 +169,15 @@ Block[ {auto, disp, cols, rows, dhead, g, topnr = 0, runnr = 0},
         DiagramGraphics["T" <> ToString[topnr] <> specs]
       ],
     Simple,
-      dhead[_] := DiagramGraphics[ ToString[++runnr] ],
+      _dhead := DiagramGraphics[ ToString[++runnr] ],
     _,
-      dhead[_] = DiagramGraphics[]
+      _dhead = DiagramGraphics[]
   ];
 
   g = Flatten[TopologyGraphics/@ List@@ tops] /. _Index -> Null;
   g = Flatten[{g, Table[Null, {Mod[rows cols - Length[g], rows cols]}]}];
   g = ghead@@ Partition[Partition[g, cols], rows];
-  (DisplayFunction /. opt)[g];
+  (DisplayFunction /. opt)[g, SelectOptions[Display, options]];
   g
 ]
 
@@ -408,7 +409,8 @@ LabelFontSize = 1.26 LabelFontSize},
   fsize = LabelFontSize Min[imgsize/{cols, rows}]/DiagramSize;
   Graphics[ Flatten[{g, title}],
     PlotRange -> {{0, cols}, {0, rows}} DiagramSize,
-    AspectRatio -> rows/cols]
+    AspectRatio -> rows/cols,
+    ImageSize -> imgsize]
 ]
 
 

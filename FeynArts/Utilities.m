@@ -1,7 +1,7 @@
 (*
 	Utilities.m
 		diverse utility functions for other parts of FA
-		last modified 11 Jul 14 th
+		last modified 8 Jul 15 th
 *)
 
 Begin["`Utilities`"]
@@ -16,14 +16,18 @@ ActualOptions::noopt =
 
 Options[ ActualOptions ] = {Warnings -> True}
 
-ActualOptions[ sym_, opts___ ] :=
+ActualOptions[ sym_Symbol, more___Symbol, opts:P$Options ] :=
 Block[ {p},
   If[ Warnings /. Options[ActualOptions],
     Message[ActualOptions::noopt, sym, #]&/@
-      Complement[First/@ {opts}, First/@ Options[sym]] ];
+      Complement[First/@ {opts}, First/@ Flatten[Options/@ {sym, more}]] ];
   If[ Length[ p = Position[{opts}, _[First[#], _], 1, 1] ] === 0, #,
-    {opts}[[ Sequence@@ p[[1]] ]] ]&/@ Options[sym]
+    {opts}[[ p[[1, 1]] ]] ]&/@ Options[sym]
 ]
+
+
+SelectOptions[ sym_Symbol, opts:P$Options ] := Sequence@@
+  Cases[Flatten[{opts}], _[Alternatives@@ First/@ Options[sym], _]]
 
 
 ResolveLevel::invalid =

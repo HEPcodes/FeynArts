@@ -1,3 +1,12 @@
+(*
+	dAlfa.mod
+		add-on model file which modifies the renormalization for
+		use with alpha(MZ), rather than alpha(0) as in SM.mod
+		by Thomas Hahn
+		last modified 20 Feb 15 by cs
+*)
+
+
 RenConst[ dZAA1 ] = dZAA1light + dZAA1heavy
 
 
@@ -20,7 +29,9 @@ Block[ {InsertFieldsHook},
 ]
 
 
-Alfa = AlfaMZ
+Alfa = AlfaMZ;
+Conjugate[AlfaMZ] ^:= AlfaMZ
 
-EL = ELMZ
+EL = ELMZ;
+Conjugate[ELMZ] ^:= ELMZ
 

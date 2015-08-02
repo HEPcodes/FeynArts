@@ -1,0 +1,4865 @@
+\documentclass[twoside,12pt]{article}
+\usepackage{a4wide,array,graphicx,amsmath,amssymb,axodraw,makeidx,colordvi,alltt,feynarts,mathpple}
+
+\makeindex
+\def\indextt#1{\index{#1@\texttt{#1}}}
+
+%\renewcommand{\rmdefault}{ppl}
+%\DeclareSymbolFont{operators}{OT1}{pplcm}{m}{n}
+%\DeclareSymbolFont{letters}{OML}{pplcm}{m}{it}
+%\DeclareSymbolFont{symbols}{OMS}{pzccm}{m}{n}
+%\DeclareSymbolFont{largesymbols}{OMX}{psycm}{m}{n}
+%\DeclareSymbolFont{bold}{OT1}{ppl}{bx}{n}
+%\DeclareSymbolFont{italic}{OT1}{ppl}{m}{it}
+%\DeclareMathAlphabet{\mathrm}{OT1}{ppl}{m}{n}
+%\DeclareMathAlphabet{\mathbf}{OT1}{ppl}{bx}{n}
+%\DeclareMathAlphabet{\mathit}{OT1}{ppl}{m}{it}
+
+\renewcommand{\baselinestretch}{1.2}
+\renewcommand{\arraystretch}{1.2}
+\renewcommand{\tabcolsep}{8pt}
+\renewcommand{\arraycolsep}{8pt}
+\renewcommand{\labelenumi}{\theenumi)\,}
+\def\thefootnote{\fnsymbol{footnote}}
+\parskip=4pt
+\parindent=0pt
+\pagestyle{headings}
+\raggedbottom
+\sloppy
+
+\def\bbox{\vskip .5\baselineskip\par
+  \newbox\grey\setbox\grey=\vbox\bgroup\ignorespaces}
+\def\ebox{\egroup%
+  \hbox{%
+    \special{ps: gsave
+      initmatrix currentpoint translate 1 65781 div dup scale % 1bp = 65781sp
+      newpath
+      0 -\number\dp\grey\space moveto
+      \number\wd\grey\space dup dup 0 rlineto
+      \number\ht\grey\space lineto
+      neg 0 rlineto
+      closepath
+      gsave .9 setgray fill grestore
+      0 setlinewidth stroke
+      grestore}%
+    \box\grey}%
+  \vskip .5\baselineskip\par}
+
+\def\oldcr#1{\let\temp=\\#1\let\\=\temp}
+\def\biitab{\bbox%
+  \begin{tabular}{>{\oldcr\raggedleft\hspace{0pt}}p{.35\linewidth}%
+                  >{\oldcr\raggedright\hspace{0pt}}p{.57\linewidth}}}
+\def\bxtab#1{\bbox%
+  \hspace*{5pt}
+  \begin{tabular}{>{\oldcr\raggedright\hspace{0pt}}p{.235\linewidth}%
+                  >{\oldcr\raggedright\hspace{0pt}}p{.185\linewidth}%
+                  >{\oldcr\raggedright\hspace{0pt}}p{.44\linewidth}}
+  \Name{#1} & \Name{default value} \\ \hline}
+\def\biiitab{\bxtab{option}}
+\def\etab{\end{tabular}\ebox}
+
+\long\def\mmaex#1#2{%
+  \begin{footnotesize}%
+  \begin{minipage}[t]{.25\linewidth}\raggedright%
+  #1%
+  \end{minipage}%
+  \hskip .05\linewidth%
+  \begin{minipage}[t]{.65\linewidth}\raggedright%
+  \begin{tt}#2\end{tt}%
+  \end{minipage}%
+  \end{footnotesize}\vskip .5\baselineskip\par}
+\def\mmafig#1{%
+  \vskip .5\baselineskip\par%
+  \fbox{\includegraphics[width=.95\linewidth]{#1}}%
+  \vskip .5\baselineskip\par}
+
+\def\button#1{\fbox{\sc \vphantom{(}#1}}
+
+\let\dots\textellipsis
+\def\FA{\textit{FeynArts}}
+\def\MM{\textit{ModelMaker}}
+\def\mma{{\it Mathematica}}
+\def\ie{i.e.\ }
+\def\eg{e.g.\ }
+\def\lbrac{\symbol{123}}
+\def\rbrac{\symbol{125}}
+\def\Brac#1{\lbrac#1\rbrac}
+\def\uscore{\symbol{95}}
+\def\backsl{\symbol{92}}
+\def\plusminus{+\llap{\lower .635ex\hbox{-}}}
+\def\pslash#1{\rlap{/}#1}
+\def\ri{{\rm i}}
+\def\d{{\rm d}}
+\def\unity{{\rm 1\mskip-4.25mu l}}
+\def\sw{\sin\theta_{\rm W}}
+\def\MW{M_{\rm W}}
+\def\MH{M_{\rm H}}
+\def\q{\hspace*{1.5em}}
+\def\tinydot{\vrule width .4pt height .4pt depth 0pt}
+\def\greyed#1{\special{ps: .7 setgray}#1\special{ps: 0 setgray}}
+\def\ql{%
+  \setlength\unitlength{.1\baselineskip}%
+  \begin{picture}(0,0)%
+    \put(1.5,-1.5){\makebox(0,0){\tinydot}}%
+    \put(1.5,1){\makebox(0,0){\tinydot}}%
+    \put(1.5,3.5){\makebox(0,0){\tinydot}}%
+    \put(1.5,6){\makebox(0,0){\tinydot}}%
+  \end{picture}%
+  \hspace*{1em}}
+\def\braket#1#2{\left\langle #1\vphantom{#2}
+  \right. \kern-2.5pt\left| #2\vphantom{#1}\right\rangle }
+
+\def\Two#1#2{\vtop{\hbox{#1}\hbox{#2}}}
+
+\def\Code#1{\ensuremath{\texttt{#1}}}
+%\def\Code#1{\ensuremath{\texttt{\Red{#1}}}}
+\def\Name#1{\ensuremath{\textit{\rmfamily #1}}}
+%\def\Name#1{\ensuremath{\textit{\rmfamily\Green{#1}}}}
+\def\Var#1{\ensuremath{\mathit{#1}}}
+%\def\Var#1{\ensuremath{\mathit{\Blue{#1}}}}
+\def\Va{\Var{a}}
+\def\Vb{\Var{b}}
+\def\Vc{\Var{c}}
+\def\Vcp{\Var{c'}}
+\def\Vd{\Var{d}}
+\def\Ve{\Var{e}}
+\def\Vf{\Var{f}}
+\def\Vg{\Var{g}}
+\def\Vgp{\Var{g'}}
+\def\Vh{\Var{h}}
+\def\Vi{\Var{i}}
+\def\Vl{\Var{l}}
+\def\Vm{\Var{m}}
+\def\Vn{\Var{n}}
+\def\Vnp{\Var{n'}}
+\def\Vo{\Var{o}}
+\def\Vp{\Var{p}}
+\def\Vr{\Var{r}}
+\def\Vs{\Var{s}}
+\def\Vsp{\Var{s'}}
+\def\Vt{\Var{t}}
+\def\Vv{\Var{v}}
+\def\Vmu{\ensuremath{\mu}}
+\def\Vnu{\ensuremath{\nu}}
+\def\VmuI{\ensuremath{\mu_1}}
+\def\VnuI{\ensuremath{\nu_1}}
+
+\hyphenation{Feyn-Arts}
+
+\begin{document}
+
+\thispagestyle{empty}
+
+\vspace*{.2\textheight}
+
+\hfill\includegraphics[width=298bp]{famonster}
+
+\bigskip\bigskip
+
+\hfill\hbox{\underline{%
+\vrule width 0pt height 0pt depth 2ex%
+\Huge \FA\ 3.9~~~~~User's Guide}}
+
+\vspace*{1ex}
+
+\hfill\hbox{June 16, 2015~~~~~Thomas Hahn}
+
+\clearpage
+
+\vspace*{.5\textheight}
+\vfill
+
+\hrule
+
+\medskip
+
+\begin{scriptsize}
+The dreadful legal stuff:
+\FA\ is free software, but is not in the public domain.
+Instead it is covered by the GNU library general public license.
+In plain English this means:
+
+1) We don't promise that this software works.   
+(But if you find any bugs, please let us know!)
+
+2) You can use this software for whatever you want.
+You don't have to pay us.
+
+3) You may not pretend that you wrote this software.
+If you use it in a program, you must acknowledge
+somewhere in your documentation that you've used  
+our code.
+
+If you're a lawyer, you will rejoice at the exact wording of the license 
+at \Code{http://www.fsf.org/copyleft/lgpl.html}.
+
+\FA\ is available from \Code{http://feynarts.de}.  If you make this
+software available to others, please provide them with this manual, too.
+
+If you find any bugs, or want to make suggestions, or just write fan mail,
+address it to:
+\vspace*{-2ex}
+\begin{quote}
+Thomas Hahn \\
+Max-Planck-Institut f\"ur Physik \\
+(Werner-Heisenberg-Institut) \\
+F\"ohringer Ring 6 \\
+D--80805 Munich, Germany \\
+e-mail: \Code{hahn@feynarts.de}
+\end{quote}
+\end{scriptsize}
+
+\clearpage
+
+\tableofcontents
+
+\clearpage
+
+\section{Getting Started}
+\label{sect:install}
+
+\FA\ is a \mma\ package for the generation and visualization of Feynman
+diagrams and amplitudes.  It started out in 1990 as a Macsyma code written
+by Hagen Eck and Sepp K\"ublbeck which could produce tree-level and
+one-loop diagrams in the Standard Model \cite{KuBD90}, but soon got ported
+to the \mma\ platform.  In 1995, Hagen Eck designed the second version to
+be a fully general diagram generator.  To achieve this, he implemented 
+some decisive new ideas \cite{Eck95}, the most important one being the
+generation of diagrams in three levels.  The program was taken up again in
+1998 by Thomas Hahn who developed version 2.2.  The well-designed
+conceptual framework was kept, but the actual code was reprogrammed almost
+entirely to make it more efficient and a user-friendly topology editor was
+added.  The current version 3 features a completely new rendering engine
+for PostScript and \LaTeX, together with full support of the \mma\
+Frontend's graphical capabilities.  It is also no longer dependent on the
+X platform for topology editing.
+
+The main features of \FA\ are:
+\begin{itemize}
+\item
+The generation of diagrams is possible at three levels: generic fields,
+classes of fields, or specific particles.
+
+\item
+The model information is contained in two special files:
+The \emph{generic model file} defines the representation of the
+kinematical quantities like spinors or vector fields.  The \emph{classes
+model file} sets up the particle content and specifies the actual
+couplings.  Since users can create their own model files, the applicability
+of \FA\ is virtually unlimited within perturbative quantum field
+theory.  As a generic model the Lorentz formalism (\Code{Lorentz.gen}) and 
+as classes model the electroweak Standard Model in several variations 
+(\Code{SM.mod}, \Code{SMQCD.mod}, \Code{SMbgf.mod}), the Minimal 
+Supersymmetric Standard Model (\Code{MSSM.mod}, \Code{MSSMQCD.mod}), and
+the Two-Higgs-Doublet Model (\Code{THDM.mod}) are supplied.
+
+\item
+In addition to ordinary diagrams, \FA\ can generate counter-term diagrams
+and diagrams with placeholders for one-particle irreducible vertex
+functions (skeleton diagrams).
+
+\item
+\FA\ employs the so-called ``flipping-rule'' algorithm \cite{DeEHK92} to
+concatenate fermion chains.  This algorithm is unique in that it works
+also for Majorana fermions and the fermion-number-violating couplings they
+entail (\eg quark--squark--gluino) and hence allows supersymmetric models
+to be implemented.
+
+\item
+Restrictions of the type ``field $X$ is not allowed in loops'' can be
+applied.  This is necessary \eg for the background-field formulation of a
+field theory.
+
+\item
+Vertices of arbitrary adjacency, required for effective theories, are
+allowed.
+
+\item
+Mixing propagators, such as appear in non-$R_\xi$-gauges, are supported.
+
+\item
+\FA\ produces publication-quality Feynman diagrams in PostScript or
+\LaTeX\ in a format that allows easy customization.
+\end{itemize}
+These features have been introduced in version 2 but some parts received 
+considerable improvements in version 3.  The user interface, on the other 
+hand, has through all versions suffered only minor and mostly 
+backward-compatible changes, and the major functions can still be used in 
+essentially the same way as in version 1.
+
+
+\subsubsection*{Installation}
+\index{Installation}%
+
+\FA\ requires \mma\ 3.0 or above.  In \mma\ versions before 5.0, a Java
+VM and the J/Link package are needed for the topology editor.  Both
+ingredients can be obtained free of charge from
+\begin{quote}
+\Code{http://www.wolfram.com/solutions/mathlink/jlink} (J/Link), \\
+\Code{http://java.sun.com/j2se} (Java).
+\end{quote}
+Note that many systems (\eg Windows) have a Java VM pre-installed.
+Follow the instructions that come with J/Link for installation on the
+various platforms.
+
+\FA\ comes in a compressed tar archive \Code{FeynArts-$n$.$m$.tar.gz} 
+which merely needs to be unpacked, no further installation is necessary:
+\bbox
+\begin{alltt}
+   gunzip -c FeynArts-\(n\).\(m\).tar.gz | tar xvf -
+\end{alltt}
+\ebox
+
+\bigskip
+
+Unpacking the archive creates a subdirectory \Code{FeynArts-\Vn.\Vm} 
+which contains
+\begin{tabbing}
+\Code{FeynArts.m} \hspace{.25\linewidth} \=
+	the main program \\
+\Code{Setup.m} \>
+	initialization file \\
+\Code{FeynArts/} \>
+	directory containing the \FA\ code \\
+\Code{Models/} \>
+	directory containing the model files \\
+\Code{ShapeData/} \>
+	directory containing the shapes of topologies \\
+\Code{README} \>
+	additional information about this release \\
+\Code{HISTORY} \>
+	general blurb about the evolution of \FA \\
+\Code{Convert2to3.m} \>
+	conversion program for \FA\ 2 GraphInfo files \\
+\Code{Convert3to31.m} \>
+	conversion program for \FA\ 3 GraphInfo files \\
+\Code{Convert31to32.m} \>
+	conversion program for \FA\ 3.1 GraphInfo files
+\end{tabbing}%
+\index{directory contents}
+
+Permanent changes of parameters, options, etc.\ should be placed in
+\Code{Setup.m}.  Patching the \FA\ code directly is not recommended since
+it is inherently unportable.%
+\index{initialization file}%
+\indextt{Setup.m}
+
+Several \FA\ functions have options that take a list of objects.  Except 
+in the case of level specifications (see Sect.\ \ref{sect:3lev}), the list
+may be omitted if it contains only one element, \eg
+\Code{ExcludeTopologies -> Tadpoles} instead of \Code{ExcludeTopologies ->
+\Brac{Tadpoles}}.%
+\index{level!specification of}
+
+Some \FA\ functions write messages to the screen to indicate their 
+progress.  These messages can be partially or completely suppressed by
+setting \Code{\$FAVerbose} to 0 (no messages) or 1 (summary messages only).
+The default is 2 (all messages).%
+\indextt{\$FAVerbose}%
+\index{screen messages}
+
+
+\clearpage
+
+\section{Roadmap of \FA}
+\index{roadmap}%
+
+\bigskip\bigskip
+
+\begin{center}
+\unitlength=1bp%
+\begin{picture}(445,480)(-115,0)
+\SetScale{.8}
+\SetOffset(0,10)
+\Text(-64,408)[b]{Inputs:}
+\GBox(-140,370)(-20,495){.8}
+\Text(-64,388)[t]{Process}
+\BBox(-130,420)(-30,450)
+\Text(-64,347)[]{ext.\ fields\vphantom{p}}
+\BBox(-130,380)(-30,410)
+\Text(-64,315)[]{\# of loops}
+
+\GBox(-140,190)(-20,355){.8}
+\Text(-64,276)[t]{Model}
+\BBox(-130,280)(-30,310)
+\Text(-64,235)[]{adjacencies}
+\BBox(-130,240)(-30,270)
+\Text(-64,203)[]{fields\vphantom{p}}
+\BBox(-130,200)(-30,230)
+\Text(-64,171)[]{couplings}
+
+\DashArrowLine(-30,215)(50,150){1}
+\DashArrowLine(-30,215)(60,332){1}
+\DashArrowLine(-30,255)(60,337){1}
+\DashArrowLine(-30,295)(30,540){1}
+\DashArrowLine(-30,395)(25,528){1}
+\DashArrowLine(-30,435)(25,535){1}
+\DashArrowLine(-30,435)(60,343){1}
+
+\SetOffset(0,0)
+\SetWidth{1.5}
+\ArrowLine(150,540)(150,450)
+\ArrowLine(150,450)(150,350)
+\ArrowLine(150,340)(150,250)
+\ArrowLine(150,250)(150,150)
+\ArrowLine(150,140)(150,50)
+
+\Line(200,50)(280,50)
+\ArrowLine(279,50)(280,50)
+\ArrowArcn(210,350)(100,90,15)
+\ArrowArc(210,350)(100,-90,-15)
+\SetWidth{.5}
+
+\GBox(25,520)(275,580){.9}
+\Text(120,447)[b]{Find all distinct ways of connect-}
+\Text(120,433)[b]{ing incoming and outgoing lines}
+\Text(120,430)[t]{\Code{CreateTopologies}}
+\GOval(150,450)(25,65)(0){1}
+\Text(120,359)[]{Topologies}
+\GBox(60,320)(240,380){.9}
+\Text(120,287)[b]{Determine all possible}
+\Text(120,273)[b]{combinations of fields\vphantom{p}}
+\Text(120,270)[t]{\Code{InsertFields}}
+\GBox(270,320)(410,380){.9}
+\Text(272,281)[b]{Draw the results\vphantom{p}}
+\Text(272,276)[t]{\Code{Paint}}
+\GOval(150,250)(25,65)(0){1}
+\Text(120,199)[]{Diagrams}
+\GBox(50,120)(250,180){.9}
+\Text(120,121)[b]{Apply the Feynman rules}
+\Text(120,116)[t]{\Code{CreateFeynAmp}}
+\GOval(150,50)(25,65)(0){1}
+\Text(120,39)[]{Amplitudes}
+
+\Text(240,44)[lb]{further}
+\Text(240,36)[lt]{processing}
+\end{picture}
+\end{center}
+
+\clearpage
+
+\section{Creating the Topologies}
+
+\subsection{Topological Objects}
+
+For the purposes of \FA, a \emph{topology} is a set of lines
+(propagators) connecting a set of points (vertices).  Furthermore,
+topologies in \FA\ are restricted to be \emph{connected} topologies,
+where every part of the topology is connected to the rest with at least
+one propagator.%
+\index{topology}%
+\index{topology!connected}%
+\index{propagator}%
+\index{vertex}
+
+A vertex is characterized by two numbers: its adjacency and its
+counter-term order.  The \emph{adjacency} is the number of propagators 
+that run into the vertex.
+\biitab
+\Code{Vertex[\Var{adj}][\Vn]} &
+	vertex with adjacency \Var{adj}, counter-term order 0, and
+	number \Vn \\
+\Code{Vertex[\Var{adj},\,\Var{cto}][\Vn]} &
+	vertex with adjacency \Var{adj}, counter-term order \Var{cto},
+	and number \Vn
+\etab%
+\indextt{Vertex}%
+\index{adjacency}%
+\index{vertex!adjacency}
+
+A propagator connects two vertices, possibly carrying a field.
+\biitab
+\Code{Propagator[\Vt][\Var{from},\,\Var{to}]} &
+	propagator of type \Vt\ running from \Var{from} to \Var{to} \\
+\Code{Propagator[\Vt][\Var{from},\,\Var{to},\,\Var{field}]} &
+	propagator of type \Vt\ running from \Var{from} to \Var{to}
+	carrying field \Var{field} \\
+\Name{possible types of propagators:} \\
+\Code{Incoming, Outgoing} &
+	external propagator flowing in or out \\
+\Code{External} &
+	undirected external propagator \\
+\Code{Internal} &
+	internal propagator which is not part of a loop \\
+\Code{Loop[\Vn]} &
+	internal propagator on loop \Vn\footnotemark
+\etab
+\footnotetext{The \Vn\ in \Code{Loop[\Vn]} is not the actual 
+number of the loop---which in general cannot be determined 
+unambiguously---but the number of the one-particle irreducible 
+conglomerate of loops.}%
+\indextt{Propagator}%
+\indextt{Loop}%
+\indextt{Incoming}%
+\indextt{Outgoing}%
+\indextt{Internal}%
+\indextt{External}%
+\index{propagator!type of}%
+\index{loops!irreducible conglomerate of}
+
+The propagators, then, are collected into topologies.
+\biitab
+\Code{Topology[\Var{p_1},\,\Var{p_2},\,\dots]} &
+	representation of a topology with propagators \Var{p_i} \\
+\Code{Topology[\Vs][\dots]} &
+	the same with combinatorial factor $1/\Vs$ \\
+\Code{TopologyList[\Var{t_1},\,\Var{t_2},\,\dots]} &
+	a list of topologies \Var{t_i} \\
+\Code{TopologyList[\Var{info}][\dots]} &
+	the same with an additional information field
+\etab%
+\indextt{Topology}%
+\indextt{TopologyList}
+
+
+\subsection{\Code{CreateTopologies}}
+\indextt{CreateTopologies}%
+
+The basic function to generate topologies is \Code{CreateTopologies}.  It
+creates topologies based on how many loops and external legs they have.
+\index{loops!number of}%
+\index{external!legs}%
+\biitab
+\Code{CreateTopologies[\Vl,\,\Vi\ -> \Vo]} &
+	create topologies with \Vl\ loops, \Vi\ incoming, and
+	\Vo\ outgoing legs \\
+\Code{CreateTopologies[\Vl,\,\Ve]} &
+	create topologies with \Vl\ loops and \Ve\ external legs
+\etab
+\mmaex{Load \FA.}{%
+{\sl In[1]:=}~<<~FeynArts`\\[1ex]
+FeynArts~3.9\\
+by~Hagen~Eck,~Sepp~Kueblbeck,~and~Thomas~Hahn\\
+last~revised~32~Dec~15
+}
+\mmaex{Create all topologies with one loop, one incoming, and one
+outgoing line.  The results are collected in a \Code{TopologyList}.}{%
+{\sl In[2]:=}~CreateTopologies[1,~1~->~1]\\
+{\sl Out[2]=}~TopologyList[\\
+~~Topology[2][\\
+~~~~Propagator[Incoming][Vertex[1][1],~Vertex[4][3]],\\
+~~~~Propagator[Outgoing][Vertex[1][2],~Vertex[4][3]],\\
+~~~~Propagator[Loop[1]][Vertex[4][3],~Vertex[4][3]]~]\\
+~~Topology[2][\\
+~~~~Propagator[Incoming][Vertex[1][1],~Vertex[3][3]],\\
+~~~~Propagator[Outgoing][Vertex[1][2],~Vertex[3][3]],\\
+~~~~Propagator[Internal][Vertex[3][3],~Vertex[3][4]],\\
+~~~~Propagator[Loop[1]][Vertex[3][4],~Vertex[3][4]]~],\\
+~~Topology[2][\\
+~~~~Propagator[Incoming][Vertex[1][1],~Vertex[3][3]],\\
+~~~~Propagator[Outgoing][Vertex[1][2],~Vertex[3][4]],\\
+~~~~Propagator[Loop[1]][Vertex[3][3],~Vertex[3][4]],\\
+~~~~Propagator[Loop[1]][Vertex[3][3],~Vertex[3][4]]~]~]}
+\mmaex{The painted version of these topologies is much easier to
+understand than the list form.}{%
+{\sl In[3]:=}~Paint[\%]\\
+\mmafig{figs/tops1to1}}
+
+\Code{CreateTopologies} uses a recursive algorithm that generates
+topologies with $n$ legs from topologies with $n - 1$ legs \cite{KuBD90}.
+The recursion iterates down to zero external legs where it is stopped by
+a pre-defined set of \emph{starting topologies}.%
+\index{topology!starting}%
+\index{starting topology}
+
+Several options influence the behaviour of \Code{CreateTopologies}:
+\biiitab
+\Code{Adjacencies} & \Code{\Brac{3,\,4}} &
+	allowed adjacencies of the vertices \\
+\Code{CTOrder} & \Code{0} &
+	counter-term order of the topologies \\
+\Code{\rlap{ExcludeTopologies}} & \Code{\Brac{}} &
+	list of filters for excluding topologies \\
+\Code{\rlap{StartingTopologies}} & \Code{All} &
+	list to starting topologies to use
+\etab%
+\indextt{Adjacencies}%
+\indextt{CTOrder}%
+\indextt{ExcludeTopologies}%
+\indextt{StartingTopologies}%
+\indextt{All}
+
+\Code{Adjacencies} gives the allowed adjacencies the vertices may have.
+For example, \Code{Adjacencies -> 4} generates only topologies with 
+4-vertices.  In renormalizable quantum field theories, 3 and 4 are the 
+only possible adjacencies.%
+\index{vertex!adjacency}%
+\index{adjacency}
+
+\Code{CTOrder} specifies at which counter-term order topologies are
+generated.  Note that \Code{CreateTopologies} creates counter-term
+topologies for \emph{exactly} the given counter-term order.%
+\index{counter-terms!order of}
+
+
+\subsection{Creating Counter-term Topologies}
+\index{topology!counter-term}%
+\index{counter-terms}%
+\indextt{CreateCTTopologies}%
+
+Beyond one loop, one generally needs counter-terms of more than one order,
+\eg in a two-loop calculation the second-order counter-terms on tree
+topologies as well as the first-order counter-terms on one-loop topologies
+are needed.  This more comprehensive task is handled by 
+\Code{CreateCTTopologies}.  Its options are the same as for
+\Code{CreateTopologies} except that \Code{CTOrder} is ignored.
+\biitab
+\llap{\Code{CreateCTTopologies[\Vl,\,\Vi\,->\,\Vo]}} &
+	create all counter-term topologies up to order \Vl\
+	with \Vi\ incoming and \Vo\ outgoing legs \\
+\Code{CreateCTTopologies[\Vl,\,\Ve]} &
+	create all counter-term topologies up to order \Vl\
+	with \Ve\ external legs
+\etab
+Once again: use \Code{CreateTopologies} to generate topologies with
+\Vl\ loops and counter-term order \Var{cto}; use
+\Code{CreateCTTopologies} to generate counter-term topologies for
+calculations of order \Vl.  Specifically,
+\Code{CreateCTTopologies[\Vl,\,\Vi\ -> \Vo]} creates all
+counter-term topologies needed for the topologies created by
+\Code{CreateTopologies[\Vl,\,\Vi\ -> \Vo]}. 
+
+\mmaex{Create all 2-loop counter-term topologies including the one-loop 
+subrenormalization.}{%
+{\sl In[4]:=}~CreateCTTopologies[2,~1~->~1];\\
+{\sl In[5]:=}~Paint[\%]\\
+\mmafig{figs/cttops1to1}}
+
+\subsection{Creating Topologies with generic Vertex Functions}
+\label{sect:1PIvf}
+\index{topology!with vertex function}%
+\index{vertex functions}%
+\index{1PI}%
+\index{irreducible}%
+\indextt{CreateVFTopologies}%
+\index{placeholders}%
+
+Topologies can also be created with ``placeholders'' for one-particle
+irreducible (1PI) vertex functions.  Such topologies are sometimes also
+called skeleton diagrams.  The vertex-function placeholders are
+represented graphically by a grey bubble, \eg
+\vspace*{-3ex}%
+\begin{center}
+\includegraphics[width=.67\linewidth]{figs/1PIvf}
+\end{center}%
+\vspace*{-4ex}%
+The idea is to reduce the number of diagrams by calculating the vertex
+functions separately and inserting the final expression into tree diagrams
+at the proper places.  For example, in a $2\to 2$ process, the self-energy
+diagrams are generated once for the $s$-channel, once for the $t$-channel,
+and once for the $u$-channel.  It would of course be much more economic to
+calculate the necessary 1PI two-point vertex functions only once, and
+insert them at the proper places in the $s$-, $t$-, and $u$-channel tree
+diagrams.  The problem may not be particularly acute in this example at 
+one loop, but it can easily become significant for higher loop order or 
+more external legs.
+
+Topologies with vertex-function placeholders are generated by
+\Code{CreateVFTopologies}.  Note that there is always a loop order
+associated with the vertex function, hence one has to specify a loop order
+also for these ``VF'' topologies.
+\biitab
+\llap{\Code{CreateVFTopologies[\Vl,\,\Vi\,->\,\Vo]}} &
+	create topologies with placeholders for 1PI vertex functions
+	of order \Vl\ with \Vi\ incoming and \Vo\ outgoing 
+	legs \\
+\Code{CreateVFTopologies[\Vl,\,\Ve]} &
+	create topologies containing generic 1PI vertex-function
+	insertions of order \Vl\ with \Ve\ external legs
+\etab
+The creation of ``VF'' topologies and of counter-term topologies is
+essentially the same.  In fact, the place where the vertex function must
+later be inserted is given precisely by the location of the cross on the
+counter-term diagram of the corresponding order.
+
+\Code{CreateFeynAmp} translates the vertex-function placeholders into
+generic objects of the form
+\Code{VertexFunction[\Vo][\Var{f_1},\,\Var{f_2},\dots]} which
+represent the 1PI vertex function $\Gamma^{(\Vo)}_{\Var{f_1}
+\Var{f_2} \ldots}$, where \Vo\ is the loop order and \Var{f_1},
+\Var{f_2}, \dots\ are the adjoining fields (direction: all incoming),
+complete with their momenta and kinematic indices.  The conventions are
+such that a \Code{VertexFunction} consists directly of the corresponding
+1PI diagrams (as generated by \FA) without further prefactors.%
+\indextt{VertexFunction}
+
+Internally, the tricky part is to decide which vertex functions are
+allowed and which are not.  Unlike in the case of ordinary counter-terms,
+\Code{InsertFields} cannot simply look up which vertices are present in the
+model since there are exceptions: for instance in the electroweak Standard
+Model the $\gamma\gamma H$ vertex has neither a counter-term nor even a
+tree-level vertex.  Nevertheless, loop diagrams for this vertex exist.
+
+Therefore, different constraints have to be used: only such vertex
+functions are generated for which there exists a corresponding generic
+vertex, and which do not violate conservation of quantum numbers.  The
+quantum numbers of the fields are defined in the classes model file
+(see Sect.\ \ref{sect:clamodel}).
+\index{quantum numbers}%
+\index{conservation of quantum numbers}%
+
+
+
+\subsection{Excluding Topologies}
+\label{sect:excltop}%
+\index{topology!exclusion of}%
+\indextt{ExcludeTopologies}%
+\index{topology!filter}%
+\index{filter}%
+
+The \Code{ExcludeTopologies} option specifies topology exclusion
+filters.  Such a filter is a special function whose outcome when applied
+to a topology---\Code{True} or not---determines whether the
+topology is kept or discarded.  Some filters are supplied with \FA,
+others can be defined.  The pre-defined filters work on topologies of
+any loop number.
+\biitab
+& \Name{exclude topology if it contains\dots} \\
+\Two{\Code{Loops[\Var{patt}]}}{\Code{CTs[\Var{patt}]}} &
+	\Two{loops}{counter-terms}%
+	\lower 1.5ex\hbox{ of adjacency \Var{patt}} \\[3ex]
+\Two{\Code{Tadpoles}}{\Code{TadpoleCTs}} &
+	\Two{loops}{counter-terms}%
+	\lower 1.5ex\hbox{ of adjacency 1} \\[3ex]
+\Two{\Code{SelfEnergies}}{\Code{SelfEnergyCTs}} &
+	\Two{loops}{counter-terms}%
+	\lower 1.5ex\hbox{ of adjacency 2} \\[3ex]
+\Two{\Code{Triangles}}{\Code{TriangleCTs}} &
+	\Two{loops}{counter-terms}%
+	\lower 1.5ex\hbox{ of adjacency 3} \\[3ex]
+\Two{\Code{Boxes}}{\Code{BoxCTs}} &
+	\Two{loops}{counter-terms}%
+	\lower 1.5ex\hbox{ of adjacency 4} \\[3ex]
+\Two{\Code{Pentagons}}{\Code{PentagonCTs}} &
+	\Two{loops}{counter-terms}%
+	\lower 1.5ex\hbox{ of adjacency 5} \\[3ex]
+\Two{\Code{Hexagons}}{\Code{HexagonCTs}} &
+	\Two{loops}{counter-terms}%
+	\lower 1.5ex\hbox{ of adjacency 6} \\[3ex]
+\Two{\Code{AllBoxes}}{\Code{AllBoxCTs}} &
+	\Two{loops}{counter-terms}%
+	\lower 1.5ex\hbox{ of adjacency $\geqslant 4$} \\[3ex]
+\Two{\Code{WFCorrections}}{\Code{WFCorrectionCTs}} &
+	\lower 1.5ex\hbox{self-energy or tadpole }%
+	\Two{loops}{counter-terms}%
+	\lower 1.5ex\hbox{ on ext.\ legs} \\[3ex]
+\Two{\Code{WFCorrections[\Var{patt}]}}{\Code{WFCorrectionCTs[\Var{patt}]}} &
+	\lower 1.5ex\hbox{ditto only on ext.\ legs matching \Var{patt}} \\[3ex]
+\Code{Internal} &
+	propagators of type \Code{Internal},
+	\ie if the topology is one-particle reducible
+\etab
+\indextt{Tadpoles}%
+\indextt{TadpoleCTs}%
+\indextt{SelfEnergies}%
+\indextt{SelfEnergyCTs}%
+\indextt{Triangles}%
+\indextt{TriangleCTs}%
+\indextt{AllBoxes}%
+\indextt{AllBoxCTs}%
+\indextt{Boxes}%
+\indextt{BoxCTs}%
+\indextt{WFCorrections}%
+\indextt{WFCorrectionCTs}%
+\indextt{Internal}%
+\index{irreducible}%
+\index{topology!irreducible}%
+\index{wave-function corrections}%
+
+Because the generation of counter-term topologies and topologies with
+vertex-function insertions (see Sect.\ \ref{sect:1PIvf}) is so similar,
+there are no special exclusion filters for the latter---one simply uses
+the filters for counter-terms.
+
+\mmaex{Create all $1\to 2$ topologies.}{%
+{\sl In[6]:=}~CreateTopologies[1,~1~->~2];\\
+{\sl In[7]:=}~Paint[\%,~ColumnsXRows~->~4]\\
+\mmafig{figs/tops1to2}}
+\mmaex{Now the same for irreducible topologies.}{%
+{\sl In[8]:=}~CreateTopologies[1,~1~->~2,\\
+~~~~~~~~~~ExcludeTopologies~->~Internal];\\
+{\sl In[9]:=}~Paint[\%,~ColumnsXRows~->~4]\\
+\mmafig{figs/tops1to2irred}}
+
+\pagebreak
+
+For convenience, common choices of the \Code{ExcludeTopologies} option
+have a short-cut:
+\biitab
+& \Name{same as\dots} \\
+\Code{TadpolesOnly} &
+	\Code{ExcludeTopologies -> Loops[Except[1]]} \\
+\Code{TadpoleCTsOnly} &
+	\Code{ExcludeTopologies -> CTs[Except[1]]} \\
+\Code{SelfEnergiesOnly} &
+	\Code{ExcludeTopologies -> \lbrac Loops[Except[2]],} \\[-1ex]
+&	\quad\Code{WFCorrections\rbrac} \\
+\Code{SelfEnergyCTsOnly} &
+	\Code{ExcludeTopologies -> \lbrac CTs[Except[2]],} \\[-1ex]
+&	\quad\Code{WFCorrectionCTs\rbrac} \\
+\Code{TrianglesOnly} &
+	\Code{ExcludeTopologies -> Loops[Except[3]]} \\
+\Code{TriangleCTsOnly} &
+	\Code{ExcludeTopologies -> CTs[Except[3]]} \\
+\Code{BoxesOnly} &
+	\Code{ExcludeTopologies -> Loops[Except[4]]} \\
+\Code{BoxCTsOnly} &
+	\Code{ExcludeTopologies -> CTs[Except[4]]} \\
+\Code{PentagonsOnly} &
+	\Code{ExcludeTopologies -> Loops[Except[5]]} \\
+\Code{PentagonCTsOnly} &
+	\Code{ExcludeTopologies -> CTs[Except[5]]} \\
+\Code{HexagonsOnly} &
+	\Code{ExcludeTopologies -> Loops[Except[6]]} \\
+\Code{HexagonCTsOnly} &
+	\Code{ExcludeTopologies -> CTs[Except[6]]} \\
+\etab%
+\indextt{TadpolesOnly}%
+\indextt{TadpoleCTsOnly}%
+\indextt{SelfEnergiesOnly}%
+\indextt{SelfEnergyCTsOnly}%
+\indextt{TrianglesOnly}%
+\indextt{TriangleCTsOnly}%
+\indextt{BoxesOnly}%
+\indextt{BoxCTsOnly}%
+\indextt{PentagonsOnly}%
+\indextt{PentagonCTsOnly}%
+\indextt{HexagonsOnly}%
+\indextt{HexagonCTsOnly}
+
+To extend the filtering capabilities, you may define your own filter
+functions.  Here is how the \Code{Triangles} filter is defined:
+\begin{verbatim}
+   $ExcludeTopologies[ Triangles ] = FreeQ[ToTree[#], Centre[3]]&
+\end{verbatim}
+\index{topology!filter!defining own}%
+\index{topology!filter!function}%
+\index{filter!function}%
+\indextt{\$ExcludeTopologies}%
+The filter function \emph{must} be defined as a pure function
+(\Code{foo[\#]\&}) since it will be grouped together with other filter
+functions by \Code{CreateTopologies}.  The function will be passed a
+topology as its argument.  This is important to know for structural
+operations, \eg the following filter excludes topologies with 4-vertices
+on external legs:
+\begin{verbatim}
+   $ExcludeTopologies[ V4onExt ] =
+     FreeQ[ Cases[#, Propagator[External][__]], Vertex[4] ]&
+\end{verbatim}
+\indextt{V4onExt}%
+\biitab
+\Code{\$ExcludeTopologies[\Var{name}]\,\,\rlap{= \Var{func}[\#]\&}} \\
+	& defines the filter \Var{name} \\
+\Code{ToTree[\Var{top}]} &
+	returns the topology \Var{top} with each loop shrunk to a point
+	named \Code{Centre[\Var{adj}][\Vn]} where \Var{adj} is the
+	adjacency of loop \Vn \\
+\Code{Centre[\Var{adj}][\Vn]} &
+	represents the remains of loop \Vn\ with adjacency \Var{adj}
+	after it has been shrunk to a point by \Code{ToTree}
+\etab
+\indextt{ToTree}%
+\indextt{Centre}%
+
+
+\subsection{Selecting Starting Topologies}
+\index{starting topology}%
+\index{topology!starting}%
+\indextt{StartingTopologies}%
+
+Using the option \Code{StartingTopologies} to select particular starting
+topologies may significantly speed up \Code{CreateTopologies},
+especially for higher-loop topologies.  For example, it is much faster to
+start without the reducible three-loop starting topologies than to exclude
+the reducible topologies afterwards.  The default setting \Code{All}
+evaluates to all starting topologies for the given loop number and
+counter-term order.  It is allowed to use patterns, \eg 
+\Code{StartingTopologies -> Three[\uscore]} selects only the irreducible
+three-loop starting topologies.
+\biitab
+\Code{Theta, Eight, Bicycle} &
+	two-loop starting topologies \\
+\Code{Three[1\dots 8]} &
+	irreducible three-loop starting topologies \\
+\Code{ThreeRed[1\dots 7]} &
+	reducible three-loop starting topologies \\
+\Code{CT[\Vl,\,\Var{cto}][\Vn]} &
+	counter-term starting topologies, currently defined for
+	loop number and counter-term order (\Vl, \Var{cto}) =
+	(0, 2), (0, 3), (1, 1), (1, 2),	and (2, 1) \\
+\Code{StartTop[\Vl,\,\Var{cto}]} &
+	the starting topologies for loop number \Vl\ and counter-term
+	order \Var{cto} \\
+\Code{SymmetryFactor[\Vt]} &
+	find the combinatorial factor of the starting topology \Vt
+\etab
+\indextt{Theta}%
+\indextt{Eight}%
+\indextt{Bicycle}%
+\indextt{Three}%
+\indextt{ThreeRed}%
+\indextt{CT}%
+\indextt{StartTop}%
+\indextt{SymmetryFactor}%
+\mmaex{You can also draw the starting topologies.  The cross marks a
+first-order and the circled cross a second-order counter-term.}{%
+{\sl In[10]:=}~Paint[StartTop[1,~2]]\\
+\mmafig{figs/starttop1_2}}
+
+Up to three loops all starting topologies including the counter-terms are
+supplied with \FA.  If you need others, you must enter them yourself: Edit
+\Code{Topology.m} and locate the definition of \Code{StartTop}.  There more
+starting topologies can be appended.  Since entering starting topologies 
+is not an everyday job, some restrictions have been imposed that enable 
+\FA\ to work with much faster algorithms.%
+\index{starting topology!definition}%
+\index{topology!starting!definition}%
+\begin{enumerate}
+\item	There is an important distinction between positive and negative
+	vertex identifiers (the $v$ in \Code{Vertex[$e$][$v$]}).  Vertices
+	with negative identifiers are so-called permutable vertices.  They
+	are used for weeding out topologically equivalent topologies.
+	The algorithm is roughly the following:
+	The topologies are sorted into some canonical order, and then
+	compared.  This simple method, however, fails whenever a graph has
+	a symmetry.  In that case, the indices of the symmetrical vertices
+	have to be permuted to give all topologically equivalent versions.
+	It is this ``power set'' of each topology that is actually compared.
+	If you're not sure which vertices should be permutables, make them
+	\emph{all} permutables.  This will be slower, but safer.
+\index{topology!comparison}%
+\index{permutable}%
+\index{vertex!permutable}%
+
+\item	For the correct functioning of the \Code{ExcludeTopologies} filters
+	it is essential that the propagators on an irreducible
+	conglomerate of loops have the \emph{same} loop number (the 
+	\Vn\ in \Code{Loop[\Vn]}), no matter how many loops 
+	there actually are.  For example, the two-loop starting topology 
+	\Code{Theta} has only \Code{Loop[1]} propagators.
+\index{loops!irreducible conglomerate of}%
+
+\item	Vertex identifiers must always be unique, \eg having both a
+	\Code{Vertex[3][1]} and a \Code{Vertex[4][1]} within the same
+	topology is forbidden.
+\index{vertex!identifiers}%
+
+\item	To give the starting topology a name which can be used with 
+	\Code{StartingTopologies}, define it with
+	\Code{define[\Var{name}] = Topology[\Vs][\dots]}.  To make
+	\Var{name} accessible outside of \Code{Topology.m} it must either 
+	be declared in \Code{FeynArts.m} via \Var{name}\Code{::usage} or 
+	else live in the \Code{Global`} context (\ie
+	\Code{define[Global`\Var{name}] = \dots}).  If there is only one 
+	starting topology, or one always wants to use all of the starting 
+	topologies, the \Code{define[\dots]} can be omitted.
+\indextt{Global`}%
+\indextt{define}%
+\indextt{Topology.m}%
+\index{topology!starting!name}%
+\index{starting topology!name}%
+
+\item	To determine the (inverse) symmetry factor (the \Var{s} in
+	\Code{Topology[\Vs][\dots]}), enter the topology with an
+	arbitrary factor first (\eg \Code{Topology[1][\dots]}), then
+	apply \Code{SymmetryFactor} to find the right symmetry factor,
+	and with it supplement the initial definition.
+\indextt{SymmetryFactor}%
+\end{enumerate}
+For example, the two-loop starting topologies are defined as
+\begin{verbatim}
+StartTop[2, 0] = TopologyList[
+  define[Theta] = Topology[12][
+    Propagator[Loop[1]][Vertex[3][-2], Vertex[3][-1]],
+    Propagator[Loop[1]][Vertex[3][-2], Vertex[3][-1]],
+    Propagator[Loop[1]][Vertex[3][-2], Vertex[3][-1]] ],
+  define[Eight] = Topology[8][
+    Propagator[Loop[1]][Vertex[4][1], Vertex[4][1]],
+    Propagator[Loop[1]][Vertex[4][1], Vertex[4][1]] ],
+  define[Bicycle] = Topology[8][
+    Propagator[Internal][Vertex[3][-2], Vertex[3][-1]],
+    Propagator[Loop[1]][Vertex[3][-2], Vertex[3][-2]],
+    Propagator[Loop[2]][Vertex[3][-1], Vertex[3][-1]] ]
+]
+\end{verbatim}
+
+
+\clearpage
+
+\section{Inserting Fields into Topologies}
+\index{field}%
+\index{field!insertion}%
+
+\subsection{The Three-Level Fields Concept}%
+\label{sect:3lev}%
+\index{field!level}%
+\index{level}
+
+\FA\ distinguishes three different levels of fields, generic fields,
+classes of fields, and specific particles.  Field information becomes more
+and more specific with these levels.
+\biitab
+\Code{Generic}, \Code{Classes}, \Code{Particles} &
+	field levels in \FA
+\etab%
+\indextt{Generic}%
+\indextt{Classes}%
+\indextt{Particles}%
+\index{level!generic}%
+\index{level!classes}%
+\index{level!particles}
+
+\emph{Generic fields} are the abstract field types.
+\biitab
+\Code{F}, \Code{S}, \Code{V}, \Code{U}, \Code{T} &
+	basic field types: fermion, scalar, vector, ghost, and
+	tensor fields \\
+\Code{Mix[\Var{g_1},\,\Var{g_2}]} &
+	\Var{g_1}--\Var{g_2} mixing field
+\etab%
+\indextt{F}%
+\indextt{S}%
+\indextt{V}%
+\indextt{U}%
+\indextt{T}%
+\indextt{Mix}%
+\index{fermion}%
+\index{scalar field}%
+\index{vector field}%
+\index{ghost field}%
+\index{tensor field}%
+\index{mixing field}
+
+\emph{Classes fields} represent sets of fields with common properties
+such as behaviour under charge conjugation.  A class is a generic field
+type with a class number, \eg \Code{F[1]}.  The class specifies which
+further indices (if any) the class members possess and the range of
+these indices. \index{charge conjugation}%
+
+\emph{Particles fields} are then class members with definite indices,
+\eg \Code{F[1,\,\Brac{1,\,2}]} if the class \Code{F[1]} has two
+indices.  For classes fields without further indices, classes and 
+particles fields are the same.
+
+\emph{Antiparticles} (charge-conjugate fields) are denoted by a minus
+sign in front of the field, \eg if \Code{F[2,\,\Brac{1}]} is the
+electron, \Code{-F[2,\,\Brac{1}]} is the positron.%
+\index{antiparticle}
+
+Apart from simple fields, \FA\ can also handle mixing fields.  A mixing
+field propagates like any other field but has no couplings of its own.
+Instead, it couples like one simple field on the left side and like
+another simple field on the right side, \eg if the scalar--vector mixing
+field \Code{Mix[S,\,V][3]} has the mixing partners
+\Code{\Brac{S[3],\,V[3]}}, it couples as if it were an \Code{S[3]} on the
+left and a \Code{V[3]} on the right.%
+\index{field!mixing}
+
+Whereas simple fields can have at most two states, the field and its
+antifield, a mixing field can occur in four states, the mixing field, its
+antifield, the reversed mixing field, and its antifield.  Unlike for 
+simple fields, the antifield of \Code{Mix[S,\,V][3]} is
+\Code{-2\,Mix[S,\,V][3]} and the antifield of \Code{-Mix[S,\,V][3]} is
+\Code{2\,Mix[S,\,V][3]}.  Self-conjugate fields cannot have negative
+coefficients, \ie in that case the two possibilities in the bottom row
+are absent:%
+\index{mixing field!reversed}%
+\begin{center}
+\vspace*{-2ex}
+\unitlength=1bp%
+\begin{feynartspicture}(200,100)(2,1)
+\FADiagram{}
+\FAProp(1,16)(19,16)(0,){ScalarDash Sine}{1}
+\FALabel(10,15)[t]{\Code{Mix[S,\,V][3]}}
+\FAProp(1,7)(19,7)(0,){ScalarDash Sine}{-1}
+\FALabel(10,6)[t]{\Code{-Mix[S,\,V][3]}}
+
+\FADiagram{}
+\FAProp(1,16)(19,16)(0,){Sine ScalarDash}{1}
+\FALabel(10,15)[t]{\Code{2 Mix[S,\,V][3]}}
+\FAProp(1,7)(19,7)(0,){Sine ScalarDash}{-1}
+\FALabel(10,6)[t]{\Code{-2 Mix[S,\,V][3]}}
+\end{feynartspicture}
+\vspace*{-4ex}
+\end{center}
+Mixing of generic fields is a special case because it requires different
+handling internally already at generic level.  It is disabled by default.
+\biitab
+\Code{\$GenericMixing = True} &
+	enable mixing of generic fields \\
+	& (must be set \Var{before} the model is initialized)
+\etab%
+\indextt{\$GenericMixing}
+
+At generic level there are no antiparticles and reversed mixing
+propagators are denoted by \Code{Rev[\Var{g_1},\,\Var{g_2}]}.
+For compatibility with old versions, \FA\ replaces \Code{SV =
+Mix[S,\,V]}.
+\indextt{Rev}%
+\indextt{SV}%
+\biitab
+\Code{F} &
+	generic fermion field \\
+\Code{F[\Vn]} &
+	fermion class \Vn, \\
+	& \eg \Code{F[2]} is the class of leptons in \Code{SM.mod} \\
+\Code{F[\Vn,\,\Brac{\Vi,\,\dots}]} &
+	member of fermion class \Vn, \\
+	& \eg \Code{F[2,\,\Brac{1}]} is the electron
+	in \Code{SM.mod} \\
+\Code{-\Var{field}} &
+	charge-conjugate of \Var{field} \\
+\Code{2 \Var{mixingfield}} &
+	\Var{mixingfield} with left and right partner reversed
+\etab
+
+Using different levels of fields is a natural concept in perturbative 
+field theory.  The kinematical structure of a coupling is determined
+at the generic level.  Consider the scalar--fermion--fermion coupling in
+the Lorentz formalism.  Its kinematical structure is%
+\index{coupling!kinematical structure}%
+\index{Lorentz formalism}%
+\index{chirality projector}
+$$
+C_{\rm FFS} = G_{\rm FFS}^{\omega_-}\,\omega_- +
+G_{\rm FFS}^{\omega_+}\,\omega_+
+$$
+($\omega_\pm$ being the chirality projectors).  $G_{\rm FFS}^{\omega_-}$
+and $G_{\rm FFS}^{\omega_+}$ are generic coupling constants which carry
+two kinds of indices: the fields they belong to and the kinematical object
+they appear with.  At classes level, the coupling constants are resolved
+but not the indices.  E.g.\ for the $H\ell_i\ell_j$ coupling in the
+electroweak Standard Model (Higgs--lepton--lepton with generation indices 
+$i$ and $j$, \ie $\ell_1=e$, $\ell_2=\mu$, $\ell_3=\tau$) they happen
+to be identical:
+$$
+G_{H\ell_i\ell_j}^{\omega_-} = G_{H\ell_i\ell_j}^{\omega_+} =
+-\frac{\ri e}{2 \sw\,\MW} \delta_{ij} m_{\ell_i}
+$$
+Finally, at particles level, the generation indices $i$ and $j$ are
+resolved, so for instance the $He\mu$ coupling is zero because of the
+$\delta_{ij}$.%
+\index{index!generation}
+
+
+The \FA\ functions \Code{InsertFields}, \Code{CreateFeynAmp}, and
+\Code{Paint} can operate at different field levels.  The level
+specification is analogous to the usual \mma\ level specifications with
+\eg \Code{\Brac{3}} vs.\ \Code{3}.  If, for example,
+\Code{InsertFields} is used with the option \Code{InsertionLevel -> 
+\Brac{Particles}}, the result will contain insertions \emph{only at}
+particles level.  In contrast, \Code{InsertionLevel -> Particles} (no
+braces) will produce insertions \emph{down to} particles level.  More than
+one level may be specified, for instance, \Code{\Brac{Generic, 
+Particles}} skips the classes level.%
+\index{level!specification of}
+
+
+\subsection{\Code{InsertFields}}%
+\indextt{InsertFields}
+
+The computer-algebraic generation of Feynman diagrams corresponds to the
+distribution of fields over topologies in such a way that the resulting
+diagrams contain only couplings allowed by the model.  The function for
+this is \Code{InsertFields}.
+\biitab
+\Code{InsertFields[\Vt,
+\Brac{\Var{i_1},\,\Var{i_2},\,\dots}\rlap{%
+~->~\Brac{\Var{o_1},\,\Var{o_2},\,\dots}]}} & \\
+	& insert fields into the \Code{TopologyList} \Vt\ where the
+	incoming fields are \Var{i_1}, \Var{i_2}, \dots\ and the 
+	outgoing fields are \Var{o_1}, \Var{o_2}, \dots
+\etab
+\mmaex{Create irreducible $1\to 2$ topologies.}{%
+{\sl In[11]:=}~t12~=~CreateTopologies[1,~1~->~2,\\
+~~~~~~~~~~ExcludeTopologies~->~Internal];}
+\mmaex{Insert $Z\to b\overline{b}$.}{%
+{\sl In[12]:=}~InsertFields[~t12,\\
+~~~~~~~~~~~V[2]~->~\Brac{F[4,~\Brac{3}],~-F[4,~\Brac{3}]}~];\\[1ex]
+loading~generic~model~file~Models/Lorentz.gen\\
+>~\$GenericMixing~is~OFF\\
+generic~model~Lorentz~initialized\\[1ex]
+loading~classes~model~file~Models/SM.mod\\
+>~46~particles~(incl.~antiparticles)~in~16~classes\\
+>~\$CounterTerms~are~ON\\
+>~88~vertices\\
+>~108~counter~terms~of~order~1\\
+>~1~counter~terms~of~order~2\\
+classes~model~SM~initialized\\[1ex]
+inserting~at~level(s)~\Brac{Generic,~Classes}\\
+>~Top.~1:~6~Generic,~14~Classes~insertions\\
+>~Top.~2:~0~Generic,~0~Classes~insertions\\
+>~Top.~3:~0~Generic,~0~Classes~insertions\\
+>~Top.~4:~0~Generic,~0~Classes~insertions\\
+in~total:~6~Generic,~14~Classes~insertions}
+\mmaex{\Code{Paint} works also with inserted topologies.}{%
+{\sl In[13]~:=}~Paint[\%,~ColumnsXRows~->~4,\\
+~~~~~~~~~~~~PaintLevel~->~\Brac{Classes}]\\
+\mmafig{figs/Zbb}}
+
+\Code{InsertFields} accepts the following options.
+\biiitab
+\Code{InsertionLevel} & \Code{Classes} &
+	level specification (see end of Sect.\ \ref{sect:3lev}) \\
+\Code{GenericModel} & \Code{"Lorentz"} &
+	generic model to use \\
+\Code{Model} & \Code{"SM"} &
+	classes model to use \\
+\Code{\rlap{ExcludeFieldPoints}} & \Code{\Brac{}} &
+	couplings to exclude \\
+\Code{ExcludeParticles} & \Code{\Brac{}} &
+	fields to exclude \\
+\Code{Restrictions} & \Code{\Brac{}} &
+	restrictions for diagram generation \\
+\Code{LastSelections} & \Code{\Brac{}} &
+	field patterns which must or must not appear in the final
+	output
+\etab%
+\indextt{InsertionLevel}%
+\indextt{GenericModel}%
+\indextt{Model}%
+\indextt{Automatic}%
+\indextt{ExcludeFieldPoints}%
+\indextt{ExcludeParticles}%
+\indextt{Restrictions}%
+\indextt{LastSelections}
+
+\Code{GenericModel} specifies the model file containing the generic
+propagators and couplings (the extension \Code{.gen} is always added to the
+file name).  \Code{Model} specifies the classes model file containing the
+classes definitions and couplings (extension \Code{.mod}).  The model name
+is a string but may be given as a symbol if this is possible (\eg a name
+like \Code{2HD} cannot be represented by a symbol because it starts with a
+digit).%
+\index{model}%
+\index{model!generic}%
+\index{model!classes}%
+\index{classes model}%
+\index{generic model}
+
+
+\subsection{Model Files}
+
+\FA\ distinguishes basic model files and add-on (or partial) model
+files.  Most commonly, only the basic model files are used, as in
+\begin{verbatim}
+   InsertFields[..., Model -> "MSSM"]
+\end{verbatim}
+In contrast, the add-on model files do not supply a complete model.  
+They just modify the particle descriptions and coupling tables of 
+another model file and can therefore only be used ``on top'' of a basic 
+model file.  It produces an error to load an add-on model file without a 
+basic one.  An add-on model file might, for example, change a particular 
+coupling, modify the mass of a particle, etc.  One case given in
+\cite{HaI06} is the enhancement (resummation) of the $H$--$b$--$\bar b$ 
+coupling in the MSSM.  Such an add-on model file is used like
+\begin{verbatim}
+   InsertFields[..., Model -> {"MSSM", "EnhHbb"}]
+\end{verbatim}
+
+The model files that come with \FA\ are located in the \Code{Models}
+subdirectory of the \FA\ tree.  The major model files Standard Model,
+MSSM, and Two-Higgs-doublet Model are described in Appendices
+\ref{sect:sm}, \ref{sect:mssm}, and \ref{sect:thdm}, respectively.
+
+A classes or generic model file can also be initialized explicitly with 
+\Code{InitializeModel}.  This can be useful \eg when writing and 
+debugging model files.
+\biitab
+\Code{InitializeModel[]} &
+	initialize just the generic model file \\
+\Code{InitializeModel[\Var{modname}]} &
+	initialize the generic model file and the classes model
+	file \Code{\Var{modname}.mod}
+\etab%
+\indextt{InitializeModel}%
+\index{model!initialization}%
+\biiitab
+\Code{GenericModel} & \Code{"Lorentz"} &
+	generic model to use \\
+\Code{Reinitialize} & \Code{True} &
+	whether to initialize the model, even if it is the
+	current one \\
+\Code{TagCouplings} & \Code{False} &
+	whether to add a tag to each coupling
+	(see Sect.\ \ref{sect:debug} on debugging) \\
+\Code{ModelEdit} & \Code{Null} &
+	code that will be executed directly after loading the model
+\etab%
+\indextt{GenericModel}%
+\indextt{Reinitialize}%
+\indextt{ModelEdit}
+
+\Code{GenericModel} specifies the model file containing the generic
+propagators and couplings (the extension \Code{.gen} is always added to 
+the file name).  The same conventions for the model name as in the 
+\Code{Model} option of \Code{InsertFields} apply here.  
+\Code{Reinitialize} specifies whether the model file is initialized when 
+it is already the current model file.
+
+\Code{ModelEdit} provides a way to apply small changes to the model 
+file, much as in the add-on model files described above.  It provides 
+code that is executed just after loading the model file, but before any 
+initialization takes place.  One example use could be the replacement of 
+the `ordinary' Z-boson mass by a complex one, which would include the 
+width of the Z-boson.  This could be done with
+\begin{verbatim}
+   SetOptions[InitializeModel, ModelEdit :>
+     (M$ClassesDescription = M$ClassesDescription /. MZ -> MZc)]
+\end{verbatim}
+Note that the \Code{ModelEdit} option uses \Code{:>} 
+(\Code{RuleDelayed}) rather than \Code{->} (\Code{Rule}), otherwise the 
+code would be executed immediately.  For the description of the 
+model-file contents, such as \Code{M\$ClassesDescription}, see 
+Sect.~\ref{sect:model}.
+
+
+\subsection{Imposing Restrictions}
+\label{sect:restrictions}
+
+It is often necessary to restrict the number of diagrams generated
+by \Code{InsertFields}.  This can be done in several ways.
+
+\Code{ExcludeParticles -> \Brac{\Var{fields}}} excludes insertions
+containing \Var{fields}.  Patterns are permitted in \Var{fields}, \eg
+\Code{ExcludeParticles -> F[\uscore,\,\Brac{2\,\symbol{124}\,3}]} 
+excludes all second and third generation fermion fields.  Note that 
+excluding a field at a particular level automatically excludes derived 
+fields at lower levels including their antiparticles.  Excluding \eg the 
+classes field \Code{F[1]} will also exclude \Code{-F[1]},
+\Code{F[1,\,\Brac{1}]}, \Code{-F[1,\,\Brac{1}]}, \dots\
+Furthermore, \Code{ExcludeParticles} has no effect on the external 
+particles.  (After all, it would be rather pointless to specify certain 
+external fields and exclude them in the same line.)%
+\indextt{ExcludeParticles}%
+\index{field!exclusion}%
+\index{field!derived}%
+\index{field!lower level}
+
+\Code{ExcludeFieldPoints -> \Brac{\Var{couplings}}} excludes
+insertions containing \Var{couplings}.  A coupling of counter-term order
+\Var{cto} is specified as \Code{FieldPoint[\Var{cto}][\Var{fields}]}.
+Patterns are allowed, \eg \Code{FieldPoint[\uscore][-F[2,\,\Brac{1}],
+F[1,\,\Brac{1}], S[3]]}.  Here, too, the exclusion of a field point
+entails the exclusion of more specific ones derived from it.%
+\indextt{ExcludeFieldPoints}
+
+\Code{Restrictions -> \Brac{\Var{exclp},\,\Var{exclfp}}} is a convenient
+way of specifying abbreviations for \Code{ExcludeParticles} and
+\Code{ExcludeFieldPoints} statements.  For example, \Code{SM.mod} defines
+\begin{verbatim}
+   NoElectronHCoupling =
+     ExcludeFieldPoints -> {
+       FieldPoint[0][-F[2, {1}], F[1, {1}], S[3]],
+       FieldPoint[0][-F[2, {1}], F[2, {1}], S[1]],
+       FieldPoint[0][-F[2, {1}], F[2, {1}], S[2]] }
+\end{verbatim}
+as a short-hand to exclude the electron--Higgs couplings.  In
+\Code{InsertFields} it is used as
+\Code{Restrictions -> NoElectronHCoupling}.%
+\indextt{Restrictions}%
+\indextt{NoElectronHCoupling}
+
+\Code{LastSelections} is an alternative method to specify field patterns
+that must or must not appear in the insertions.  For example,
+\Code{LastSelections -> \Brac{S, !F[\uscore,\,\Brac{2}]}}
+forces that the insertions must contain a scalar field and must not
+contain fermions of the second generation.  Like \Code{ExcludeParticles},
+\Code{LastSelections} does not affect the external fields.  The individual
+criteria are combined with the logical `and', \ie an insertion is only
+permitted if it fulfills all criteria simultaneously.%
+\indextt{LastSelections}
+
+While \Code{LastSelections} may seem more general, it works by first
+generating all diagrams and \emph{afterwards} selecting those that match
+the given criteria (hence the name).  In contrast, \Code{ExcludeParticles}
+and \Code{ExcludeFieldPoints} work by eliminating particles and couplings
+\emph{before} starting the insertion process and can thus be significantly
+faster.  They can, on the other hand, only exclude but not force the
+presence of fields or field points.
+
+\mmaex{Here is the $Z\to b\overline{b}$ example again.  Now we select
+only diagrams in which a W boson occurs.}{%
+{\sl In[14]:=}~InsertFields[~t12,\\
+~~~~~~~~~~~V[2]~->~\Brac{F[4,~\Brac{3}],~-F[4,~\Brac{3}]},\\
+~~~~~~~~~~~InsertionLevel~->~\Brac{Classes},\\
+~~~~~~~~~~~LastSelections~->~V[3]~];\\[1ex]
+inserting~at~level(s)~\Brac{Classes}\\
+>~Top.~1:~4~Classes~insertions\\
+>~Top.~2:~0~Classes~insertions\\
+>~Top.~3:~0~Classes~insertions\\
+>~Top.~4:~0~Classes~insertions\\
+in~total:~4~Classes~insertions}
+\mmaex{~}{%
+{\sl In[15]~:=}~Paint[\%,~ColumnsXRows~->~4]\\
+\mmafig{figs/Zbb_W}}
+
+
+\subsection{Selecting Insertions}%
+\label{sect:diagsel}%
+\index{insertion!selecting}%
+\indextt{DiagramSelect}%
+\indextt{FieldNumbers}%
+\indextt{Field}
+
+One further way to pick a selected set of diagrams is to use the function
+\Code{DiagramSelect}.
+\biitab
+\Code{DiagramSelect[\Vd,\,\Var{crit}]} &
+	select the diagrams from \Vd\ for which \Var{crit} gives
+	\Code{True}
+\etab
+This function works much like the usual \Code{Select} of \mma, \ie it
+applies a test function to every diagram, and returns only those for which
+the result is \Code{True}.  The test function can of course be any \mma\
+expression, but the most common usage is something like
+\begin{verbatim}
+   DiagramSelect[ diags, FreeQ[#, Field[5] -> S]& ]
+\end{verbatim}
+which eliminates all diagrams with a scalar particle on the fifth
+propagator.  Such a statement would not be very useful were it not for the
+fact that \FA\ orders its propagators in a very systematic way.  This is
+best exploited if the topologies are grouped into categories like
+self-energies, vertices, or boxes.  For example, in a $2\to 2$
+vertex-correction diagram the first four propagators are those of the
+external particles, the fifth is the propagator of the tree part, and the
+rest are the loop propagators, \eg
+\begin{center}
+\includegraphics[width=.7\linewidth]{figs/propnum}%
+\quad\raise 6.7ex\hbox{etc.}
+\end{center}
+The important thing to note here is that the same ``parts'' of a diagram
+(say, the loop) in general get the same propagator numbers.  Nevertheless,
+the number of a certain propagator is not fixed a priori, so the only
+reliable way to find the propagator numbers is to paint the bare
+topologies with the option \Code{FieldNumbers -> True} (see Sect.\
+\ref{sect:paint}).
+
+The test function actually receives three arguments: the list of field 
+substitution rules for the graph of the form 
+\Code{FeynmanGraph[Field[1]\,->\,\,\Var{f_1}, Field[2]\,->\,\,\Var{f_2}, 
+\dots]}, the topology belonging to the graph, and the head of the 
+surrounding topology list.
+
+See Sect.~\ref{sect:aux} for auxiliary functions to use with 
+\Code{DiagramSelect}.
+
+
+\subsection{Grouping Insertions}%
+\label{sect:group}%
+\index{insertion!grouping}%
+\indextt{DiagramGrouping}
+
+The function \Code{DiagramGrouping} groups insertions according to the 
+output of a function.
+\biitab
+\Code{DiagramGrouping[\Var{tops},\,\Var{foo}]} &
+	return a list of parts of the inserted topologies \Var{tops}, 
+	grouped according to the output of \Var{foo}
+\etab
+
+The user function \Var{foo} is applied to all insertions.  Groups are 
+introduced for all different return values of this function.  The output 
+of \Code{DiagramGrouping} is a list of pairs \Code{\textrm{(return value 
+of \Var{foo})} -> \textrm{(inserted topologies)}}.
+
+The user function is invoked with the same three arguments as the test 
+function of \Code{DiagramSelect}: the list of field substitution rules 
+for the graph of the form \Code{FeynmanGraph[Field[1]\,->\,\,\Var{f_1}, 
+Field[2]\,->\,\,\Var{f_2}, \dots]}, the topology belonging to the graph, 
+and the head of the surrounding topology list.
+
+See Sect.~\ref{sect:aux} for auxiliary functions to use with 
+\Code{DiagramGrouping}.
+
+
+\subsection{Auxiliary Functions}%
+\label{sect:aux}%
+\index{insertion!auxiliary functions}
+
+Several functions aid the selection of diagrams with
+\Code{DiagramSelect} or their grouping with \Code{DiagramGrouping}.
+\biitab
+\Code{LoopFields[\Var{top}]} &
+	return a list of the fields that are part of any loop in
+	the topology \Var{top} \\
+\Code{WFCorrectionFields[\Var{top}]} &
+	extract the fields external to any wave-function correction
+	from topology \Var{top} \\
+\Code{WFCorrectionCTFields[\Var{top}]} &
+	extract the fields external to any wave-function-correction
+	counter-term from topology \Var{top} \\
+\Code{LoopFields[\Var{rul},\,\rlap{\Var{top}]}} & \\
+\Code{WFCorrectionFields[\Var{rul},\,\rlap{\Var{top}]}} & \\
+\Code{WFCorrectionCTFields[\Var{rul},\,\rlap{\Var{top}]}} & \\
+&	substitute the insertion rules \Var{rul} into the
+	bare topology \Var{top}, then proceed as above
+\etab%
+\indextt{LoopFields}%
+\indextt{WFCorrectionFields}%
+\indextt{WFCorrectionCTFields}
+
+\Code{LoopFields} identifies the fields running in the loop of a
+diagram.  It is commonly used as in
+\begin{verbatim}
+   DiagramSelect[ diags, FreeQ[LoopFields[##], V[1]]& ]
+\end{verbatim}
+
+\Code{WFCorrection(CT)Fields} typically returns a list of two fields,
+such as \Code{\lbrac S[1], S[3]\rbrac}.  These are the fields external
+to the wave-function correction (or its counter-term), \ie the diagram
+contains a self-energy insertion $\Code{S[1]}\to\Code{S[3]}$ on an
+external leg.  If the diagram contains no wave-function correction, the
+list is empty.
+
+This filter is usually used to eliminate wave-function corrections with
+identical external legs, \ie remove corrections of the type $a\to a$ but 
+keep $a\to b$.  This can be done with a construction like
+\begin{verbatim}
+   DiagramSelect[ diags, UnsameQ@@ WFCorrectionFields[##] & ]
+\end{verbatim}
+
+\biitab
+\Code{Vertices[\Var{top}]} &
+	return the vertices contained in the topology \Var{top} \\
+\Code{FieldPoints[\Var{top}]} &
+	return the field points contained in the topology \Var{top} \\
+\Code{FieldPoints[\Var{rul},\,\Var{top}]} &
+	substitute the insertion rules \Var{rul} into the
+	bare topology \Var{top}, then proceed as above \\
+\etab%
+\indextt{Vertices}%
+\indextt{FieldPoints}
+
+\Code{Vertices} returns the vertices contained in a topology, not
+counting the external legs (even though they are internally
+represented as \Code{Vertex[1][\Vn]}).
+
+\Code{FieldPoints} returns the field content for each vertex of a
+topology, \ie a list of objects of the form
+\Code{FieldPoint[\Var{cto}][\Var{fields}]}, where \Code{cto} is the
+counter-term order.
+
+The following functions further facilitate matching of fields and field
+points.
+\biitab
+\Code{FieldMatchQ[\Vf,\,\Var{f'}]} &
+	True if the field \Vf\ matches the pattern \Var{f'} \\
+\Code{FieldMemberQ[\Var{flist},\,\Var{f'}]} &
+	True if an element of \Var{flist} matches the field
+	pattern \Var{f'} \\
+\Code{FieldPointMatchQ[\Var{fp},\,\Var{fp'}]} &
+	True if the field point \Var{fp} matches the pattern
+	\Var{fp'} \\
+\Code{FieldPointMemberQ[\Var{fplist}\!,\,\Var{fp'}]} &
+	True if an element of \Var{fplist} matches the field-point
+	pattern \Var{fp'}
+\etab%
+\indextt{FieldMatchQ}%
+\indextt{FieldMemberQ}%
+\indextt{FieldPointMatchQ}
+\indextt{FieldPointMemberQ}
+
+\Code{FieldMatchQ} works like \Code{MatchQ} but takes into account
+field levels, \eg \Code{F[1]} matches \Code{F}.
+
+\Code{FieldPointMemberQ} similarly works like \Code{MemberQ} except
+that the field matching is done with \Code{FieldMatchQ}.
+
+\Code{FieldPointMatchQ} and \Code{FieldPointMemberQ} are to field
+points what \Code{FieldMatchQ} and \Code{FieldMemberQ} are to fields, 
+respectively.
+
+\biitab
+\Code{FermionRouting[\Var{top}]} &
+	find out the permutation of external fermions as routed
+	through the inserted topology \Var{top} \\
+\Code{FermionRouting[\Var{rul},\,\Var{top}]} &
+	substitute the insertion rules \Var{rul} into the
+	bare topology \Var{top}, then proceed as above
+\etab%
+\indextt{FermionRouting}
+
+\Code{FermionRouting} returns a list of integers of which every 
+successive two denote the end-points of a fermion line in the diagram.  
+This function is typically used as a filter for \Code{DiagramSelect}, 
+as in
+\begin{verbatim}
+   DiagramSelect[ diags, FermionRouting[##] == {1, 4, 2, 3} & ]
+\end{verbatim}
+or as
+\begin{verbatim}
+   DiagramGrouping[ diags, FermionRouting ]
+\end{verbatim}
+which returns a list of fermion-flow-ordered diagrams.
+
+The function \Code{FeynAmpCases} works like a \Code{Cases} statement on 
+the amplitude corresponding to a graph.  That is, \Code{FeynAmpCases} 
+invokes \Code{CreateFeynAmp} on each graph and from the resulting 
+amplitude selects the parts matching a pattern.
+\biitab
+\Code{FeynAmpCases[\Var{patt}][\Vg,\,\Vt,\,\Vh]} &
+	create an amplitude from \Vg, \Vt, \Vh\ (same three 
+	arguments as for user function above) and select all parts 
+	matching \Var{patt} from that \\
+\Code{FeynAmpCases[\Var{patt}][\Var{amp}]} &
+	select all parts matching \Var{patt} from the amplitude
+	\Var{amp}
+\etab%
+\indextt{FeynAmpCases}
+
+This function is typically used as a filter for \Code{DiagramSelect} or 
+\Code{DiagramGrouping}, as in
+\begin{verbatim}
+  DiagramGrouping[ diags,
+    FeynAmpCases[_[Index[Colour | Gluon, _], ___]] ]
+\end{verbatim}
+
+
+\subsection{Extracting and Deleting Insertions by Number}%
+\label{sect:discard}%
+\index{insertion!extracting/deleting an}%
+\index{extracting insertions}%
+\index{deleting insertions}%
+\indextt{DiagramExtract}%
+\indextt{DiagramDelete}
+
+If the various ways of restricting \Code{InsertFields} are not 
+sufficient to select the desired diagrams, the user may extract or 
+delete diagrams by number.  The functions for this are
+\Code{DiagramExtract} and \Code{DiagramDelete}.
+\biitab
+\Code{DiagramExtract[\Vt,\,\Var{sel}]} &
+	extract the diagrams with numbers \Var{sel} from the list
+	of inserted topologies \Vt \\
+\Code{DiagramDelete[\Vt,\,\Var{sel}]} &
+	delete the diagrams with numbers \Var{sel} from the list
+	of inserted topologies \Vt \\
+&	\Var{sel} can be \eg \Code{5,\,10...12,\,20} 
+	which refers to diagrams 5, 10, 11, 12, and 20
+\etab
+The numbers referred to are the sequential numbers of the diagrams as 
+given by \Code{Paint}.  If \Code{Paint} is used with a \Code{PaintLevel} 
+different from the \Code{InsertionLevel}, the numbering will not be 
+useful for \Code{DiagramExtract} and \Code{DiagramDelete}.
+
+If a diagram is discarded at a particular level, derived diagrams at 
+deeper levels are removed, too.  Conversely, choosing a diagram at a 
+particular level requires that the lower levels of that diagram (the 
+`parent' diagrams) are kept.  The end result may thus contain less 
+(or more) diagrams than asked for.
+
+For other kinds of objects, \Code{DiagramExtract} (\Code{DiagramDelete}) 
+works like an extended version of \Code{Extract} (\Code{Delete}), \eg
+\Code{DiagramDelete[\Brac{a,\,b,\,c,\,d,\,e}, 2...4]} results in 
+\Code{\Brac{a,\,e}}.%
+\index{numbering!for use with \Code{DiagramDelete}, \Code{-Extract}}
+
+Consider that selecting diagrams by number is typically not as robust 
+as selecting them through other criteria.  This is because the numbering
+generally changes whenever the \Code{CreateTopologies} and/or
+\Code{InsertFields} invocations are modified.  For example, the diagrams
+corresponding to a certain set of numbers in the Standard Model and in
+the MSSM will in general not be the same.
+
+
+\Code{DiagramComplement} returns the complement of a list of diagrams.
+\biitab
+\Code{DiagramComplement[\Var{t_{all}},\,}%
+	\rlap{\Code{\Var{t_1},\,\Var{t_2},\,\dots]}} \\
+&	the diagrams in \Var{t_{all}} which are not in any of
+	the \Var{t_i}
+\etab%
+\indextt{DiagramComplement}%
+\index{diagram!complement}%
+\index{complement}
+
+
+\subsection{Modifying Insertions}%
+\index{insertion!modifying an}%
+\indextt{DiagramMap}
+
+Diagrams can also be modified by mapping a function over the diagrams
+with \Code{DiagramMap}.
+\biitab
+\Code{DiagramMap[\Var{foo},\,\Var{tops}]} &
+	map \Var{foo} over each diagram in the inserted topologies
+	\Var{tops}
+\etab
+The user function \Var{foo} is applied to all insertions.  It is
+invoked with the same three arguments as the test function of
+\Code{DiagramSelect}: the list of field substitution rules for the 
+graph of the form \Code{FeynmanGraph[Field[1]\,->\,\,\Var{f_1},
+Field[2]\,->\,\,\Var{f_2}, \dots]}, the topology belonging to the 
+graph, and the head of the surrounding topology list.  It must
+return the modified first argument (the \Code{FeynmanGraph} object).
+
+%\pagebreak
+
+\subsection{Structure of the Inserted Topologies}%
+\index{insertion!structure of}%
+\index{topology!inserted}
+
+If one wants to perform more advanced operations on inserted topologies
+it is necessary to know their structure.  Essentially, a topology gets
+enclosed in a hierarchy of rules with particles insertions nested inside
+classes insertions nested inside generic insertions.  It is possible to
+select specific levels out of this hierarchy with \Code{PickLevel} (see
+Sect.\ \ref{sect:picklev}).
+
+\begin{small}
+\begin{tt}
+TopologyList[\Var{info}][\\
+\ql Topology[\Vs][\Var{props}]~->\\
+\ql\q Insertions[Generic][\\
+\ql\q\ql FeynmanGraph[\Var{s_{g_1}}, Generic == 1][Field[1] -> F, \dots]~->\\
+\ql\q\ql\q Insertions[Classes][\\
+\ql\q\ql\q\ql FeynmanGraph[\Var{s_{c_1}}, Classes == 1][Field[1] -> F[1], \dots]~->\\
+\ql\q\ql\q\ql\q Insertions[Particles][\\
+\ql\q\ql\q\ql\q\ql FeynmanGraph[\Var{s_{p_1}}, Particles == 1][Field[1] -> F[1,\,\Brac{1}], \dots],\\
+\ql\q\ql\q\ql\q\ql FeynmanGraph[\Var{s_{p_2}}, Particles == 2][Field[1] -> F[1,\,\Brac{2}], \dots],\\
+\ql\q\ql\q\ql\q\ql \Name{more particles insertions} \\
+\ql\q\ql\q\ql\q ],\\
+\ql\q\ql\q\ql FeynmanGraph[\Var{s_{c_2}}, Classes == 2][Field[1] -> F[2], \dots]~->
+\dots,\\
+\ql\q\ql\q\ql \Name{more classes insertions}\\
+\ql\q\ql\q ],\\
+\ql\q\ql FeynmanGraph[\Var{s_{g_2}}, Generic == 2][Field[1] -> V, \dots]~-> \dots,\\
+\ql\q\ql \Name{more generic insertions}\\
+\ql\q ],\\
+\ql \Name{more topologies}\\
+]
+\end{tt}
+\end{small}
+
+\clearpage
+
+
+\section{Drawing Feynman Graphs}%
+\label{sect:paint}
+\indextt{Paint}%
+\index{drawing diagrams}
+
+The drawing routine \Code{Paint} has already been used several times to
+illustrate the examples in this manual.
+\biitab
+\Code{Paint[\Vt]} &
+	paint the (bare or inserted) topologies \Vt
+\etab
+\Code{Paint} accepts either a \Code{TopologyList} or a \Code{Topology} as
+argument.  Note however that \Code{InsertFields} adds an information field
+to \Code{TopologyList} which is used by \Code{Paint}.  Thus, if you want to
+paint a single \emph{inserted} topology, it is better to paint a topology
+list with one element (viz.\ \Code{Take[\Var{toplist},\,\Brac{1}]})
+than a single topology (viz.\ \Code{\Var{toplist}[[1]]}) in order to
+preserve that information field.
+\biiitab
+\Code{PaintLevel} & \Code{\rlap{InsertionLevel}} &
+	level specification (see end of Sect.\ \ref{sect:3lev}) \\
+\Code{ColumnsXRows} & \Code{3} &
+	number of diagrams per column/row,
+	may also be given as a list \Code{\Brac{$n_c$,\,$n_r$}} \\
+\Code{SheetHeader} & \Code{Automatic} &
+	title for each sheet of graphics \\
+\Code{Numbering} & \Code{Full} &
+	what type of numbering to display underneath each diagram \\
+\Code{FieldNumbers} & \Code{False} &
+	whether to label the propagators of a bare topology with the
+	field numbers \\
+\Code{AutoEdit} & \Code{True} &
+	whether to call the topology editor when encountering
+	an unshaped topology \\
+\Code{DisplayFunction} & \Code{\llap{\$D}isplayFuncti\rlap{on}} &
+	which function to apply to the final graphics object in
+	order to display it
+\etab%
+\indextt{PaintLevel}%
+\indextt{ColumnsXRows}%
+\indextt{SheetHeader}%
+\indextt{Numbering}%
+\indextt{FieldNumbers}%
+\indextt{AutoEdit}%
+\indextt{DisplayFunction}
+
+\Code{PaintLevel} specifies the level at which diagrams are painted.
+The default is to use the level the topologies were inserted at (for
+inserted topologies).  For bare topologies \Code{PaintLevel} is not
+relevant.  Note that for the numbering of the diagrams to be appropriate
+for discarding insertions (see Sect.\ \ref{sect:discard}), the
+\Code{PaintLevel} has to be the same as the \Code{InsertionLevel}.%
+\index{numbering!for use with \Code{Discard}}
+
+\Code{ColumnsXRows} specifies the number of diagrams displayed in each
+column and row of a sheet.  It may be given as a single integer, \eg
+\Code{ColumnsXRows -> 4} which means 4 rows of 4 diagrams each on a sheet,
+or as a list of two integers, \eg \Code{ColumnsXRows -> \Brac{3,\,5}} 
+which means 5 rows of 3 diagrams each.
+
+\Code{SheetHeader} specifies the title of each sheet of diagrams.  With
+\Code{Automatic} or \Code{True} the default header is used
+(``$\rm particles_{in}\to particles_{out}$'' for inserted or
+``$n_{\rm in}\to n_{\rm out}$'' for bare topologies), \Code{False} disables
+the header, and everything else is taken literally as a header, \eg
+\Code{SheetHeader -> "Self-energy diagrams"}.
+
+\Code{Numbering -> None} omits the default numbering of the diagrams.  The
+default setting of \Code{Numbering -> Full} places diagram numbers of the
+form \Code{T1 C8 N15} (= topology 1, classes insertion 8, running number
+15) underneath the diagram.  A simple numbering which is useful in
+publications is \Code{Numbering -> Simple} in which case just the running
+number is used.
+
+The propagators of a bare topology are usually unlabelled.  With
+\Code{FieldNumbers -> True} \Code{Paint} uses the field numbers (the
+\Vn\ in \Code{Field[\Vn]}) as labels.  This is useful when selecting
+diagrams with \Code{DiagramSelect} (see Sect.\ \ref{sect:diagsel}).
+
+\Code{AutoEdit} determines whether \Code{Shape} is called when an unshaped
+topology is found.  This option is useful if your diagrams involve lots of
+unshaped topologies (\eg try painting 2-loop, $2\to 4$ diagrams) and you
+want a quick (pre)view of the diagrams without going through the effort of
+shaping them at that moment.  \FA\ uses a rather sophisticated autoshaping
+algorithm, but one should not expect too much: autoshaping offers a
+reasonable starting point, but for publishing-quality diagrams it is
+usually necessary to refine the shapes by hand.%
+\index{autoshaping}%
+\index{shapes}%
+\indextt{AutoEdit}
+
+\Code{DisplayFunction} determines how the output of \Code{Paint} is
+rendered.  The default is to show the graphics on screen.  Popular choices
+are \Code{DisplayFunction -> Identity} which does not render the graphics
+at all, or \Code{DisplayFunction -> (Display["file.ps", \#]\&)} which saves
+it in a file.
+
+When running in the standalone \mma\ Kernel, \Code{Paint} automatically
+animates the screen graphics, with the sheets of output acting as the
+frames of the animation.  This is to inhibit the cluttering of the screen
+with too many windows.  The speed at which the frames are displayed by
+default is rather high, more appropriate for a movie than for viewing
+sheets of graphics.  The frame rate can be adjusted in the ``Animation
+Controls'' menu, which also allows to view single frames.  Under Unix, the
+initial frame rate can be set with the X resource \Code{Motifps*frameTime},
+\eg in \Code{.Xdefaults}:
+\begin{verbatim}
+  Motifps*frameTime: 1000
+\end{verbatim}
+\indextt{\$DisplayFunction}%
+\indextt{.Xdefaults}%
+\indextt{motifps}%
+\indextt{frameTime}%
+\index{animation}%
+\index{frame rate}%
+
+
+\subsection{Things to do with the Paint Output}
+
+\indextt{FeynArtsGraphics}%
+The output of \Code{Paint} is a \Code{FeynArtsGraphics} object whose
+arguments represent the sheets of the output.  Each of these sheets is
+represented by a matrix which determines the layout of the diagrams, \ie
+
+\begin{tt}
+\begin{tabbing}
+\q FeynArtsGraphics[\Var{title}][\\
+\q\q\=\lbrac~\=\Brac{$g_{11}$, $g_{12}$, \dots},\=\\
+\>\>\Brac{$g_{21}$, $g_{22}$, \dots},
+\qquad\q
+\smash{$\left.\vrule width 0bp depth 4ex height 0ex\right\}$
+{\rm sheet 1}}\\
+\>\>\dots\>~\rbrac,\\
+\>\dots\\
+\q ]
+\end{tabbing}
+\end{tt}
+
+These \Code{FeynArtsGraphics} objects can be rendered with the usual \mma\
+rendering functions \Code{Export}, \Code{Display}, and \Code{Show}.
+\Code{Export} and \Code{Display} allow the image size to be changed with the
+\Code{ImageSize} option whose default value is \Code{72*\Brac{6,\,7}}
+($6\times 7$ inches) for a \Code{FeynArtsGraphics} object.%
+\indextt{Export}%
+\indextt{Display}%
+\indextt{Show}%
+\indextt{ImageSize}
+
+In addition to the standard formats understood by \mma, the rendering
+functions accept two more output formats, \Code{"PS"} and \Code{"TeX"}.
+To run output produced with the \Code{"TeX"} format through \LaTeX, the
+\Code{feynarts.sty} style file is required; it is located in the \FA\
+directory.%
+\index{PS output format@\Code{"PS"} output format}%
+\index{TeX output format@\Code{"TeX"} output format}%
+\indextt{feynarts.sty}
+
+One particular feature of the \Code{"TeX"} output is that it can be touched
+up quite easily.  This is useful for publications, \eg when grouping
+together diagrams.  To start with, the generated \LaTeX\ code doesn't look
+too scary, for instance a single diagram might be drawn by
+\begin{verbatim}
+  \FADiagram{T1 C1 N2}
+  \FAProp(0.,15.)(6.,10.)(0.,){Sine}{0}
+  \FALabel(2.48771,11.7893)[tr]{$Z$}
+  \FAProp(0.,5.)(6.,10.)(0.,){Sine}{0}
+  \FALabel(3.51229,6.78926)[tl]{$Z$}
+  \FAProp(20.,15.)(14.,10.)(0.,){Sine}{0}
+  \FALabel(16.4877,13.2107)[br]{$Z$}
+  \FAProp(20.,5.)(14.,10.)(0.,){Sine}{0}
+  \FALabel(17.5123,8.21074)[bl]{$Z$}
+  \FAProp(6.,10.)(14.,10.)(0.,){ScalarDash}{0}
+  \FALabel(10.,9.18)[t]{$H$}
+  \FAVert(6.,10.){0}
+  \FAVert(14.,10.){0}
+\end{verbatim}
+With this representation, it is pretty straightforward to move diagrams
+around as they always start with \Code{\backsl FADiagram}.  (Incidentally,
+the PostScript files generated by \FA\ have a very similar markup.)
+
+The \Code{feynarts.sty} introduces the following new \LaTeX\ commands:
+\biitab
+\Code{\backsl begin\Brac{feynartspicture}} \\
+\Code{\backsl end\Brac{feynartspicture}} &
+	delimit a sheet of diagrams \\
+\Code{\backsl FADiagram\Brac{\Vt}} &
+	advance to the next diagram, which has title \Vt \\
+\Code{\backsl FAProp(\Vf)(\Vt)(\Vc)\Brac{\Vg}\Brac{\Va}} &
+	draw a propagator from point \Vf\ to point \Vt\ with 
+	curvature \Vc\ using graphical representation \Vg\ and 
+	arrow \Va \\
+\Code{\backsl FAVert(\Vp)\Brac{\Var{cto}}} &
+	draw a vertex of counter-term order \Var{cto} at point \Vp \\
+\Code{\backsl FALabel(\Vp)[\Var{align}]\Brac{\Var{text}}} &
+	write \Var{text} at point \Vp\ with alignment \Var{align}
+\etab
+Do not be confused by the multitude of parameters: The only command likely
+to be edited is \Code{\backsl FALabel}.  Suffice it to say that each 
+diagram is drawn on a $20\times 20$ grid with the origin in the lower 
+left corner and the positive axes extending to the right and upward, and 
+that the alignment is specified in the standard \TeX\ manner, \ie with 
+combinations of \Code{t}, \Code{b}, \Code{l}, and \Code{r} for top, 
+bottom, left, and right alignment, respectively.  The exact details of 
+all \LaTeX\ commands defined by \Code{feynarts.sty} can be found in 
+Appendix \ref{sect:fasty}.%
+\index{label!\LaTeX}%
+\index{alignment}%
+\index{FADiagram@\Code{\backsl FADiagram}}%
+\index{FALabel@\Code{\backsl FALabel}}%
+\index{FAVert@\Code{\backsl FAVert}}%
+\index{FAProp@\Code{\backsl FAProp}}%
+\indextt{feynartspicture}
+
+
+\subsection{Shaping Topologies}
+
+A topology does not by itself provide information on how to draw it.
+While the human eye is usually quite skilled in figuring out a nice shape
+for a topology, at least for not too complex ones, this is a tremendously
+difficult task for the computer even in simple cases.  Indeed, the
+autoshaping routine is the longest single function in the whole program.
+
+\indextt{Shape}%
+\indextt{AutoEdit}%
+Whenever \Code{Paint} encounters a topology for which is does not yet know
+the shape, it first does its best to autoshape the topology, and then
+calls the topology editor (unless \Code{AutoEdit -> False} is set) so that
+the user can refine the shape.  This shaping function can also be invoked
+directly.
+\biitab
+\Code{Shape[\Vt]} &
+	invoke the topology editor to shape the topology or topology
+	list \Vt
+\etab
+The topology editor pops up a window which looks like
+\begin{center}
+\includegraphics{TopEdit_screenshot}
+\end{center}%
+\index{topology!editor}
+
+The \emph{red squares} mark the vertices.  Click and drag a red square with
+the left mouse button to move the respective vertex.
+
+The \emph{blue squares} mark the propagators.  Click and drag a blue square 
+with the left mouse button to change the respective propagator's
+curvature.  Click on it with the middle mouse button to make the 
+propagator straight again.  Click on it with the right mouse button to 
+reverse the curvature, \ie to make the line curved in the opposite 
+direction.
+
+The \emph{green squares} mark the label positions (they look like little
+tags attached to the center of the propagator).  Click and drag a green
+square with the left mouse button to move the respective label.  Click on
+it with the middle mouse button to put the label back to its default
+position.  Click on it with the right button to flick the label to the
+opposite side of the propagator.
+
+The buttons on the right of the window are largely self-explanatory:%
+\index{buttons}
+
+The OK button commits the changes and exits.%
+\index{OK@{\sc OK}}
+
+The {\sc Cancel} button discards the changes made to the current diagram
+and exits the editor but continues editing more diagrams if a list of
+topologies is being shaped.%
+\index{Cancel@{\sc Cancel}}
+
+The {\sc Abort} button is similar to {\sc Cancel}, but aborts the editing
+process altogether, \ie it returns to the \mma\ prompt immediately, even
+if there are more topologies in line to be edited.%
+\index{Abort@{\sc Abort}}%
+
+The {\sc Revert} button reverts to the initial layout of the topology.%
+\index{Revert@{\sc Revert}}
+
+Choosing {\sc Grid position} allows dragging of the squares only onto
+grid points.  Conversely, {\sc Any position} allows a square to be dragged
+to an arbitrary position.%
+\index{Grid position@{\sc Grid position}}%
+\index{Any position@{\sc Any position}}
+
+The topologies need to be shaped only once.  The shapes changed during a
+\mma\ session are saved in the directory specified by the variable
+\Code{\$ShapeDataDir}, which by default is the \Code{ShapeData} directory
+in the \FA\ home directory.%
+\indextt{\$ShapeDataDir}%
+\index{shapes!saving}
+
+The actual topology editor is a program written in Java,
+\Code{TopologyEditor.java}, that communicates with \mma\ through the
+J/Link program.  See Sect.\ \ref{sect:install} for setting up Java and
+J/Link.%
+\indextt{TopologyEditor.java}%
+\index{J/Link}%
+\index{Java}
+
+
+\clearpage
+
+\section{Creating the Analytic Expressions}
+
+\subsection{Representation of Feynman Amplitudes}
+
+The basic object for a Feynman amplitude is \Code{FeynAmp}.  Corresponding
+to the three insertion levels there are also three amplitude levels.
+\biitab
+\Name{for a single level:} \\
+\Code{FeynAmp[\Vn,\,\Var{mom},\,\Var{amp}]} &
+	Feynman amplitude with name \Vn, integration momenta 
+	\Var{mom}, and analytic expression \Var{amp} \\
+\Name{for multiple levels:} \\
+\Code{FeynAmp[\Vn,\,\Var{mom},\,\Var{amp},\,\Var{ru}]} &
+	Feynman amplitude with name \Vn, integration momenta 
+	\Var{mom}, and generic analytic expression \Var{amp} including 
+	replacement rules \Var{ru} to obtain the other levels \\
+\Code{FeynAmpList[\Var{info}][\Var{amps}]} &
+	list of \Code{FeynAmps} \\
+\Code{GraphID[\Var{id}]} &
+	identifier of an amplitude \\
+\Code{Integral[\Var{q_1},\,\Var{q_2},\,\dots]} &
+	representation of the integration momenta
+\etab
+\indextt{FeynAmp}%
+\indextt{FeynAmpList}%
+\indextt{GraphID}%
+\indextt{Integral}%
+\index{integration momenta}%
+\index{amplitude}%
+A \Code{FeynAmp} containing a single level has only a single analytic
+expression \Var{amp}: the amplitude at that level.  In case more than one
+level is present, \Var{amp} is the generic-level amplitude, which can be
+transformed into the individual amplitudes of the deeper levels by
+applying the replacement rules \Var{ru} with \Code{PickLevel} (see Sect.\
+\ref{sect:picklev}).
+\indextt{PickLevel}%
+\index{level!picking a}%
+
+\FA\ always produces purely symbolic expressions for Feynman amplitudes,
+\eg \Code{PropagatorDenominator[\Vp, \Vm]} is used to denote $1/(\Vp^2 -
+\Vm^2)$, simply to prevent \mma\ from performing any automatic
+simplification on it.  In fact, \FA\ does not attempt to simplify
+\emph{anything} in the amplitude (\eg evaluate traces) because this
+would limit its applicability to a certain class of theories.
+
+Apart from the relatively few symbols \FA\ uses by itself in amplitudes,
+all symbols defined by the model can of course appear in the amplitude.
+
+\biitab
+\Code{Mass[\Vf]} &
+	mass of field \Vf \\
+\Code{GaugeXi[\Vf]} &
+	gauge parameter of field \Vf \\
+\Code{G[\plusminus 1][\Var{cto}][\Vf][\Var{kin}]} &
+	symmetric ($+1$) or antisymmetric ($-1$) generic coupling of
+	counter-term order \Var{cto} involving the fields \Vf\ and
+	corresponding to the kinematical object \Var{kin} of the coupling
+	vector (see Sect.\ \ref{sect:model} for details) \\
+\Code{FourMomentum[\Vt,\,\Vn]} &
+	\Vn th momentum of type \Vt\ (\Code{Incoming}, 
+	\Code{Outgoing}, or \Code{Internal}) \\
+\Code{PropagatorDenominator[\Vp,\,\rlap{\Vm]}} \\
+	& symbolic expression for $1/(\Vp^2 - \Vm^2)$ where 
+	\Vp\ is the momentum and \Vm\ the mass of the propagator \\
+\Code{FeynAmpDenominator[\dots]} &
+	collection of \Code{PropagatorDenominators} belonging
+	to loops \\
+\Code{MatrixTrace[\Var{o_1},\,\Var{o_2},\,\dots]} &
+	closed fermion chain involving the noncommuting objects
+	\Var{o_1}, \Var{o_2}, \dots \\
+\Code{FermionChain[\Var{o_1},\,\Var{o_2},\,\dots]} &
+	open fermion chain involving the noncommuting objects
+	\Var{o_1}, \Var{o_2}, \dots \\
+\Code{VertexFunction[\Vo][\Vf]} &
+	generic vertex function of loop order \Vo\ with adjoining
+	fields \Vf \\
+\Code{SumOver[\Vi,\,\Var{r},\,\Var{ext}]} &
+	indicates that the amplitude it is multiplied with is to
+	be summed in the index \Vi\ over the range \Var{r}; if 
+	\Var{r} is an integer, it represents the range 1\dots \Var{r}.  
+	\Var{ext} is the symbol \Code{External} if the summation is over 
+	an index belonging to an external particle\footnotemark \\
+\Code{IndexSum[\Var{expr},\,\Brac{\Vi,\,\Var{range}}]} &
+	the sum of \Var{expr} over the index \Vi; \Code{IndexSum}
+	has the same syntax as \Code{Sum}, but remains unevaluated
+\etab
+\footnotetext{It is necessary to distinguish sums over internal and
+external indices.  For example, a squared diagram is calculated by 
+squaring the diagram and then summing over the external indices.  On the 
+other hand, an internal index summation (say, for a quark loop) must be 
+done for each diagram before squaring.}%
+\indextt{GaugeXi}%
+\indextt{G}%
+\indextt{FourMomentum}%
+\indextt{PropagatorDenominator}%
+\indextt{FeynAmpDenominator}%
+\indextt{MatrixTrace}%
+\indextt{FermionChain}%
+\indextt{VertexFunction}%
+\indextt{SumOver}%
+\indextt{External}%
+\indextt{IndexSum}%
+\index{index!summed over}%
+\index{generic coupling}%
+\index{kinematic object}%
+\index{noncommuting object}%
+
+
+\subsection{\Code{CreateFeynAmp}}
+\indextt{CreateFeynAmp}%
+
+Once the possible combinations of fields have been determined by
+\Code{InsertFields}, the Feynman rules must be applied to produce the
+actual amplitudes.  The function for this is \Code{CreateFeynAmp}.
+\biitab
+\Code{CreateFeynAmp[\Vi]} &
+	translate the inserted topologies \Vi\ into Feynman amplitudes
+\etab
+
+\biiitab
+\Code{AmplitudeLevel} & \Code{\rlap{InsertionLevel}} &
+	level specification (see end of Sect.\ \ref{sect:3lev}) \\
+\Code{PreFactor} & 
+\Code{\vtop{\hbox{-I\,(2\,Pi)\symbol{94}}%
+\hbox{\raise .7ex\hbox{~(-4\,LoopNum\rlap{ber)}}}}} &
+	overall factor of the amplitude \\
+\Code{Truncated} & \Code{False} &
+	whether to remove external wave functions \\
+\Code{GaugeRules} &
+	\Code{\llap{\lbrac}\uscore GaugeXi -> 1\rlap{,}}\linebreak
+	\Code{\hbox{~~}MG0 -> MZ,}\linebreak
+	\Code{\hbox{~~}MGp -> MW\rbrac} &
+	rules to enforce a particular choice of gauge \\
+\Code{\rlap{MomentumConservation}} & \Code{~~True} &
+	whether to enforce momentum conservation at each vertex \\
+\Code{GraphInfoFunction} & \Code{(1\,\&)} &
+	a function for adding graph information to the amplitude
+\etab%
+\indextt{AmplitudeLevel}%
+\indextt{PreFactor}%
+\indextt{LoopNumber}%
+\indextt{Truncated}%
+\indextt{GaugeRules}%
+\indextt{GaugeXi}%
+\indextt{MG0}%
+\indextt{MZ}%
+\indextt{MGp}%
+\indextt{MW}%
+\indextt{MomentumConservation}%
+\indextt{GraphInfoFunction}%
+The default for \Code{AmplitudeLevel} is to use the same level the
+topologies were inserted at.
+
+\Code{PreFactor} specifies the overall factor every diagram is multiplied
+with.  It may contain the symbol \Code{LoopNumber} which is substituted by
+the actual number of loops of a topology.
+
+If \Code{Truncated -> True} is set, \Code{CreateFeynAmp} applies the
+truncation rules defined in the model file (\Code{M\$TruncationRules}) to
+the final result.  These rules should discard external wave functions,
+typically spinors or polarization vectors.%
+\indextt{M\$TruncationRules}%
+\index{external!wave functions}
+
+To be able to produce amplitudes in an arbitrary gauge, the model file
+must of course contain the full gauge dependence of the propagators and
+couplings.  For example, \Code{Lorentz.gen} and \Code{SM.mod} contain the
+gauge-dependent propagators (\Code{V}, \Code{S}, \Code{U}) and couplings
+(\Code{SUU}) for an arbitrary $R_\xi$-gauge.  However, most people prefer 
+to work in the Feynman gauge which is the most convenient one for 
+calculating radiative corrections.  Therefore, the default
+\Code{GaugeRules} set all gauge parameters to unity.  On the other hand, if 
+one wants to check \eg gauge independence of an expression,
+\Code{GaugeRules -> \Brac{}} will keep the gauge parameters untouched.%
+\index{gauge}%
+\index{Feynman gauge}
+
+It is possible to add information about the underlying graph to the 
+amplitude by giving a \Code{GraphInfoFunction}.  This function receives 
+the same three arguments as the test functions of \Code{DiagramSelect} 
+and \Code{DiagramGrouping}: the list of field substitution rules for the 
+graph of the form \Code{FeynmanGraph[Field[1]\,->\,\,\Var{f_1}, 
+Field[2]\,->\,\,\Var{f_2}, \dots]}, the topology belonging to the graph, 
+and the head of the surrounding topology list.  See Sect.~\ref{sect:aux} 
+for auxiliary functions to use with these arguments.
+
+\bigskip
+
+\mmaex{Create one diagram from the photon self-energy:
+\includegraphics[width=.75\linewidth]{figs/AA}}{%
+{\sl In[16]:=}~t11~=~CreateTopologies[1,~1~->~1][[3]];\\
+{\sl In[17]:=}~AA~=~InsertFields[t11,~V[1]~->~V[1],\\
+~~~~~~~~~ExcludeParticles~->~\Brac{F,~V,~U}];\\[1ex]
+Excluding~3~Generic,~20~Classes,~and~36~Particles~fields\\[1ex]
+inserting~at~level(s)~\Brac{Generic,~Classes}\\
+>~Top.~1:~1~Generic,~1~Classes~insertions\\
+in~total:~1~Generic,~1~Classes~insertions\\[1ex]
+Restoring~3~Generic,~20~Classes,~and~36~Particles~fields}
+\mmaex{Generate the amplitudes.}{%
+{\sl In[18]:=}~CreateFeynAmp[AA]\\[1ex]
+creating~amplitudes~at~level(s)~\Brac{Generic,~Classes}\\
+>~Top.~1:~1~Generic,~1~Classes~amplitudes\\
+in~total:~1~Generic,~1~Classes~amplitudes\\[1ex]
+{\sl Out[18]=}~FeynAmpList[\\
+~~~~Model~->~SM,~GenericModel~->~Lorentz,\\
+~~~~InsertionLevel~->~Classes,~Restrictions~->~\Brac{},\\
+~~~~ExcludeParticles~->~\Brac{F,~V,~U},\\
+~~~~ExcludeFieldPoints~->~\Brac{},~LastSelections~->~\Brac{},\\
+~~~~Process~->~\Brac{\Brac{V[1],~p1,~0}}~->~\Brac{\Brac{V[1],~k1,~0}}][\\
+~~FeynAmp[\\
+~~~~GraphID[Topology~==~1,~Generic~==~1],\\
+~~~~Integral[q1],\\[.5ex]
+~~~~($\dfrac{\Code{I}}{\Code{32}}$~RelativeCF\\
+~~~~~~FeynAmpDenominator[$\dfrac{\text{1}}{\tt
+q1^2\text{~-~}\text{Mass[S[Gen3]]}^2}$,\\
+~~~~~~~~$\dfrac{\text{1}}{\tt
+\text{(-p1 + q1)}^2\text{~-~}\text{Mass[S[Gen4]]}^2}$]\\[1ex]
+~~~~~~(p1~-~2~q1)[Lor1]~(-p1~+~2~q1)[Lor2]\\
+~~~~~~ep[V[1],~p1,~Lor1]~ep$^{\text{*}}$[V[1],~k1,~Lor2]\\
+~~~~~~G$\tt ^{\text{(0)}}_{SSV}$[(Mom[1]~-~Mom[2])[KI1[3]]]\\
+~~~~~~G$\tt ^{\text{(0)}}_{SSV}$[(Mom[1]~-~Mom[2])[KI1[3]]])~/~Pi$
+^{\Code{4}}$,\\[.5ex]
+~~~~\lbrac Mass[S[Gen3]],~Mass[S[Gen4]],\\
+~~~~~~G$^{\text{(0)}}_{\text{SSV}}$[(Mom[1]~-~Mom[2])[KI1[3]]],\\
+~~~~~~G$^{\text{(0)}}_{\text{SSV}}
+$[(Mom[1]~-~Mom[2])[KI1[3]]],~RelativeCF\rbrac~->\\
+~~~~~~Insertions[Classes][\Brac{MW,~MW,~I~EL,~-I~EL,~2}]~]~]}
+\mmaex{The \Code{CreateFeynAmp} output is by default displayed on the
+screen in a special human-readable format.  Its full internal
+representation is shown here.}{%
+{\sl In[19]:=}~InputForm[\%]\\[1ex]
+{\sl Out[19]/\!/InputForm=}\\
+~~FeynAmpList[Model~->~"SM",~GenericModel~->~"Lorentz",\\
+~~~~InsertionLevel~->~Classes,~Restrictions~->~\Brac{},\\
+~~~~ExcludeParticles~->~\Brac{F,~V,~U},\\
+~~~~ExcludeFieldPoints~->~\Brac{},~LastSelections~->~\Brac{},\\
+~~~~Process~->~\Brac{\Brac{V[1],~FourMomentum[Incoming,~1],~0}}~->\\
+~~~~~~\Brac{\Brac{V[1],~FourMomentum[Outgoing,~1],~0}}][\\
+~~FeynAmp[\\
+~~~~GraphID[Topology~==~1,~Generic~==~1],\\
+~~~~Integral[FourMomentum[Internal,~1]],\\
+~~~~(I/32*RelativeCF*\\
+~~~~~~FeynAmpDenominator[\\
+~~~~~~~~PropagatorDenominator[FourMomentum[Internal,~1],\\
+~~~~~~~~~~Mass[S[Index[Generic,~3]]]],\\
+~~~~~~~~PropagatorDenominator[-FourMomentum[Incoming,~1]\rlap{~+}\\
+~~~~~~~~~~~~FourMomentum[Internal,~1],\\
+~~~~~~~~~~Mass[S[Index[Generic,~4]]]]~]*\\
+~~~~~~FourVector[FourMomentum[Incoming,~1]~-\\
+~~~~~~~~2*FourMomentum[Internal,~1],~Index[Lorentz,~1]]*\\
+~~~~~~FourVector[-FourMomentum[Incoming,~1]~+\\
+~~~~~~~~2*FourMomentum[Internal,~1],~Index[Lorentz,~2]]*\\
+~~~~~~PolarizationVector[V[1],\\
+~~~~~~~~FourMomentum[Incoming,~1],~Index[Lorentz,~1]]*\\
+~~~~~~Conjugate[PolarizationVector][V[1],\\
+~~~~~~~~FourMomentum[Outgoing,~1],~Index[Lorentz,~2]]*\\
+~~~~~~G[-1][0][-S[Index[Generic,~3]],\\
+~~~~~~~~-S[Index[Generic,~4]],~V[1]][\\
+~~~~~~~~FourVector[Mom[1]~-~Mom[2],~KI1[3]]]*\\
+~~~~~~G[-1][0][S[Index[Generic,~3]],\\
+~~~~~~~~S[Index[Generic,~4]],~V[1]][\\
+~~~~~~~~FourVector[Mom[1]~-~Mom[2],~KI1[3]]])/Pi\symbol{94}4,\\
+~~~~~~\lbrac Mass[S[Index[Generic,~3]]],\\
+~~~~~~~~Mass[S[Index[Generic,~4]]],\\
+~~~~~~~~G[-1][0][-S[Index[Generic,~3]],\\
+~~~~~~~~~~-S[Index[Generic,~4]],~V[1]][\\
+~~~~~~~~~~FourVector[Mom[1]~-~Mom[2],~KI1[3]]],\\
+~~~~~~~~G[-1][0][S[Index[Generic,~3]],\\
+~~~~~~~~~~S[Index[Generic,~4]],~V[1]][\\
+~~~~~~~~~~FourVector[Mom[1]~-~Mom[2],~KI1[3]]],\\
+~~~~~~~~RelativeCF\rbrac~->\\
+~~~~~~Insertions[Classes][\Brac{MW,~MW,~I*EL,~-I*EL,~2}] ] ]}
+
+
+\subsection{Interpreting the Results}
+
+Although the analytical expression of an amplitude (the third element of a
+\Code{FeynAmp}) may look complicated as a whole, the origin of the
+individual parts can easily be recounted.  In the preceding example the
+respective terms have the following meaning:
+
+\Code{I/32} and \Code{Pi$^{\text{-4}}$} together are the product of all
+scalar factors from the (generic) couplings and propagators including the
+prefactor of the diagram.  The fact that both terms are displayed apart in
+the output is a peculiarity of \mma.
+\index{prefactor}%
+
+The symbol \Code{RelativeCF} stands for the \emph{relative}
+\emph{c}ombinatorical \emph{f}actor of a classes or particles amplitude with
+respect to the generic amplitude.  It is inserted by the replacement rules
+for the deeper levels.%
+\indextt{RelativeCF}%
+\index{combinatorial factor}
+
+\Code{FeynAmpDenominator} collects all denominators belonging to a loop,
+\ie those whose momentum is not fixed by conservation of the external
+momenta.  If the structure of the propagators is more intricate
+(\eg gauge-boson propagators in a general gauge), a sum of several
+\Code{FeynAmpDenominators} can appear in one amplitude.%
+\indextt{FeynAmpDenominator}
+
+\Code{(p1 - 2 q1)[Lor1]} and \Code{(-p1 + 2 q1)[Lor2]} are the kinematical
+objects---four-vectors in this case---that come from the generic
+coupling structure, the first from the left and the second from the
+right vertex.  \Code{Lor1} and \Code{Lor2} are Lorentz indices.  The 
+external momenta are assigned such that the total momentum flows in 
+through the incoming particles, and out through the outgoing particles,
+\ie $\sum\limits_{\text{in}} p_i - \sum\limits_{\text{out}} p_i = 0$, 
+not $\sum\limits_{\text{all}} p_i = 0$.%
+\index{kinematic object}%
+\index{coupling!structure}
+
+\Code{ep[V[1], p1, Lor1]} and \Code{ep$^{\text{*}}$[V[1], k1, Lor1]} are
+the polarization vectors of the incoming and outgoing photon, the latter
+of which is complex conjugated.%
+\index{polarization vector}
+
+\Code{G$_{\text{SSV}}^{\text{(0)}}$[(Mom[1]\,-\,Mom[2])[KI1[3]]]} is the
+generic coupling constant of the scalar--scalar--vector coupling
+associated with the kinematical object
+\Code{(Mom[1]\,-\,Mom[2])[KI1[3]]}, a four-vector.  (The \Code{SSV}
+coupling happens to be proportional to only one kinematical object.) 
+The superscript \Code{(0)} refers to counter-term order 0.  The two
+\Code{G}'s (one for the left and one for the right vertex) look
+identical but are not the same internally because in the human-readable
+output format some indices are suppressed.%
+\index{generic coupling}
+
+\index{replacement rules}%
+The replacement rules (the fourth element of a \Code{FeynAmp}) 
+particularize the unspecified quantities in the generic expression.  For
+the single classes insertion of the example in the last section the
+following substitutions are made.  (The full form of the generic
+expressions is written out below in small print to show that all
+substitutions are distinct.)
+
+\begin{tt}
+Mass[S[Gen3]]\!~->~MW \\[-1ex]
+{\scriptsize\Name{full:} Mass[S[Index[Generic,\,3]]]}
+
+Mass[S[Gen4]]\!~->~MW \\[-1ex]
+{\scriptsize\Name{full:} Mass[S[Index[Generic,\,4]]]}
+
+G$\tt ^{\text{(0)}}_{SSV}$[(Mom[1]\!\:-\,Mom[2])[KI1[3]]]\!~->~I*EL \\[-1ex]
+{\scriptsize\Name{full:} G[-1][0][-S[Index[Generic,\,3]],
+-S[Index[Generic,\,4]], V[1]][FourVector[Mom[1]\!\;-\,Mom[2],\,KI1[3]]]}
+
+G$\tt ^{\text{(0)}}_{SSV}$[(Mom[1]\!\:-\,Mom[2])[KI1[3]]]\!~->~-I*EL
+\\[-1ex]
+{\scriptsize\Name{full:} G[-1][0][S[Index[Generic,\,3]],
+S[Index[Generic,\,4]], V[1]][FourVector[Mom[1]\!\;-\,Mom[2],\,KI1[3]]]}
+
+RelativeCF~->~2
+\end{tt}
+
+
+\subsection{Picking Levels}%
+\label{sect:picklev}%
+\index{level!picking a}%
+\indextt{PickLevel}%
+\index{replacement rules}
+
+The replacement rules are not of a form which can directly be applied
+with \Code{\Var{expr}\,/.\,\Var{rules}}.  Instead, \Code{PickLevel} has to 
+be used to select a particular level.
+\biitab
+\Code{PickLevel[\Var{lev}][\Var{amp}]} &
+	pick level \Var{lev} from the amplitude \Var{amp} \\
+\Code{PickLevel[\Var{levs}][\Var{toplist}]} &
+	pick level(s) \Var{levs} from the list of inserted
+	topologies \Var{toplist}
+\etab
+For the case of an amplitude, only one level may be specified.
+\Code{PickLevel} replaces the generic amplitude and the rules with the
+amplitude at the selected level (\ie the \Code{FeynAmp} contains only three
+elements after \Code{PickLevel}) and adds a running number of the form
+\Code{Number == \Vn} to the \Code{GraphID}.  Once a particular level 
+has been selected, it is no longer possible to choose other levels (even
+deeper ones), \eg it is not possible to first select classes level and
+subsequently particles level from a \Code{FeynAmpList}.
+
+With inserted topologies, \Code{PickLevel} works somewhat differently.
+First, it preserves the structure of the inserted topologies.  While in
+a \Code{FeynAmp} the fourth element (the replacement rules) is deleted,
+an inserted topology is still of the form \Code{\Var{topology} ->
+\Var{insertions}} after \Code{PickLevel}.  Second, more than one level
+may be picked, with one exception: the generic level cannot be removed
+because it is needed to create the generic amplitudes.  However, the
+syntax differs from the usual level specification:
+\Code{PickLevel[\Var{lev}][\Vt]} selects \emph{only} level \Var{lev}
+from \Vt\ (apart from the generic level);
+\Code{PickLevel[\Brac{\Var{leva},\,\Var{levb}}]} selects levels
+\Var{leva} and \Var{levb}.
+
+If \Code{CreateFeynAmp} finds that amplitudes at only one level are
+requested (either directly by \Code{AmplitudeLevel}, or if the topologies
+were inserted at only one level), it automatically calls \Code{PickLevel}
+so that the output will contain only the amplitudes at the requested level
+and no replacement rules.%
+\indextt{AmplitudeLevel}
+
+
+\subsection{General Structure of the Amplitudes}%
+\index{amplitude!structure of}%
+\index{level}
+
+The three-level concept has a big advantage when simplifying the
+amplitudes.  Since the kinematical structure is already determined at the
+generic level, certain algebraic simplifications can be performed for the
+generic amplitude only and need not be done over and over for every
+insertion.  For example, a fermionic trace needs to be calculated only for
+the generic amplitude, from which the expressions for the individual
+fermion classes or particles are then obtained by applying respectively
+the classes- or particles-level replacement rules.
+
+Owing to fast computers and powerful software for evaluating amplitudes
+at one-loop level, however, this conceptually superior technique has not
+been used much so far.  Nevertheless, for higher-loop calculations it will
+likely become an inevitable modus operandi given the number of diagrams
+already a two-loop calculation typically involves.
+
+To be able to simplify the amplitudes at different levels it is essential
+to understand how they are structured.  The structure is similar to that 
+of inserted topologies, \ie an expression embedded in a hierarchical list 
+of insertion rules.  The main difference is that the basic ingredient is 
+not a topology but the generic amplitude.
+
+Note that only amplitudes containing more than one level are structured in
+this way.  If only one level is selected in \Code{CreateFeynAmp} or with
+\Code{PickLevel}, the \Code{FeynAmps} contain only the analytic expression
+of the amplitude at the chosen level and no rules.%
+\index{replacement rules}
+
+\begin{tt}
+FeynAmpList[\Var{info}][\\
+\ql FeynAmp[\Var{gname}, \Var{mom}, \Var{generic\,amp},\\
+\ql\ql \Brac{Mass[F[Index[Generic, 1]]], \dots}~->\\
+\ql\ql\q Insertions[Classes][\\
+\ql\ql\q\ql \Brac{MLE, \dots}~->\\
+\ql\ql\q\ql\q Insertions[Particles][\\
+\ql\ql\q\ql\q\ql \Brac{MLE[1], \dots}, \Brac{MLE[2], \dots},
+\Name{more particles insertions} \\
+\ql\ql\q\ql\q ],\\
+\ql\ql\q\ql \Brac{MQU, \dots}~-> \dots,\\
+\ql\ql\q\ql \Name{more classes insertions}\\
+\ql\ql\q ],\\
+\ql ],\\
+\ql \Name{more amplitudes}\\
+]
+\end{tt}
+
+
+\subsection{On Fermion Chains and Signs}%
+\label{sect:fermsigns}%
+\index{fermion!amplitude}%
+\index{fermion!signs}%
+\index{fermion!flow}
+
+One of the most asked-for details of amplitude generation is how the signs
+of fermionic diagrams are determined.
+
+\FA\ generally uses the methods from \cite{DeEHK92}.  That is basically,
+the fermion flow is fixed at generic level and so-called flip rules are
+applied if it turns out that in the classes or particles insertion the
+flow is reversed.  Open fermion chains---the ones terminating on external
+fermions---are ordered opposite to the fermion flow, \ie the leftmost
+field in the chain is an antifermion, \Code{-F}.
+
+For amplitudes containing anticommuting fields (fermions or ghosts) the
+following signs are added:
+\begin{itemize}
+\item	a minus for every closed fermion or ghost loop and
+\item	the signature of the permutation that brings the ordinal numbers
+	of the external fermions as connected by the fermion chains
+	into descending order (descending because the fermion chains are
+	ordered opposite to the fermion flow).
+
+	Consider these diagrams:
+	\vspace*{-2ex}
+	\begin{center}%
+	\setlength{\unitlength}{.01\linewidth}%
+	\begin{picture}(70,15)
+	\put(5,0){%
+	  \makebox(20,15){\includegraphics[width=.2\linewidth]{figs/eeee_s}}}
+	\put(45,0){%
+	  \makebox(20,15){\includegraphics[width=.2\linewidth]{figs/eeee_t}}}
+	\put(5,12.5){\makebox(0,0)[r]{\small 1}}
+	\put(5,2){\makebox(0,0)[r]{\small 2}}
+	\put(25.5,12.5){\makebox(0,0)[l]{\small 3}}
+	\put(25.5,2){\makebox(0,0)[l]{\small 4}}
+	\put(45,12.5){\makebox(0,0)[r]{\small 1}}
+	\put(45,2){\makebox(0,0)[r]{\small 2}}
+	\put(65.5,12.5){\makebox(0,0)[l]{\small 3}}
+	\put(65.5,2){\makebox(0,0)[l]{\small 4}}
+	\end{picture}%
+	\end{center}
+	\vspace*{-2ex}
+	Following the fermion chains opposite to the arrows, the external
+	particles are connected as \{2--1, 3--4\} in the left diagram,
+	and as \{3--1, 2--4\} in the right diagram.  The number of
+	permutations needed to bring \{2\,1\,3\,4\} into descending
+	order \{4\,3\,2\,1\} is odd, but even for \{3\,1\,2\,4\}.  Hence
+	the $s$-channel diagram gets an additional minus sign.
+
+	Note that the signature of the permutation is invariant under
+	interchange of any two whole fermion chains because each fermion
+	chain contributes an even number (two) of external fermions.
+\end{itemize}
+
+In renormalizable theories at most two fermion fields can appear at a
+vertex, and therefore the construction of the fermion chains is totally
+unambiguous.  This is not so in other, non-renormalizable theories, for
+instance in the Fermi model.  \textbf{\FA\ cannot correctly build the
+fermion chains if vertices involving more than two fermions appear}
+because this information is simply not available from the Feynman rules.
+In such a case \Code{\$FermionLines = False} must be set and the fermion
+fields must carry an additional kinematic index (\eg a Dirac index) with
+which it is \emph{afterwards} possible (\ie \FA\ does not do this) to find
+the right concatenation.  Also, the above mentioned signs are not resolved
+in this case.%
+\indextt{\$FermionLines}%
+\index{index!Dirac}
+
+
+\subsection{Specifying Momenta}%
+\index{momenta}%
+\index{specifying momenta}
+
+\Code{CreateFeynAmp} can be made to use a certain momentum on a certain
+propagator.  This is done by editing the inserted topologies and appending
+a fourth argument to the propagators whose momenta one wants to fix.  (A
+convenient way to do so is to assign the inserted topologies to a
+variable and use the \mma\ function \Code{EditDefinition[\Var{var}]}.)
+
+This fourth argument will become the momentum's name.  For example, the
+momentum assigned to the propagator
+\begin{verbatim}
+  Propagator[Internal][Vertex[3][101], Vertex[3][100], Field[4], Q1]
+\end{verbatim}
+will be \Code{FourMomentum[Internal, Q1]}.  There are two rules to observe:
+Do not use an integer as a name to avoid conflict with the
+automatically-generated momenta, and do not change the direction of the
+propagator! If you need the momentum flowing opposite to the direction of
+the propagator, give it a minus sign, \eg \Code{-Q1}.
+
+While \Code{CreateFeynAmp} takes care to eliminate automatically-generated
+momenta before user-specified ones when working through momentum
+conservation, one can prohibit the elimination of any momentum with the
+option \Code{MomentumConservation -> False}.
+
+
+\subsection{Compatibility with \FA\ 1}%
+\index{FeynArts 1@\FA\ 1}%
+\indextt{ToFA1Conventions}%
+\index{conventions (\FA\ 1)}%
+\index{compatibility}
+
+Many programs based on \FA\ still use the simpler conventions of version
+1.  For them to work with \FA\ 2.2, a function is provided to translate 
+the \Code{CreateFeynAmp} output into the old format.
+\biitab
+\Code{ToFA1Conventions[\Var{expr}]} &
+	convert \Var{expr} into the conventions of \FA\ 1
+\etab
+Note that \Code{ToFA1Conventions} only renames some symbols.  The results
+may thus not be 100\% \FA\ 1 compatible since certain kinds of expressions
+could not be generated with \FA\ 1 at all.  (That, after all, is why the
+conventions had to be changed.) In particular, amplitudes containing more
+than one level will probably not be very useful in programs made for
+processing \FA\ 1 output.
+
+
+\clearpage
+
+\section{Definition of a New Model}%
+\label{sect:model}%
+\index{model!definition}
+
+\subsection{The Generic Model}%
+\index{model!generic}%
+\index{generic model}
+
+In the generic model file the following items are defined:
+\begin{itemize}
+\item	the kinematic indices of the fields (\Code{KinematicIndices}),
+\item	the generic propagators (\Code{M\$GenericPropagators}),
+\item	the generic coupling vectors (\Code{M\$GenericCouplings}),
+\item	the fermion flipping rules (\Code{M\$FlippingRules}),
+\item	the truncation rules (\Code{M\$TruncationRules}),
+\item	some optional ``final-touch'' rules (\Code{M\$LastGenericRules}).
+\end{itemize}
+\indextt{KinematicIndices}%
+\indextt{M\$GenericPropagators}%
+\indextt{M\$GenericCouplings}%
+\indextt{M\$FlippingRules}%
+\indextt{M\$TruncationRules}%
+\indextt{M\$LastGenericRules}%
+Apart from these required definitions, the generic model file is a
+perfectly ordinary \mma\ input file and may contain any number of
+additional statements.  For example, \Code{Lorentz.gen} includes
+\Code{Format} directives with which the objects it introduces are displayed
+in a nicer form in the output.
+\indextt{Format}%
+
+Probably the best way to learn how to set up a generic model file is by
+going through one of the provided generic models, \Code{Lorentz.gen} or
+\Code{QED.gen}.
+\indextt{Lorentz.gen}%
+\indextt{QED.gen}%
+
+
+\subsubsection*{Kinematic Indices}%
+\index{index!kinematic}
+
+A kinematic index is an index transported along a propagator.  Due to the
+special property of renormalizable theories to possess vertices which join
+at most two fermion fields, spinor indices are not necessary because \FA\
+can construct the fermion chains itself
+(cf.\ Sect.\ \ref{sect:fermsigns}).
+\biitab
+\Code{KinematicIndices[\Vf] = \Brac{\Vi}} &
+	definition of the kinematic indices for field \Vf
+\etab
+For example, in the usual representation of the Poincar\'e group, only
+the vector bosons carry a Lorentz index.  \Code{Lorentz.gen} thus defines
+the following kinematic indices.
+\index{Poincar\'e group}%
+\index{index!Lorentz}%
+\index{index!kinematic}%
+\pagebreak
+\begin{verbatim}
+   KinematicIndices[ F ] = {};
+   KinematicIndices[ V ] = {Lorentz};
+   KinematicIndices[ S ] = {};
+   KinematicIndices[ SV ] = {Lorentz};
+   KinematicIndices[ U ] = {}
+\end{verbatim}
+There seems to be a mismatch for the scalar--vector mixing field
+\Code{SV} (= \Code{Mix[S,\,V]}): it is declared to have a Lorentz
+index even though the scalar half has no index at all.  However,
+\Code{CreateFeynAmp} knows about this special case and discards the
+index on the scalar side when resolving a coupling.
+\indextt{Lorentz}%
+\indextt{Mix}%
+
+
+\subsubsection*{Generic Propagators}%
+\index{propagator!generic}
+
+A generic propagator defines the kinematical structure of a propagator.
+In the generic model file the generic propagators are contained in the
+list \Code{M\$GenericPropagators}.  Inside this list each propagator is
+declared by an equation for \Code{AnalyticalPropagator}.
+\biitab
+\Code{M\$GenericPropagators} &
+	name of the list of generic propagators \\
+\Code{AnalyticalPropagator[\Vt][\Vf\rlap{] == \Var{expr}}} \\
+	& definition of the propagator of type \Vt\ (\Code{Internal} or
+	\Code{External}) for field \Vf
+\etab%
+\indextt{M\$GenericPropagators}%
+\indextt{External}%
+\indextt{Internal}%
+\indextt{AnalyticalPropagator}%
+The nomenclature perhaps needs explanation: An \Code{External}
+``propagator'' is what is traditionally called external wave function, \eg
+a spinor in the case of a fermion field.  \Code{Internal} propagators are
+the propagators in the usual sense connecting two internal field points.
+
+The simplest case are scalar fields which have no external wave function,
+and propagator
+$$
+\braket{S_i(k)}{S_i(k)} = \frac{\ri}{k^2 - \xi_{S_i}M_{S_i}^2}\,.
+$$
+The corresponding statements in \Code{Lorentz.gen} are
+\index{patterns}%
+\indextt{PropagatorDenominator}%
+\indextt{GaugeXi}%
+\indextt{Mass}%
+\begin{verbatim}
+  AnalyticalPropagator[External][ s S[i, mom] ] == 1,
+  AnalyticalPropagator[Internal][ s S[i, mom] ] ==
+    I PropagatorDenominator[mom, Sqrt[GaugeXi[S[i]]] Mass[S[i]]]
+\end{verbatim}
+When initializing the generic model, \FA\ transforms these equations into
+definitions and for this purpose augments the symbols like \Code{s},
+\Code{i}, and \Code{mom} by patterns.  It is important to realize that
+\Code{CreateFeynAmp} appends the momentum and kinematic indices to the
+field while resolving the propagators and couplings.  These additional
+elements do not appear in the final output, but must be taken into account
+in the definition of \Code{AnalyticalPropagator}.
+\biitab
+\Code{\Vf[\Vi,\,\Var{mom},\,\Brac{\VmuI,\,\dots}\,->\,
+\lbrac\VnuI,\,\rlap{\dots\rbrac]}} \\
+	& maximal internal pattern layout of field \Vf\ with classes
+	and particles indices summarized in \Vi, momentum \Var{mom},
+	and kinematic indices $\VmuI,\ldots$ on the left and
+	$\VnuI,\ldots$ on the right side of the propagator
+\etab%
+\index{field!extended structure}%
+\index{field!intermediate}
+
+For instance, a vector field \Code{V[1]} might intermediately be extended
+by \Code{CreateFeynAmp} to \Code{V[1, FourMomentum[Internal,\,1], 
+\Brac{Index[Lorentz,\,1]}\ -> \Brac{Index[Lorentz,\,5]}]}.%
+\indextt{Index}
+
+The vector-boson propagator is defined accordingly:
+\index{propagator!vector-boson}%
+\indextt{MetricTensor}%
+\indextt{PolarizationVector}%
+\begin{verbatim}
+  AnalyticalPropagator[External][ s V[i, mom, {li2}] ] ==     
+    PolarizationVector[V[i], mom, li2],
+  AnalyticalPropagator[Internal][ s V[i, mom, {li1} -> {li2}] ] ==
+    -I PropagatorDenominator[mom, Mass[V[i]]] *
+      (MetricTensor[li1, li2] - (1 - GaugeXi[V[i]]) *
+         FourVector[mom, li1] FourVector[mom, li2] *
+         PropagatorDenominator[mom, Sqrt[GaugeXi[V[i]]] Mass[V[i]]])
+\end{verbatim}
+The \Code{s} stands for a possible prefactor (a sign for antiparticles or
+$\pm 2$ for mixing fields), and is transformed to the pattern
+\Code{s\uscore .} in the final definition.  \Code{i} summarizes the class
+index and all possible particles indices (final pattern:
+\Code{i\uscore\uscore}) and \Code{mom} stands for the momentum (final
+pattern: \Code{mom\uscore}).  For an internal propagator, \Code{li1} and
+\Code{li2} are the kinematic indices on the left and right side of the
+propagator, respectively (final patterns: \Code{li1\uscore} and
+\Code{li2\uscore}), and an external propagator uses only one set of
+kinematic indices, \Code{li1}.  The names of the patterns (\Code{s},
+\Code{i}, \Code{mom}, etc.) can of course be freely chosen, but must be 
+unique.  The most common errors in this respect are assignments of \Code{i} 
+or \Code{j} prior to employing them as patterns.
+
+\index{noncommuting object}%
+\indextt{NonCommutative}%
+Noncommuting objects appearing in the kinematic vector (typically elements
+from the Dirac algebra) must be wrapped in \Code{NonCommutative} so that 
+their order does not get destroyed by \Code{CreateFeynAmp}.  This makes 
+sense only for fermion (and perhaps ghost) fields since there is no 
+well-defined order for other types of field.  The external spinors are 
+for example noncommutative objects:%
+\indextt{MajoranaSpinor}%
+\indextt{DiracSpinor}%
+\begin{verbatim}
+  AnalyticalPropagator[External][ s F[i, mom] ] ==
+    NonCommutative[ 
+      If[SelfConjugate[F[i]], MajoranaSpinor, DiracSpinor][
+        -mom, Mass[F[i]] ] ]
+\end{verbatim}
+
+
+\subsubsection*{Generic Couplings}%
+\index{coupling!generic}
+
+Analogous to a generic propagator, a generic coupling defines the
+kinematical structure of a coupling.  The generic couplings are contained
+in the generic model file in the list \Code{M\$GenericCouplings}.  Inside
+this list each coupling is declared by an equation for
+\Code{AnalyticalCoupling}.  By convention, all fields in
+\Code{AnalyticalCoupling} are incoming.
+\indextt{M\$GenericCouplings}%
+\indextt{AnalyticalCoupling}%
+\indextt{G}%
+\index{coupling!constant}%
+\index{coupling!vector}%
+\biitab
+\Code{M\$GenericCouplings} &
+	name of the list of generic couplings \\
+\Code{AnalyticalCoupling[\Var{f_1},\,\Var{f_2},\rlap{\,\dots]~==~%
+G[\Vs][\Var{f_1},\,\Var{f_2},\,\dots]~.~%
+\Brac{\Var{k_1},\,\Var{k_2},\,\dots}}} \\
+	& definition of the coupling of fields \Var{f_1}, \Var{f_2}, 
+	\dots\ with coupling-constant vector 
+	\Code{G[\Vs][\Var{f_1},\,\Var{f_2},\,\dots]} and kinematic 
+	vector \Code{\Brac{\Var{k_1},\,\Var{k_2},\,\dots}} \\
+\Code{G[\plusminus 1][\Var{f_1},\,\Var{f_2},\,\dots]} &
+	generic coupling-constant vector, symmetric for $+1$ and
+	antisymmetric for $-1$
+\etab
+The kinematically extended field structure of the fields must be taken
+into account similar to the case of generic propagators.  Whereas however 
+a field on an internal propagator has two sets of kinematic indices
+\Code{\Brac{li1}\ -> \Brac{li2}} for the left and right side each 
+(provided the field carries kinematic indices at all), a field involved 
+in a coupling obviously needs at most one set of indices.%
+\index{field!extended structure}
+
+For example, the quartic gauge-boson coupling is defined in
+\Code{Lorentz.gen} as
+\index{coupling!quartic gauge-boson}%
+\index{kinematic vector}%
+\begin{verbatim}
+  AnalyticalCoupling[ s1 V[i, mom1, {li1}], s2 V[j, mom2, {li2}],
+      s3 V[k, mom3, {li3}], s4 V[l, mom4, {li4}] ] ==
+    G[1][s1 V[i], s2 V[j], s3 V[k], s4 V[l]] .
+      { MetricTensor[li1, li2] MetricTensor[li3, li4],
+        MetricTensor[li1, li3] MetricTensor[li2, li4],   
+        MetricTensor[li1, li4] MetricTensor[li3, li2] }
+\end{verbatim}
+The generic coupling ``constant'' \Code{G} refers actually to a vector of
+coupling constants, one for each element of the kinematic vector.  The
+\Code{VVVV} coupling would appear in a textbook as
+\begin{align*}
+C\bigl(V_{\!\mu}^i(p_1), V_{\!\nu}^j(p_2), V_{\!\rho}^k(p_3),
+V_{\!\sigma}^\ell(p_4)\bigr)
+&= G_{V_{\!i}V_{\!j}V_{\!k}V_{\!\ell}}^{(1)}\,g_{\mu\nu} g_{\rho\sigma} +
+   G_{V_{\!i}V_{\!j}V_{\!k}V_{\!\ell}}^{(2)}\,g_{\mu\rho} g_{\nu\sigma} +
+   G_{V_{\!i}V_{\!j}V_{\!k}V_{\!\ell}}^{(3)}\,g_{\mu\sigma} g_{\rho\nu} \\
+&= \vec G_{V_{\!i}V_{\!j}V_{\!k}V_{\!\ell}}\cdot
+\lower .5ex\hbox{$\left(\vrule width 0pt height 4ex depth 4ex\right.$}
+\!\!
+\begin{array}{l}
+g_{\mu\nu} g_{\rho\sigma} \\[-.5ex]
+g_{\mu\rho} g_{\nu\sigma} \\[-.5ex]
+g_{\mu\sigma} g_{\rho\nu}
+\end{array}
+\!\!\!
+\lower .5ex\hbox{$\left.\vrule width 0pt height 4ex depth 4ex\right)$}
+\,.
+\end{align*}
+When looking up a coupling, the fields of a vertex in general have to be
+permuted to fit the definition in the model file.  For this to work it is
+necessary that the kinematic vector closes under permutations of fields of
+one type.  In the example above this means that for any permutation of
+\{$\mu,\nu,\rho,\sigma$\} (all four fields are of the same type here) one
+must end up with another (or the same) element of the kinematic vector,
+which is indeed the case.%
+\index{coupling!closure}%
+\index{closure}
+
+There is one exception from this closure requirement: if a permutation of
+the fields yields either an element of the kinematic vector or the
+negative of an element of the kinematic vector, the coupling is said to be
+antisymmetric and specified as \Code{G[-1]}.  An example of this is the
+triple gauge-boson coupling in \Code{Lorentz.gen}.
+\index{coupling!antisymmetric}%
+\begin{verbatim}
+  AnalyticalCoupling[ s1 V[i, mom1, {li1}], s2 V[j, mom2, {li2}],
+      s3 V[k, mom3, {li3}] ] ==
+    G[-1][s1 V[i], s2 V[j], s3 V[k]] .
+      { MetricTensor[li1, li2] FourVector[mom2 - mom1, li3] +
+        MetricTensor[li2, li3] FourVector[mom3 - mom2, li1] +
+        MetricTensor[li3, li1] FourVector[mom1 - mom3, li2] }
+\end{verbatim}
+The kinematic vector has in this case only one element,
+\index{coupling!triple gauge-boson}%
+$$
+C\bigl(V_{\!\mu}^i(p_1), V_{\!\nu}^j(p_2), V_{\!\rho}^k(p_3)\bigr) =
+G_{V_{\!i}V_{\!j}V_{\!k}}\left(g_{\mu\nu} (p_2 - p_1)_\rho +
+g_{\nu\rho} (p_3 - p_2)_\mu +
+g_{\rho\mu} (p_1 - p_3)_\nu\right)\,.
+$$
+Because the kinematic vector contains the differences of the momenta, a
+permutation of \{$(p_1,\mu), (p_2,\nu), (p_3,\rho)$\} will produce either
+the kinematic vector itself or its negative.
+
+
+\subsubsection*{Fermion Flipping Rules}%
+\index{fermion!flipping rules}%
+\index{flipping rules}
+
+Matters are more complicated for fermionic couplings.  When two fermion
+fields are not in the order in which the coupling is defined in the model
+file, simple permutation of the fields does not suffice, but in addition
+an operation called ``flipping of fermionic couplings'' has to be
+performed on the kinematic vector.
+
+The algorithm behind this was developed in \cite{DeEHK92} and its main
+advantage is that it can deal with fermion-number-violating vertices,
+such as appear in supersymmetric models.  The idea is that instead of
+ordering the fermion propagators according to the given fermion flow,
+one \emph{chooses} a direction for the fermion lines.  (Obviously one
+cannot define the fermion flow properly as soon as fermion-number
+violating couplings are present, which is why the standard method breaks
+down in that case.)  If later it turns out that the chosen direction is
+opposite to the actual fermion flow, one has to apply a so-called
+flipping rule.  The flipping rule is nothing but a charge conjugation,
+\ie
+$$
+\Gamma \overset{\text{flip}}{\longrightarrow} C \Gamma^T C^{-1}
+$$
+where $\Gamma$ is some product of Dirac matrices and $C$ is the
+charge-conjugation matrix.  The flipping rules for all possible objects
+that can appear in $\Gamma$ have been worked out in \cite{DeEHK92} and the
+only necessary substitution is
+$$
+\gamma_\mu\omega_\pm \overset{\text{flip}}{\longrightarrow}
+-\gamma_\mu\omega_\mp
+$$
+\index{chirality projector}%
+where $\omega_\pm = (\unity\pm\gamma_5)/2$ are the chirality projectors. 
+This is more than just flipping the sign of the whole expression (which
+could be effected with \Code{G[-1]}) since also the other chirality
+projector has to be taken.
+
+A case where $\gamma_\mu\omega_\pm$ occurs is the \Code{FFV} coupling
+in \Code{Lorentz.gen}:
+\begin{verbatim}
+  AnalyticalCoupling[ s1 F[i, mom1], s2 F[j, mom2],
+      s3 V[k, mom3, {li3}] ] ==
+    G[-1][s1 F[i], s2 F[j], s3 V[k]] .
+      { NonCommutative[DiracMatrix[li3], ChiralityProjector[-1]],
+        NonCommutative[DiracMatrix[li3], ChiralityProjector[+1]] }
+\end{verbatim}
+
+\FA\ expects the generic model file to define \Code{M\$FlippingRules}.
+These rules are applied when \FA\ needs to match a fermionic coupling 
+but finds only the other fermion permutation in the model file.
+For example, in \Code{Lorentz.gen} the following flip rules are 
+defined:
+\indextt{M\$FlippingRules}%
+\begin{verbatim}
+M$FlippingRules =
+  NonCommutative[dm:_DiracMatrix | _DiracSlash,
+                   ChiralityProjector[pm_]] ->
+    -NonCommutative[dm, ChiralityProjector[-pm]]
+\end{verbatim}
+
+
+\subsubsection*{Truncation Rules}
+
+Truncation rules are needed for removing external wave functions when the
+option \Code{Truncated -> True} is used in \Code{CreateFeynAmp}.  The rules
+depend of course on the symbols that are used for the external wave
+functions and must hence be defined in the generic model file.
+
+In \Code{Lorentz.gen} there are spinors and polarization vectors to be
+dealt with since scalar particles have no external wave functions.  The
+truncation rules are then
+\indextt{M\$TruncationRules}%
+\indextt{PolarizationVector}%
+\indextt{DiracSpinor}%
+\indextt{MajoranaSpinor}%
+\begin{verbatim}
+  M$TruncationRules = {
+    _PolarizationVector -> 1,
+    _DiracSpinor -> 1,
+    _MajoranaSpinor -> 1
+  }
+\end{verbatim}
+
+
+\subsubsection*{``Final-Touch'' Rules}%
+\index{final-touch rules}
+
+The last operation \Code{CreateFeynAmp} performs on a generic amplitude is
+to apply the model-dependent \Code{M\$LastGenericRules}.  These rules
+are optional and have no particular purpose.  In \Code{Lorentz.gen}, for
+example, they complex-conjugate the outgoing polarization vectors.
+\begin{verbatim}
+M$LastGenericRules = {
+        (* outgoing vector bosons: throw away signs of momenta *)
+  PolarizationVector[p_, _. k:FourMomentum[Outgoing, _], li_] :>
+    Conjugate[PolarizationVector][p, k, li]
+}
+\end{verbatim}
+\indextt{M\$LastGenericRules}%
+This rule has an interesting side-aspect: note that only the head
+\Code{PolarizationVector} is wrapped in \Code{Conjugate}.  This is because
+the \Code{M\$LastGenericRules} are applied with \Code{//.} (replace
+repeatedly until the expression no longer changes).  If the whole
+polarization vector (including arguments) were wrapped in \Code{Conjugate},
+the rules would apply anew in every pass and lead to an endless loop.%
+\indextt{Conjugate}
+
+\pagebreak
+
+\subsection{The Classes Model}%
+\label{sect:clamodel}%
+\index{model!classes}%
+\index{classes model}
+
+All particles of a model are arranged in classes.  A class is conceptually 
+similar, but not identical, to a multiplet (the fields in one class need
+not belong to a representation of some group).  For single-particle
+model definitions each particle lives in its own class.%
+\index{multiplet}
+
+The classes model defines the actual classes of fields in a particular
+model.  It should not define or rely on any kinematic objects so that it
+can be used with different generic model files.
+
+In the classes model file the following items are defined:
+\begin{itemize}
+\item	the index range of all possible particles indices
+	(\Code{IndexRange}),
+\item	a function that detects if a vertex violates quantum number
+	conservation \\
+	(\Code{ViolatesQ}),
+\item	the classes and their attributes (\Code{M\$ClassesDescription}),
+\item	the classes coupling vectors (\Code{M\$CouplingMatrices}),
+\item	some optional ``final-touch'' rules (\Code{M\$LastModelRules}).
+\end{itemize}
+\indextt{ViolatesQ}%
+\indextt{M\$ClassesDescription}%
+\indextt{M\$CouplingMatrices}%
+\indextt{M\$LastModelRules}%
+\indextt{Restrictions}%
+Just as the generic model file, the classes model file is an ordinary
+\mma\ input file apart from the three required items and may contain
+additional definitions.  For example, the abbreviations for the
+\Code{Restrictions} option of \Code{InsertFields} which typically depend on
+classes fields are usually defined in the classes model file.
+
+
+
+\subsubsection*{Range of Particles Indices}
+
+It is necessary to declare the index range of every particles index.
+\biitab
+\Code{IndexRange[Index[\Vt]] = \Brac{\Vp}} &
+	declares the index of type \Vt\ to have the values \Vp
+\etab
+For example, the \Code{Generation} index in \Code{SM.mod} which counts the
+fermion generations has the range
+\indextt{IndexRange}%
+\indextt{Index}%
+\index{index!range of}%
+\index{index!generation}%
+\indextt{Generation}%
+\begin{verbatim}
+   IndexRange[ Index[Generation] ] = {1, 2, 3}
+\end{verbatim}
+\indextt{NoUnfold}%
+If a particular index should not be ``unfolded'' at particles level
+(\ie \FA\ should not generate an extra diagram for every value the index
+can take on), its range may be wrapped in \Code{NoUnfold}.  For instance, 
+one usually does not want eight diagrams generated and drawn for every
+gluon propagating; this can be effected with
+\begin{verbatim}
+   IndexRange[ Index[Gluon] ] = NoUnfold[ Range[8] ]
+\end{verbatim}
+As a consequence, fields with specific values for such indices have no
+effect in places like \Code{ExcludeParticles}.  This means that it is
+possible to exclude either all gluons or none, but not only the gluon with
+index 5.
+
+
+\subsubsection*{Conservation of Quantum Numbers}%
+\indextt{ViolatesQ}%
+\index{quantum numbers}%
+\index{1PI}%
+\index{conservation of quantum numbers}
+
+When \FA\ generates diagrams with vertex-function placeholders (see
+Sect.\ \ref{sect:1PIvf}), it eliminates illegal ones by checking whether
+the quantum numbers of the fields joining at the vertex are conserved.  To
+this end, it calls the function \Code{ViolatesQ} for every possible 1PI
+vertex function.  \Code{ViolatesQ} receives as arguments the quantum 
+numbers of the involved fields (times $-1$ for antiparticles) and must 
+return \Code{True} if the vertex violates the conservation of those quantum
+numbers.  In the most common case of charge-like (additive) quantum
+numbers, the condition is that the sum of all quantum numbers does not
+vanish at the vertex, which can be coded simply as
+\begin{verbatim}
+  ViolatesQ[ q__ ] := Plus[q] =!= 0
+\end{verbatim}
+However, this is not true for all kinds of quantum numbers (R-parity for
+example), which is why the definition of \Code{ViolatesQ} is given in the
+model file.
+
+Note the logic: all vertices for which \Code{ViolatesQ} does not explicitly
+return \Code{True} are accepted.  It is no error if there is no definition
+for \Code{ViolatesQ} since that simply means that all 1PI vertex functions
+are allowed.
+
+
+\subsubsection*{Classes Attributes}%
+\index{attributes!classes}
+
+The attributes of each class is defined by an equation in the list
+\Code{M\$ClassesDescription}.%
+\indextt{M\$ClassesDescription}%
+\biitab
+\Code{M\$ClassesDescription} &
+	name of the list of classes descriptors \\
+\Code{\Var{class} == \Brac{\Var{a_1} -> \Var{s_1},\,\dots}} &
+	descriptor for a class whose attribute \Var{a_1} is \Var{s_1}, 
+	\dots
+\etab
+
+Consider the up-type quark class in \Code{SM.mod}.
+\index{index!generation}%
+\indextt{Generation}%
+\begin{verbatim}
+  F[3] == {
+        SelfConjugate -> False,
+        Indices -> {Index[Generation]},
+        Mass -> MQU,
+        QuantumNumbers -> 2/3 Charge,
+        MatrixTraceFactor -> 3,
+        PropagatorLabel -> ComposedChar["u", Index[Generation]],
+        PropagatorType -> Straight,
+        PropagatorArrow -> Forward }
+\end{verbatim}
+The first two fields in the descriptor are necessary: \Code{SelfConjugate}
+and \Code{Indices}.  The others are optional and have default values.
+\biiitab
+\Code{SelfConjugate} & (required) &
+	how the field behaves under charge conjugation \\
+\Code{Indices} & (required) &
+	list of indices the class carries \\
+\Code{MixingPartners} & \Code{\Brac{\Var{field},\,\Var{field}}} &
+	for mixing propagators: left and right partners,
+	\eg \Code{\Brac{S[3],\,V[3]}} \\
+\Code{Mass} & \Code{Mass[\Var{field}]} &
+	symbol to denote the mass of the class members \\
+\Code{Mixture} & \Code{\Var{field}} &
+	linear combination the field is composed of \\
+\Code{QuantumNumbers} & \Code{\Brac{}} &
+	quantum numbers the field carries \\
+\Code{MatrixTraceFactor} & \Code{1} &
+	for fermions: factor with which closed fermion loops will
+	be multiplied \\
+\Code{InsertOnly} & \Code{All} &
+	types of propagators on which the field may be inserted \\
+\Code{PropagatorLabel} & \Code{"\Var{field}"} &
+	label for the propagator \\
+\Code{PropagatorType} & \Code{Straight} &
+	line type for the propagator \\
+\Code{PropagatorArrow} & \Code{None} &
+	\Code{Forward}, \Code{Backward}, or \Code{None}
+\etab
+\indextt{SelfConjugate}%
+\indextt{Indices}%
+\indextt{MixingPartners}%
+\indextt{Mass}%
+\indextt{Mixture}%
+\indextt{QuantumNumbers}%
+\indextt{MatrixTraceFactor}%
+\indextt{InsertOnly}%
+\indextt{PropagatorLabel}%
+\indextt{PropagatorType}%
+\indextt{PropagatorArrow}%
+An ordinary field also has default ``mixing'' partners, though trivial
+ones; \eg \Code{V[2]} has mixing partners \Code{\Brac{V[2],\,V[2]}}.%
+\index{mixing field}
+
+\Code{Mass -> \Var{cmass}} specifies a symbol for the mass of the class.  
+It is possible to distinguish masses for different types of propagators 
+-- \Code{External}, \Code{Internal}, and \Code{Loop} -- by adding the 
+propagator type as in
+\begin{verbatim}
+  Mass[Loop] -> Mloop
+\end{verbatim}
+Several such mass definitions can be given, where \Code{Mass} alone acts 
+as the default.  If omitted, the expression
+\Code{Mass[\Var{field},\,\Var{propagatortype}]} remains in the output
+of \Code{CreateFeynAmp}.  The masses of particles-level fields will
+appear as \Code{\Var{cmass}[\Var{indices}]} unless specific symbols are
+declared with the function \Code{TheMass}.  \Code{SM.mod} for instance
+declares the following symbols for the individual up-type quark masses
+(which would otherwise be \Code{MQU[1]}, \Code{MQU[2]}, and
+\Code{MQU[3]}):
+\begin{verbatim}
+  TheMass[ F[3, {1}] ] = MU;
+  TheMass[ F[3, {2}] ] = MC;   
+  TheMass[ F[3, {3}] ] = MT
+\end{verbatim}
+\indextt{TheMass}%
+\indextt{MQU}%
+
+\Code{Mixture} gives the field's composition as a linear combination of 
+fields.  Only mixtures with fields of the same type are allowed, \eg 
+scalars can only be composed of other scalars.  An antiparticle has to 
+be wrapped in \Code{Field}, so that the minus sign is not taken as part 
+of the coefficient in the linear combination.  Using this method one can 
+\eg specify the couplings in terms of interaction eigenstates and 
+linear-combine them to mass eigenstates. Unless the original 
+(``interaction'') fields are themselves added to 
+\Code{M\$ClassesDescription}, they disappear completely from the model 
+after initialization.  An application where it useful to keep original 
+fields (including all vertices mixing original and rotated fields) is a 
+rotation of higher order, with the rotated fields running on tree-level 
+propagators and the unrotated ones in the loops.%
+\index{linear combination}%
+\index{mixture}%
+\index{interaction eigenstates}%
+\index{mass eigenstates}
+
+\Code{QuantumNumbers} specifies which quantum numbers the field carries.  
+In principle, any \mma\ expression can be used as a quantum number, though
+the more common choices are multiples of a symbol, \eg \Code{2/3 Charge}.
+An important point is that the quantum number of the antiparticle is
+minus the quantum number of the particle.  This is just what one wants
+in the case of additive quantum numbers like charge, since indeed if the
+up-quark has \Code{2/3 Charge}, the anti-up-quark has \Code{-2/3 Charge}.
+However, it is for instance not true that if a particle has R-parity $1$,
+its antiparticle has R-parity $-1$.  In that case, one has to choose
+\Code{RParity[\plusminus 1]} instead of \Code{\plusminus RParity} and supply
+an appropriate \Code{ViolatesQ} function.%
+\indextt{Charge}%
+\indextt{RParity}%
+\indextt{ViolatesQ}%
+\index{quantum numbers}%
+\index{conservation of quantum numbers}
+
+\Code{MatrixTraceFactor} is a way to compensate for traces over indices
+which are not explicitly specified.  For example, in the electroweak
+Standard Model (without QCD) the interactions are colour-diagonal and
+hence the quarks need no colour index.  Still, when computing the trace
+over a quark loop, colour accounts for a factor 3 which is provided by
+\Code{MatrixTraceFactor -> 3} in the quark class descriptors.
+\Code{CreateFeynAmp} will complain if fields with different
+\Code{MatrixTraceFactors} appear in the same loop.%
+\index{index!colour}%
+\index{loops!quark}
+
+\Code{InsertOnly} specifies on which propagator types the field
+may be inserted, \eg for a background field \Code{InsertOnly -> 
+\Brac{Internal, External}} is needed since it is not allowed in loops.%
+\indextt{Internal}%
+\indextt{External}
+
+The line of a propagator is in general part of a circle.  This includes
+straight lines which can be regarded as the degenerate case of infinite
+radius.  The line type is given with \Code{PropagatorType} which can take
+the values \Code{Straight}, \Code{Sine} (photon-like), \Code{Cycles}
+(gluon-like), \Code{ScalarDash}, or \Code{GhostDash}.%
+\indextt{Straight}%
+\indextt{Sine}%
+\indextt{Cycles}%
+\indextt{ScalarDash}%
+\indextt{GhostDash}%
+\index{gluon line}%
+\index{photon line}
+
+The \Code{PropagatorLabel} may contain a letter (\eg \Code{"Z"}), a \LaTeX\
+symbol (\eg \Code{"\backsl\backsl gamma"}), or a composite character
+(\eg \Code{ComposedChar["u", "-"]}).  The double backslash is really a
+single character for \mma\ since the first \Code{\backsl} is needed to
+escape the second \Code{\backsl}.  Inside the quotes only one character or
+\LaTeX\ symbol may appear.  Multiple characters must be put in a list, \eg
+\Code{\Brac{"\backsl\backsl gamma", "Z"}}.
+\biitab
+\Code{ComposedChar[\Vt,\,\Var{sub},\,\Var{sup},\,\Var{bar}\rlap{]}} &
+	composite label \Vt\ with subscript \Var{sub}, superscript
+	\Var{sup}, and accent \Var{bar}; the arguments \Var{sub},
+	\Var{sup}, and \Var{bar} are optional but their position is
+	significant, \eg \Code{ComposedChar[\Vt,\,Null,\,\Var{sup}]}
+	corresponds to a label with a superscript only
+\etab
+\indextt{ComposedChar}%
+\index{label}%
+\index{label!\LaTeX}%
+\index{subscript}%
+\index{superscript}%
+\index{bar on label}%
+\index{accent on label}%
+\index{label!composite}%
+\index{composite label}%
+For example, \Code{ComposedChar["\backsl\backsl phi", "i", "*", 
+"\backsl\backsl bar"]} will produce the label $\bar\phi_i^*$ (\LaTeX\ 
+representation \verb:\bar\phi_i^*:).  As for \Code{Mass}, it is possible 
+to define labels specific to a particular propator type 
+(\Code{External}, \Code{Internal}, \Code{Loop}), \eg
+\begin{verbatim}
+  PropagatorLabel[Loop] -> "X"
+\end{verbatim}
+
+Indices can be used in a label in the form \Code{Index[\Vt]} where \Vt\
+is the type of the index, like in \Code{ComposedChar["\backsl\backsl
+nu", Index[Generation]]}.  The rendering of indices in the graphical
+output is subject to the function \Code{Appearance}, if that is defined
+for the particular type of index.  By default, the number of the index
+is displayed.
+\biitab
+\Code{Appearance[Index[\Vt,\,\Vn\uscore Int\rlap{eger]] := \Va}} \\
+	& definition of the graphical appearance for
+	indices of type \Vt \\
+\Code{Alph[\Vn]} &
+	the \Vn th lowercase latin letter \\
+\Code{UCAlph[\Vn]} &
+	the \Vn th uppercase latin letter \\
+\Code{Greek[\Vn]} &
+	the \Vn th lowercase greek letter \\
+\Code{UCGreek[\Vn]} &
+	the \Vn th uppercase greek letter
+\etab
+\indextt{Appearance}%
+\indextt{Alph}%
+\indextt{UCAlph}%
+\indextt{Greek}%
+\indextt{UCGreek}%
+\index{character conversion}%
+\index{label!indices}%
+\index{index!Greek}%
+\index{index!Latin}%
+The functions \Code{Alph}, \Code{UCAlph}, \Code{Greek}, and \Code{UCGreek}
+are useful for converting the index numbers into Latin or Greek letters,
+if this is desired.  For example, the following line in \Code{SM.mod} makes
+the fermion generation indices appear as $i$, $j$, \dots
+\index{index!generation}%
+\indextt{Generation}%
+\begin{verbatim}
+  Appearance[ Index[Generation, i_Integer] ] := Alph[i + 8]
+\end{verbatim}
+Similarly, \Code{Lorentz.gen} adds this definition to render Lorentz
+indices as $\mu$, $\nu$, \dots
+\index{index!Lorentz}%
+\indextt{Lorentz}%
+\begin{verbatim}
+  Appearance[ Index[Lorentz, i_Integer] ] := Greek[i + 11]
+\end{verbatim}
+Particular labels for the fields at particles level can be given by
+assigning values to the function \Code{TheLabel}.  If no specific label is
+defined for a particles-level field, the label of the associated class is
+used.  E.g.\ the labels of the individual up-type quarks are declared in
+\Code{SM.mod} by
+\indextt{TheLabel}%
+\begin{verbatim}
+  TheLabel[ F[3, {1}] ] = "u";
+  TheLabel[ F[3, {2}] ] = "c";
+  TheLabel[ F[3, {3}] ] = "t"
+\end{verbatim}
+Without these definitions, the up, charm, and top quarks would be labelled
+according to their classes label: $u_1$, $u_2$, and $u_3$.
+
+In the case of a mixing field, \Code{PropagatorLabel} and
+\Code{PropagatorType} may be set to a list of two items, one for the left
+half and one for the right half.  For example, \Code{SM.mod} contains the
+class for a $\gamma$--$Z$ mixing field (it is commented out by default).
+\begin{verbatim}
+  V[4] == {
+        SelfConjugate -> True,
+        Indices -> {},
+        Mass -> MAZ,
+        MixingPartners -> {V[1], V[2]},
+        PropagatorLabel -> {"\\gamma", "Z"},
+        PropagatorType -> Sine,
+        PropagatorArrow -> None }
+\end{verbatim}
+\index{label!of mixing field}%
+
+
+\subsubsection*{Classes Coupling Vectors}%
+\index{coupling!vector}%
+\index{coupling!classes}
+
+By far the most diligent task is to enter the actual coupling vectors of
+the model, in particular if one endeavours to enter also the counter
+terms.
+
+The coupling vectors are contained in a list \Code{M\$CouplingMatrices}.
+Each coupling vector is defined by an equation.  The convention is that
+all fields at a coupling are incoming, as in the generic model file.
+\biitab
+\Code{M\$CouplingMatrices} &
+	name of the list of coupling vectors \\
+\Code{C[\Var{f_1},\,\Var{f_2},\,\dots]~==~\lbrac
+\lbrac \Var{c_0^{(1)}},\,\Var{c_1^{(1)}},\rlap{\,\dots\rbrac,\,%
+\lbrac \Var{c_0^{(2)}},\,\Var{c_1^{(2)}},\,\dots\rbrac,\,\dots\rbrac}} \\
+	& definition of the coupling for the classes-level fields 
+	\Var{f_1}, \Var{f_2}, \dots\ where the lower index of the 
+	\Vc's refers to the counter-term order and the upper index 
+	to the component of the kinematic vector \\
+\Code{CC[\Var{f_1},\,\Var{f_2},\,\dots]~==~\dots} &
+	the same, except that simultaneously the charge-conjugated vertex
+	is defined \\
+\Code{ConjugateCoupling[\Vf][\Vc]} &
+	defines how the charge-conjugate of the expression \Vc\ is 
+	derived for the coupling of the fields \Vf
+\etab
+\indextt{M\$CouplingMatrices}%
+\indextt{C}%
+\indextt{CC}%
+\indextt{ConjugateCoupling}%
+The name \Code{M\$Coupling\underline{Matrices}} is justified because the
+equations assign to each coupling a list of lists, or matrix (a coupling
+constant for each counter-term order for each component of the kinematic
+vector).
+
+The coupling vector must of course have as many entries as in the
+kinematic vector it corresponds to.  Recall the example of the quartic
+gauge-boson coupling from the last section.  It has a kinematic vector 
+with three entries, $(g_{\mu\nu} g_{\rho\sigma}, g_{\mu\rho} 
+g_{\nu\sigma}, g_{\mu\sigma} g_{\rho\nu})$, so accordingly the coupling 
+vector must also have three entries.  An actual classes-level quartic 
+gauge-boson coupling then looks like%
+\index{kinematic vector}%
+\index{coupling!quartic gauge-boson}%
+\index{coupling!tree-level}%
+\index{counter-terms}%
+\begin{verbatim}
+  C[ -V[3], V[3], V[1], V[1] ] == -I EL^2 *
+    { {2, 4 dZe1 + 2 dZW1 + 2 dZAA1 - 2 CW/SW dZZA1},
+      {-1, -2 dZe1 - dZW1 - dZAA1 + CW/SW dZZA1},
+      {-1, -2 dZe1 - dZW1 - dZAA1 + CW/SW dZZA1} }
+\end{verbatim}
+This is the $W^+W^-\gamma\gamma$ coupling in \Code{SM.mod}.  On the
+right side there is a list with three entries corresponding to the three
+entries in the kinematic vector.  Each component is again a list where
+the first element is the usual (counter-term order 0, or tree-level)
+coupling, the second the counter-term order 1 coupling, and so on.  The
+overall constant \Code{-I\,EL\symbol{94}2} has been pulled out for
+clarity.  (\mma\ automatically threads multiplications over lists, \eg
+\Code{x*\Brac{a,\,b}} becomes \Code{\Brac{x*a,\,x*b}}.)
+
+\index{counter-terms}%
+It is possible to enter counter-terms only for a subset of couplings.
+The components of the coupling vector must however always be filled up to
+the same counter-term order.
+
+In the special case where the kinematic vector has only one element, one
+level of lists may be omitted, so for example
+\begin{verbatim}
+  C[ S[2], S[2], V[3], -V[3] ] == I EL^2/(2 SW^2) *
+    { {1, 2 dZe1 - 2 dSW1/SW + dZW1 + dZchi1} }
+\end{verbatim}
+is equivalent to
+\begin{verbatim}
+  C[ S[2], S[2], V[3], -V[3] ] == I EL^2/(2 SW^2) *
+    {1, 2 dZe1 - 2 dSW1/SW + dZW1 + dZchi1}
+\end{verbatim}
+
+The classes fields in \Code{C[\Var{f_1},\,\Var{f_2},\,\dots]} must be in
+the same generic order as the corresponding \Code{AnalyticalCoupling}
+defined in the generic model file.  This means that if an analytical
+coupling is defined in the order \Code{FFS}, the classes coupling may
+not be given in the order \Code{SFF}.
+
+\index{patterns}%
+Fields with particles indices must include a pattern for every index in
+the coupling definition.  For example, the 
+$\overline{\nu}_{j_1}e_{j_2}W^+$ coupling is defined as
+\begin{verbatim}
+  C[ -F[1, {j1}], F[2, {j2}], -V[3] ] ==
+    I EL/(Sqrt[2] SW) IndexDelta[j1, j2] *
+    { {1, dZe1 - dSW1/SW + dZW1/2 +
+            Conjugate[dZfL1[1, j1, j1]]/2 + dZfL1[2, j1, j1]/2},
+      {0, 0} }
+\end{verbatim}
+\Code{j1} and \Code{j2} stand for one index each (they are transformed to
+the patterns \Code{j1\uscore} and \Code{j2\uscore} internally during model 
+initialization).  For each index a class possesses a separate pattern has
+to be specified.
+
+\indextt{IndexDelta}%
+Index-diagonal terms are multiplied with
+\Code{IndexDelta[\Var{j_1},\,\Var{j_2}]}.  If the whole coupling is
+proportional to \Code{IndexDelta} as in the last example,
+\Code{InsertFields} will use this information to fix indices as far as
+possible already in the insertion process.  In contrast,
+\Code{InsertFields} cannot constrain other indices if only part of the
+coupling is diagonal, such as in the first-order counter-term of the
+$\overline{\nu}_{j_1}\nu_{j_2}Z$ coupling.
+\begin{verbatim}
+  C[ -F[1, {j1}], F[1, {j2}], V[2] ] == I EL *
+    { {gL[1] IndexDelta[j1, j2],
+        IndexDelta[j1, j2] (gL[1] dZZZ1/2 + dgL[1]) +
+        gL[1] dZfL1cc[1, j1, j2]},
+      {0, 0} }
+\end{verbatim}
+The full index diagonality of the tree-level coupling in this case is of
+course respected as usual.
+
+\index{coupling!conjugated}%
+\index{conjugation}%
+\index{h.c.}%
+The conjugated coupling (the part of the Lagrangian usually abbreviated
+as ``+ h.c.'' in textbooks) can either be entered directly, or by using
+\Code{CC} instead of \Code{C} in the definition of the coupling; \eg in the
+Standard Model one could define both the $\bar udW^+$ and the
+$\bar duW^-$ vertex, or define either one using \Code{CC}.  However,
+when using the \Code{CC} method, one has to specify how the coupling vector
+of the conjugated coupling is derived from the original one.  This is done
+by defining the function \Code{ConjugateCoupling}.  \Code{ConjugateCoupling}
+is applied to all elements of the coupling vector and is in general
+different from a plain \Code{Conjugate}, for instance the $\ri$ from the
+exponent of the path integral (\ie $\ri\int\d^4x {\cal L}$) must not be
+conjugated.  The conjugation procedure can depend on the kinematic
+structure of the vertex, \eg couplings involving a $\partial_\mu$ in
+configuration space usually get an additional minus which comes from the
+Fourier transformation.  Using the available field information, \ie the 
+\Vf\ in \Code{ConjugateCoupling[\Vf][\Vc]}, the kinematic vector can be 
+obtained with \Code{KinematicVector[ToGeneric[\Vf]]}.%
+\index{kinematic vector}%
+\indextt{KinematicVector}
+
+A drawback is that \Code{ConjugateCoupling} is a rather dumb function which
+has to be taught how to conjugate every symbol, so it is probably less
+work to enter the conjugated couplings directly if only a few are
+affected.  Giving no definition for \Code{ConjugateCoupling} is not an
+error: the amplitudes will then simply contain the symbol
+\Code{ConjugateCoupling}.
+
+
+\subsubsection*{``Final-Touch'' Rules}%
+\index{final-touch rules}%
+\indextt{M\$LastModelRules}
+
+Analogous to the \Code{M\$LastGenericRules} in the generic model, the
+classes model file allows to define optional \Code{M\$LastModelRules}.
+These rules are applied as the last operation before \Code{CreateFeynAmp}
+returns its result.  To avoid endless loops it must be kept in mind that
+the \Code{M\$LastModelRules} are applied with \Code{//.} (replace repeatedly
+until expression no longer changes).
+
+\Code{SM.mod} currently does not define any \Code{M\$LastModelRules}.
+
+
+\subsection{Add-on Model Files}
+
+Add-on model files can be used with both generic and classes models.  
+An add-on model file is different in that it does not define (overwrite) 
+all model-file ingredients, but modifies them only.  As an example, 
+consider that one wants to introduce a resummed Yukawa coupling.  This 
+is most simply achieved by substituting the quark mass in the numerator 
+of the coupling by a resummed quark mass, which could be achieved with 
+the following add-one model file:
+\begin{verbatim}
+ResumCoup[ (c:C[_. _F, _. _F, _. _S] == rhs_ ] :=
+  c == (rhs /. Mass[F[t_, {g_, ___}]] -> MfResummed[t, g]);
+ResumCoup[ other_ ] = other;
+M$CouplingMatrices = ResumCoup/@ M$CouplingMatrices
+\end{verbatim}
+
+One can similarly build up a basic model file by loading an existing 
+model file explicitly and then modifying the ingredients as above.  This 
+has the advantage that the user has to specify only the resulting model 
+file's name, not the combination of basic and add-on model file.  The 
+above add-on model file could thus be turned into a basic model file
+with
+\begin{verbatim}
+LoadModel["SM"];
+ResumCoup[ (c:C[_. _F, _. _F, _. _S] == rhs_ ] :=
+  c == (rhs /. Mass[F[t_, {g_, ___}]] -> MfResummed[t, g]);
+ResumCoup[ other_ ] = other;
+M$CouplingMatrices = ResumCoup/@ M$CouplingMatrices
+\end{verbatim}%
+\indextt{LoadModel}%
+\biitab
+\Code{LoadModel[\Var{modname}]} &
+	load the model file \Code{\Var{modname}.mod} \\
+\Code{LoadModel[\Var{modname},\,\Var{ext}]} &
+	load the model file \Code{\Var{modname}.\Var{ext}} \\
+\etab
+
+Finally, it is possible to save the model file presently in memory with 
+the function \Code{DumpModel}.  This is useful, for example, if the 
+modification of the basic model file by the add-on model files takes a 
+lot of time, in which case one can dump the resulting model-file 
+contents in a new model file which then loads faster.  For example:
+\begin{verbatim}
+LoadModel[{"MSSMQCD", "FV", "EnhYuk", "HMix"}];
+DumpModel["FullMSSM.mod"]
+\end{verbatim}%
+\indextt{DumpModel}%
+\indextt{DumpGenericModel}%
+\biitab
+\Code{DumpModel[\Var{file}]} &
+	save the classes-model-file variables presently in memory
+	in the classes model file \Var{file} \\
+\Code{DumpModel[\Var{file},\,\Var{s\ldots}]} &
+	include the symbols \Var{s} in the variables to be saved
+	in \Var{file} \\
+\Code{DumpGenericModel[\Var{file}]} &
+	save the generic-model-file variables presently in memory
+	in the generic model file \Var{file} \\
+\Code{DumpGenericModel[\Var{file},\,\Var{s\ldots}]} &
+	include the symbols \Var{s} in the variables to be saved
+	in \Var{file}
+\etab
+
+
+\subsection{Debugging}
+\label{sect:debug}%
+\index{model!debugging}%
+\index{debugging}
+
+There are several ways to trace or inspect the application of the
+Feynman rules.
+
+For problems involving unresolved couplings there are two inspection
+functions which may be defined to print out information.
+\indextt{VertexDebug}%
+\indextt{VertexMonitor}%
+\biitab
+\Code{VertexDebug[\Var{info}]} &
+	a function called when resolving a vertex fails, where
+	\Var{info} contains various information on that coupling \\
+\Code{VertexMonitor[\Var{info}]} &
+	a function invoked whenever a vertex is resolved
+\etab
+The typical procedure is to define either as \eg \Code{Print}.
+
+Problems concerning the origin of parts of the amplitude can
+be narrowed down by tagging the couplings of a model file.
+This is effected with
+\begin{verbatim}
+  SetOptions[InitializeModel, TagCouplings -> True]
+\end{verbatim}
+\indextt{TagCouplings}%
+\indextt{Coupling}%
+\index{coupling!tagging}%
+(before model initialization, of course).  Each coupling will be tagged
+by \Code{Coupling[\Var{i}]} then, where \Var{i} is that coupling's
+position in \Code{M\$CouplingMatrices}.
+
+For easier debugging of add-on model files, \FA\ can list the couplings 
+which have changed or were added/deleted.  Once can either wrap the 
+model to be debugged in \Code{ModelDebug} in the model specification or
+set the global variable \Code{\$ModelDebug}.
+\biitab
+\Code{ModelDebug[\Var{mod}]} &
+	report changes when initializing add-on model file \Var{mod}
+\etab%
+\indextt{ModelDebug}%
+\bxtab{variable}
+\Code{\$ModelDebug} & \Code{False} &
+	whether changes introduced by add-on model files
+	will be reported as a model is initialized \\
+\Code{\$ModelDebugForm} & \Code{Short[\#,\,5]\&} &
+	the output form for debugging output when
+	model debugging is enabled
+\etab%
+\indextt{\$ModelDebug}%
+\indextt{\$ModelDebugForm}
+
+The global variable \Code{\$ModelDebug} determines whether changes
+introduced by add-on model files will be reported as a model is
+initialized.  It can be set to \Code{True}, in which case debugging
+output will be generated for all add-on model files, or to the name (or
+list of names) of the add-on model file(s) to be debugged.  Alternately,
+debugging is turned on for all models wrapped in \Code{ModelDebug} in
+the model specification.
+
+
+
+
+\subsection{Model-file Generation}
+\index{model!generation of}%
+\index{Feynman rules}%
+\index{ModelMaker@\MM}
+
+\FA\ includes an add-on package called \MM\ which can generate the Feynman
+rules for the classes model file from the Lagrangian.  While entering the
+Lagrangian requires an effort comparable to typing in the Feynman rules
+directly, it is often nicer to have the Lagrangian available rather than
+only the Feynman rules.  For example, in situations where particles mix to
+form mass eigenstates, the Lagrangian can be entered in terms of the gauge
+eigenstates, which is usually much simpler.  It is straightforward in 
+\mma\ to replace each gauge eigenstate with the appropriate linear 
+combination of mass eigenstates and then derive the Feynman rules from the 
+resulting expression.
+
+Generating a model file with \MM\ requires two things:
+\begin{itemize}
+\item
+A template model file must be made which contains everything except the
+Feynman rules, \ie the definition of \Code{M\$CouplingMatrices} (see Sect.\
+\ref{sect:clamodel}).  \MM\ reads the template model file (extension 
+\Code{.mmod}), inserts the \Code{M\$CouplingMatrices} definition, and writes 
+out the \Code{.mod} classes model file.
+
+\item
+The Lagrangian must be entered in a format where the fields are specially
+marked and the conventions of the generic model file are used for the
+kinematic quantities.
+\end{itemize}
+Assuming that the template model file is called \Code{MODEL.mmod}, the
+procedure to generate \Code{MODEL.mod} is the following:
+\begin{verbatim}
+   << Models`ModelMaker`
+   Lagrangian = (put definition of Lagrangian here);
+   frules = FeynmanRules[Lagrangian];
+   WriteModelFile[CouplingVector[frules], "MODEL.mmod"]
+\end{verbatim}
+The \MM\ functions used above are
+\biitab
+\Code{FeynmanRules[\Var{\cal L}]} &
+	derives the Feynman rules from the Lagrangian \Var{\cal L} \\
+\Code{CouplingVector[\Vr]} &
+	extracts the coupling vector of each Feynman rule in \Vr\
+	according to the corresponding kinematic vector in the currently 
+	initialized generic model file \\
+\Code{WriteModelFile[\Vr,\,"\Vt.mmod"]} &
+	splices the Feynman rules generated with \Code{FeynmanRules} and
+	\Code{CouplingVector} into the template model file
+	\Vt\Code{.mmod}, writing the results to \Vt\Code{.mod}
+\etab%
+\indextt{FeynmanRules}%
+\indextt{CouplingVector}%
+\indextt{WriteModelFile}%
+\index{template model file}%
+\index{model!template file}%
+\index{Lagrangian}
+
+The format for entering the Lagrangian is as follows:
+Fields are marked by the function \Code{Field} whose first entry is the
+field name in the form in which it appears in the classes model file, \eg
+\Code{F[3,\,\Brac{g}]}.  Only internal indices (\ie particle-level
+indices) may appear in the field name itself.  If it becomes necessary to
+refer to the momentum or kinematic indices of a field in the kinematic
+part of the coupling, two optional entries can be added to \Code{Field} in
+the form \Code{Field[\Vf,\,\Var{mom},\,\Brac{\Vmu,\dots}]}.  
+For example, the term in the Lagrangian corresponding to the
+electron--positron--photon vertex could be defined by
+\begin{verbatim}
+   EL Field[-F[2, {g1}]] . DiracMatrix[mu] . Field[F[2, {g2}]] *
+     Field[V[1], {mu}]
+\end{verbatim}
+Note the dot product which joins the noncommuting objects.  Names for the
+indices and momenta, such as \Code{g1}, \Code{g2}, and \Code{mu} in the
+example above, can be chosen freely since they will not appear in the
+final Feynman rule (internal indices are eliminated via the functional
+derivative and kinematic quantities are replaced by generic objects for
+easier matching).
+
+The kinematic quantities appearing in the coupling must be entered as in
+the generic model file.  Two exceptions are allowed: a lone 
+\Code{DiracMatrix[\Vmu]} is automatically split into $\gamma_\mu\omega_+ 
++ \gamma_\mu\omega_-$, and \Code{\Var{mom}[\Vmu]} may be used as a 
+short-hand for \Code{FourVector[\Var{mom},\,\Vmu]}.%
+\indextt{DiracMatrix}%
+\indextt{FourVector}
+
+As \MM\ must know the kinematical quantities it might encounter, some of
+the conventions of \Code{Lorentz.gen} have been hard-coded into \MM.  \MM\
+therefore may not work with generic model files other than
+\Code{Lorentz.gen}.%
+\indextt{Lorentz.gen}
+
+The template model file is the same as the complete model file except that
+it does not contain the Feynman rules, \ie it declares \Code{IndexRange}, 
+\Code{M\$ClassesDescription}, and \Code{M\$LastModelRules}, but not
+\Code{M\$CouplingMatrices} (see Sect.\ \ref{sect:clamodel}).  The 
+definition of \Code{M\$CouplingMatrices}, which in the complete model file 
+contains the Feynman rules, instead has the form
+\begin{verbatim}
+   M$CouplingMatrices = <* M$CouplingMatrices *>
+\end{verbatim}
+When the template model file is processed by \Code{WriteModelFile}, the
+text enclosed between \verb=<*= and \verb=*>= is scanned as \mma\ input
+and replaced by the resulting output, thereby inserting the Feynman rules.  
+The output is written to a file with the first ``m'' stripped from the
+extension (\Code{MODEL.mmod} $\to$ \Code{MODEL.mod}), so the template model
+file is not overwritten or deleted.%
+\indextt{M\$CouplingMatrices}
+
+
+\clearpage
+
+\begin{appendix}
+
+\section{The Lorentz Formalism}%
+\indextt{Lorentz.gen}
+
+\Code{Lorentz.gen} contains the definitions of the generic propagators and
+couplings for a relativistic field theory with scalar, spinor, and vector
+fields transforming according to the usual representation of the
+Poincar\'e group in Minkowski space.  It introduces the following symbols.
+\biitab
+\Code{MetricTensor[\Vmu,\,\Vnu]} &
+	the metric tensor $g_{\Vmu\Vnu}$ \\
+\Code{DiracSpinor[\Vp,\,\Vm,\,\Vi]} &
+	the spinor of a Dirac fermion with momentum \Vp, mass \Vm, and
+	particles indices \Vi \\
+\Code{MajoranaSpinor[\Vp,\,\Vm,\,\Vi]} &
+	the spinor of a Majorana fermion with momentum \Vp, mass \Vm, 
+	and particles indices \Vi \\
+\Code{PolarizationVector[\Vv,\,\Vp,\,\Vmu]} &
+	the polarization vector of the vector boson \Vv\ with Lorentz
+	index \Vmu\ associated with momentum \Vp \\
+\Code{DiracMatrix[\Vmu]} &
+	the Dirac matrix $\gamma_{\Vmu}$ \\
+\Code{DiracSlash[\Vp]} &
+	$\gamma_\mu \Vp^\mu$ \\
+\Code{ChiralityProjector[\plusminus 1]} &
+	the chirality projectors $\omega_\pm = (1 \pm \gamma_5)/2$ \\
+\Code{FourVector[\Vp,\,\Vmu]} &
+	the four-vector $\Vp_{\Vmu}$
+\etab
+\indextt{MetricTensor}%
+\indextt{DiracSpinor}%
+\indextt{MajoranaSpinor}%
+\indextt{PolarizationVector}%
+\indextt{DiracMatrix}%
+\indextt{DiracSlash}%
+\indextt{ChiralityProjector}%
+\indextt{FourVector}%
+The four spinor states can actually all be represented by just one symbol
+depending on its position in a \Code{FermionChain} and type of momentum:
+\begin{align*}
+\text{\Code{FermionChain[ \Var{spinor}[%
+FourMomentum[Incoming,\,\Vn],\,\Vm,\,\Vi],
+\dots\ ]}}
+&\;=\; \overline{v}\cdot\ldots \\
+\Code{FermionChain[ \Var{spinor}[%
+FourMomentum[Outgoing,\,\Vn],\,\Vm,\,\Vi],
+\dots\ ]}
+&\;=\; \overline{u}\cdot\ldots \\
+\Code{FermionChain[ \dots,
+\Var{spinor}[FourMomentum[Incoming,\,\Vn],\,\Vm,\,\Vi] ]}
+&\;=\; \ldots \cdot u \\
+\Code{FermionChain[ \dots,
+\Var{spinor}[FourMomentum[Outgoing,\,\Vn],\,\Vm,\,\Vi] ]}
+&\;=\; \ldots\cdot v
+\end{align*}
+where \Var{spinor} is either \Code{DiracSpinor} or \Code{MajoranaSpinor}.
+Majorana spinors are used for fermions with attribute
+\Code{SelfConjugate -> True}.%
+\indextt{SelfConjugate}%
+\index{fermion!self-conjugate}%
+\index{fermion!Majorana}
+
+Polarization vectors associated with outgoing momenta are brought into the
+form \Code{Conjugate[PolarizationVector][\Vv,\,\Vp,\,\Vmu]} by the
+\Code{M\$LastGenericRules}.%
+\indextt{M\$LastGenericRules}
+
+The symbol \Code{FourVector} defined by \Code{Lorentz.gen} should not be
+confused with the \FA\ symbol \Code{FourMomentum}.  The latter represents a
+momentum flowing along propagator lines, and it is very likely that
+using it for different purposes would upset the internal routines.  In
+contrast, \Code{FourVector} is not modified by \FA.%
+\indextt{FourMomentum}
+
+\clearpage
+
+The following generic couplings are defined in \Code{Lorentz.gen}.
+Antisymmetric couplings are labelled by a subscript $-$, symmetric ones by
+a subscript $+$.
+\renewcommand{\arraystretch}{.9}
+\begin{align}
+\tag{\Code{VVVV}}
+C\bigl(V_\mu, V_\nu, V_\rho, V_\sigma\bigr) & = \vec G_{VVVV} \cdot
+	\begin{pmatrix}
+	g_{\mu\nu} g_{\rho\sigma} \\
+	g_{\mu\rho} g_{\nu\sigma} \\
+	g_{\mu\sigma} g_{\nu\rho}
+	\end{pmatrix}_{\!\!+}
+\\
+\tag{\Code{VVV}}
+C\bigl(V_\mu(k_1), V_\nu(k_2), V_\rho(k_3)\bigr) &= \vec G_{VVV} \cdot
+	\begin{pmatrix}
+	g_{\mu\nu} (k_2-k_1)_\rho + g_{\nu\rho} (k_3-k_2)_\mu +
+	g_{\rho\mu} (k_1-k_3)_\nu
+	\end{pmatrix}_-
+\\
+\tag{\Code{SSSS}}
+C\bigl(S, S, S, S\bigr) &= \vec G_{SSSS} \cdot
+	\begin{pmatrix}
+	1
+	\end{pmatrix}_+
+\\
+\tag{\Code{SSS}}
+C\bigl(S, S, S\bigr) &= \vec G_{SSS} \cdot
+	\begin{pmatrix}
+	1
+	\end{pmatrix}_+
+\\
+\tag{\Code{SSVV}}
+C\bigl(S, S, V_\mu, V_\nu\bigr) &= \vec G_{SSVV} \cdot
+	\begin{pmatrix}
+	g_{\mu\nu}
+	\end{pmatrix}_+
+\\
+\tag{\Code{SSV}}
+C\bigl(S(k_1), S(k_2), V_\mu\bigr) &= \vec G_{SSV} \cdot
+	\begin{pmatrix}
+	(k_1 - k_2)_\mu
+	\end{pmatrix}_-
+\\
+\tag{\Code{SVV}}
+C\bigl(S, V_\mu, V_\nu\bigr) &= \vec G_{SVV} \cdot
+	\begin{pmatrix}
+	g_{\mu\nu}
+	\end{pmatrix}_+
+\\
+\tag{\Code{FFV}}
+C\bigl(F, F, V_\mu\bigr) &= \vec G_{FFV} \cdot
+	\begin{pmatrix}
+	\gamma_\mu \omega_- \\
+	\gamma_\mu \omega_+
+	\end{pmatrix}_+
+\\
+\tag{\Code{FFS}}
+C\bigl(F, F, S\bigr) &= \vec G_{FFS} \cdot
+	\begin{pmatrix}
+	\omega_- \\
+	\omega_+
+	\end{pmatrix}_+
+\\
+\tag{\Code{UUV}}
+C\bigl(U(k_1), U(k_2), V_\mu \bigr) &= \vec G_{UUV} \cdot
+	\begin{pmatrix}
+	k_{1\mu} \\
+	k_{2\mu}
+	\end{pmatrix}_+
+\\
+\tag{\Code{SUU}}
+C\bigl(S, U, U\bigr) &= \vec G_{SUU} \cdot
+	\begin{pmatrix}
+	1
+	\end{pmatrix}_+
+\\
+\tag{\Code{VV}}
+C\bigl(V_\mu(k_1), V_\nu(k_2)\bigr) &= \vec G_{VV} \cdot
+	\begin{pmatrix}
+	g_{\mu\nu} (k_1 k_2) \\
+	g_{\mu\nu} \\
+	k_{1\mu} k_{2\nu}
+	\end{pmatrix}_{\!\!+}
+\\
+\tag{\Code{SS}}
+C\bigl(S(k_1), S(k_2)\bigr) &= \vec G_{SS} \cdot
+	\begin{pmatrix}
+	(k_1 k_2) \\
+	1
+	\end{pmatrix}_+
+\\
+\tag{\Code{FF}}
+C\bigl(F(k_1), F(k_2)\bigr) &= \vec G_{FF} \cdot
+	\begin{pmatrix}
+	\pslash{k}_1 \omega_- \\
+	\pslash{k}_2 \omega_+ \\
+	\omega_- \\
+	\omega_+
+	\end{pmatrix}_{\!-}
+\\
+\tag{\Code{SV}}
+C\bigl(S(k_1), V_\mu(k_2)\bigr) &= \vec G_{SV} \cdot 
+	\begin{pmatrix}
+	k_{1\mu} \\
+	k_{2\mu}
+	\end{pmatrix}_+
+\end{align}
+\renewcommand{\arraystretch}{1.2}
+
+
+\section{The Electroweak Standard Model}%
+\label{sect:sm}%
+\index{electroweak Standard Model}%
+\index{Standard Model}%
+\indextt{SM.mod}
+
+The file \Code{SM.mod} contains the electroweak Standard Model including
+all counter-terms of first order in the conventions of \cite{De93}.
+
+\biitab
+\Name{coupling constants and masses:} \\
+\Code{EL} &
+	electron charge (Thomson limit) \\
+\Code{CW}, \Code{SW} &
+	cosine and sine of the weak mixing angle \\
+\Code{MW}, \Code{MZ}, \Code{MH} &
+	W, Z, Higgs masses \\
+\Code{MG0}, \Code{MGp} &
+	Goldstone masses \\
+\Code{MLE[\Vg]} &
+	mass of lepton of generation \Vg \\
+\Code{ME}, \Code{MM}, \Code{ML} &
+	e, $\mu$, $\tau$ masses \\
+\Code{MQU[\Vg]} &
+	mass of up-type quark of generation \Vg \\
+\Code{MU}, \Code{MC}, \Code{MT} &
+	up, charm, top quark masses \\
+\Code{MQD[\Vg]} &
+	mass of down-type quark of generation \Vg \\
+\Code{MD}, \Code{MS}, \Code{MB} &
+	down, strange, bottom quark masses \\
+\Code{CKM[\Vg,\,\Vgp]} &
+	quark mixing matrix \\
+\Code{GaugeXi[A}, \Code{W}, \Code{Z]} &
+	photon, W, Z gauge parameters
+\etab
+\indextt{EL}\indextt{SW}\indextt{CW}%
+\indextt{MW}\indextt{MZ}\indextt{MH}%
+\indextt{MG0}\indextt{MGp}%
+\indextt{MLE}\indextt{ME}\indextt{MM}\indextt{ML}%
+\indextt{MQU}\indextt{MU}\indextt{MC}\indextt{MT}%
+\indextt{MDQ}\indextt{MD}\indextt{MS}\indextt{MB}%
+\indextt{CKM}%
+\indextt{GaugeXi}%
+\index{Standard Model!masses}%
+\biitab
+\Name{one-loop renormalization consta\rlap{nts:}} \\
+\Code{dZe1} &
+	electromagnetic charge RC \\
+\Code{dSW1}, \Code{dCW1} &
+	mixing angle sine/cosine RC \\
+\Code{dZH1}, \Code{dMHsq1} &
+	Higgs field and mass RC \\
+\Code{dZW1}, \Code{dMWsq1} &
+	W field and mass RC \\
+\Code{dMZsq1} &
+	Z mass RC \\
+\Code{dZZZ1}, \Code{dZZA1}, \Code{dZAZ1}, \Code{dZAA1} &
+	Z and photon field RCs \\
+\Code{dZG01}, \Code{dZGp1} &
+	Goldstone field RCs \\
+\Code{dMf1[\Vt,\,\Vg]} &
+	fermion mass RCs \\
+\Code{dZfL1[\Vt,\,\Vg,\,\Vgp]}, \Code{dZfR1[\Vt,\,\Vg,\,\Vgp]} &
+	left- and right-handed fermion field RCs \\
+\Code{dCKM1[\Vg,\,\Vgp]} &
+	quark mixing matrix RCs
+\etab
+\indextt{dZe1}%
+\indextt{dSW1}\indextt{dCW1}%
+\indextt{dZH1}\indextt{dMHsq1}%
+\indextt{dZW1}\indextt{dMWsq1}%
+\indextt{dMZsq1}%
+\indextt{dZZZ1}\indextt{dZZA1}\indextt{dZAZ1}\indextt{dZAA1}%
+\indextt{dZG01}\indextt{dZGp1}%
+\indextt{dMf1}%
+\indextt{dZfL1}\indextt{dZfR1}%
+\indextt{dCKM1}%
+\index{renormalization constants}%
+\index{fermion!type}%
+\index{neutrinos}%
+\index{leptons}%
+\index{quarks}%
+The type of a fermion is 1 for neutrinos, 2 for massive leptons, 3 for
+up-type quarks, and 4 for down-type quarks.
+
+The particle content of \Code{SM.mod} is summarized in the following
+table.%
+\indextt{\$GenericMixing}
+
+\renewcommand{\arraystretch}{1.14}
+\begin{tabular}{|l|l|l|ll|l|} \hline
+\Name{class} & \Name{self-conj.} & \Name{indices} &
+\Name{members} & & \Name{mass} \\ \hline\hline
+%
+\Code{F[1]} & no & \Code{Generation} &
+\Code{F[1,\,\Brac{1}]} & $\nu_{\text{e}}$ & \Code{0} \\
+(neutrinos)
+& & & \Code{F[1,\,\Brac{2}]} & $\nu_\mu$ & \Code{0} \\
+& & & \Code{F[1,\,\Brac{3}]} & $\nu_\tau$ & \Code{0} \\
+%
+\Code{F[2]} & no & \Code{Generation} &
+\Code{F[2,\,\Brac{1}]} & $e$ & \Code{ME} \\
+(massive leptons)
+& & & \Code{F[2,\,\Brac{2}]} & $\mu$ & \Code{MM} \\
+& & & \Code{F[2,\,\Brac{3}]} & $\tau$ & \Code{ML} \\
+%
+\Code{F[3]} & no & \Code{Generation} &
+\Code{F[3,\,\Brac{1,\Vo}]} & $u$ & \Code{MU} \\
+(up-type quarks)
+& & \Code{Colour} & \Code{F[3,\,\Brac{2,\Vo}]} & $c$ & \Code{MC} \\
+& & & \Code{F[3,\,\Brac{3,\Vo}]} & $t$ & \Code{MT} \\
+\addtocounter{footnote}{-1}%
+%
+\Code{F[4]} & no & \Code{Generation} &
+\Code{F[4,\,\Brac{1,\Vo}]} & $d$ & \Code{MD} \\
+(down-type quarks)
+& & \Code{Colour} & \Code{F[4,\,\Brac{2,\Vo}]} & $s$ & \Code{MS} \\
+& & & \Code{F[4,\,\Brac{3,\Vo}]} & $b$ & \Code{MB} \\ \hline
+%
+\Code{V[1]} & yes & & \Code{V[1]} & $\gamma$ & \Code{0} \\
+\Code{V[2]} & yes & & \Code{V[2]} & $Z$ & \Code{MZ} \\
+\Code{V[3]} & no & & \Code{V[3]} & $W^-$ & \Code{MW} \\ 
+\greyed{\Code{V[4]} (mixing field)}\footnotemark & \greyed{yes} & &
+\greyed{\Code{V[4]}} & \greyed{$\gamma$--$Z$} &
+\greyed{\Code{MAZ}} \\ \hline
+%
+\Code{S[1]} & yes & & \Code{S[1]} & $H$ & \Code{MH} \\
+\Code{S[2]} & yes & & \Code{S[2]} & $G^0$ & \Code{MG0} \\
+\Code{S[3]} & no & & \Code{S[3]} & $G^-$ & \Code{MGp} \\ \hline
+%
+\Code{U[1]} & no & & \Code{U[1]} & $u_\gamma$ & \Code{0} \\
+\Code{U[2]} & no & & \Code{U[2]} & $u_Z$ & \Code{MZ} \\
+\Code{U[3]} & no & & \Code{U[3]} & $u_-$ & \Code{MW} \\
+\Code{U[4]} & no & & \Code{U[4]} & $u_+$ & \Code{MW} \\ \hline
+%
+\Code{SV[2]} (mixing field)\footnotemark & yes & & \Code{SV[2]} &
+$G^0$--$Z$ & \Code{MZ} \\
+\addtocounter{footnote}{-1}%
+\Code{SV[3]} (mixing field)\footnotemark & no & & \Code{SV[3]} &
+$G^-$--$W^-$ & \Code{MW} \\ \hline
+\end{tabular}
+\addtocounter{footnote}{-1}
+\footnotetext{Commented out by default in \Code{SM.mod}.}
+\refstepcounter{footnote}
+\footnotetext{Must be enabled with \Code{\$SVMixing = True}.}
+
+\renewcommand{\arraystretch}{1.2}
+\clearpage
+
+\Code{SM.mod} defines the following \Code{Restrictions}:
+\biitab
+\Code{NoGeneration1} &
+	exclude generation-1 fermions ($\nu_{\rm e}$, $e$, $u$, $d$) \\
+\Code{NoGeneration2} &
+	exclude generation-2 fermions ($\nu_\mu$, $\mu$, $c$, $s$) \\
+\Code{NoGeneration3} &
+	exclude generation-3 fermions ($\nu_\tau$, $\tau$, $t$, $b$) \\
+\Code{NoElectronHCoupling} &
+	exclude all couplings involving electrons and a Higgs 
+	($e^-e^+H$, $e^-e^+G^0$, $e^-\nu_e G^-$). \\
+\Code{NoLightFHCoupling} &
+	exclude all couplings between light fermions \linebreak
+	(all fermions except the top) and Higgs fields
+	($f_i\bar f_iH$, $f_i\bar f_i G^0$,
+	$\ell_i^-\nu_i G^-$, $\bar d_i u_i G^-$,
+	$f_i\neq t$, $u_i\neq t$). \\
+\Code{NoQuarkMixing} &
+	exclude all couplings where off-diagonal elements of the
+	quark mixing matrix appear
+	($\bar d_i u_j W^-$, $\bar d_i u_j G^-$, $i\neq j$).
+	Note that the diagonal elements \Code{CKM[\Vi,\,\Vi]} are
+	nevertheless present. \\
+\Code{QEDOnly} &
+	exclude all particles except the massive fermions, the photon,
+	and the photon ghost.
+\etab
+\indextt{NoGeneration$n$}%
+\indextt{NoElectronHCoupling}%
+\indextt{NoLightFHCoupling}%
+\indextt{NoQuarkMixing}%
+\indextt{QEDOnly}%
+\indextt{Restrictions}%
+\Code{SMew.mod} is a companion model file for \Code{SM.mod} in which 
+the quarks do not carry colour indices.  It is included for backward 
+compatibility with old versions.
+
+
+\subsection{The QCD Extension}
+
+The model file \Code{SMQCD.mod} adds the QCD Feynman rules to the
+electroweak part in \Code{SM.mod}.  In fact, it just loads \Code{SM.mod}
+and appends the gluon and its ghost to the appropriate definitions.%
+\indextt{SMQCD.mod}%
+\indextt{SMc.mod}%
+\index{QCD}
+
+Following is the list of additional symbols used in \Code{SMQCD.mod}.
+\biitab
+\Code{GS} &
+	the strong coupling constant \\
+\Code{SUNT[\Va,\,\Vi,\,\Var{j}]} &
+	the generators of SU($N$), $(T^\Va)_{\Var{ij}}$ \\
+\Code{SUNF[\Va,\,\Vb,\,\Vc]} &
+	the SU($N$) structure constants $f^{\Var{abc}}$ \\
+\Code{SUNF[\Va,\,\Vb,\,\Vc,\,\Vd]} &
+	a short-hand for the sum $\sum_i f^{\Var{ab}i} f^{i\Var{cd}}$
+\etab
+\indextt{GS}%
+\indextt{SUNT}%
+\indextt{SUNF}%
+
+The additional particles are the gluon and its ghost.  The gluon index
+is not expanded out at particles level, \ie \FA\ does not generate eight
+diagrams for every gluon.
+\index{gluon}%
+
+\begin{tabular}{|l|l|l|ll|l|} \hline
+\Name{class} & \Name{self-conj.} & \Name{indices} &
+\Name{members} & & \Name{mass} \\ \hline\hline
+%
+\rlap{\Code{V[5]}}\hphantom{(down-type quarks) } & yes &
+\rlap{\Code{Gluon}}\hphantom{\Code{Generation}} &
+\Code{V[5,\,\Brac{\Vi}]} &
+\rlap{$g_\Vi$}\hphantom{$G^-$--$W^-$} & \Code{0} \\ \hline
+%
+\Code{U[5]} & no & \Code{Gluon} &
+\Code{U[5,\,\Brac{\Vi}]} & $u_{g_\Vi}$ & \Code{0} \\
+\hline
+\end{tabular}
+
+
+\subsection{Background-field Formalism}%
+\index{background field}%
+\index{field!background}%
+\indextt{SMbgf.mod}%
+\indextt{Lorentzbgf.gen}
+
+The model file \Code{SMbgf.mod} contains the electroweak Standard Model in
+the background-field formalism.  It is based on \cite{DeDW95}, with the
+exception that the renormalization of the fermionic fields proceeds as in
+\Code{SM.mod}, \ie with separate renormalization constants for upper and
+lower components of the fermion doublet, which in turn means that fermions
+do not need an external wave-function renormalization.  The larger part of
+\Code{SMbgf.mod} is in fact derived from \Code{SM.mod}.  At present,
+vertices containing quantum fields other than fermions do not possess
+counter-terms, but this is sufficient for one-loop calculations.
+
+To work with \Code{SMbgf.mod}, one needs to specify \Code{Lorentzbgf.gen}
+as the generic model, which is a slightly generalized version of
+\Code{Lorentz.gen}.
+
+The following table lists the background fields and their quantum-field
+counterparts.  All other fields are the same as in \Code{SM.mod}.
+
+\medskip
+
+\begin{tabular}{|ll|ll|} \hline
+\multicolumn{2}{|c|}{background field} & 
+\multicolumn{2}{c|}{quantum field} \\ \hline\hline
+\Code{V[10]} & $\hat\gamma$ & \Code{V[1]} & $\gamma$ \\
+\Code{V[20]} & $\hat Z$ & \Code{V[2]} & $Z$ \\
+\Code{V[30]} & $\hat W^-$ & \Code{V[3]} & $W^-$ \\
+\Code{S[10]} & $\hat H$ & \Code{S[1]} & $H$ \\
+\Code{S[20]} & $\hat G^0$ & \Code{S[2]} & $G^0$ \\
+\Code{S[30]} & $\hat G^-$ & \Code{S[3]} & $G^-$ \\
+\Code{SV[20]}\footnotemark & $\hat G^0$--$\hat Z$ &
+\addtocounter{footnote}{-1}%
+  \Code{SV[2]}\footnotemark & $G^0$--$Z$ \\
+\addtocounter{footnote}{-1}%
+\Code{SV[30]}\footnotemark & $\hat G^-$--$\hat W^-$ &
+\addtocounter{footnote}{-1}%
+  \Code{SV[3]}\footnotemark & $G^-$--$W^-$ \\ \hline
+\end{tabular}
+\footnotetext{Must be enabled with \Code{\$SVMixing = True}.}
+
+
+\clearpage
+
+\section{The Minimal Supersymmetric Standard Model}%
+\label{sect:mssm}%
+\index{MSSM}%
+\index{supersymmetry}%
+\index{SUSY}%
+\indextt{MSSM.mod}%
+\indextt{MSSMQCD.mod}%
+\index{model!MSSM}
+
+The file \Code{MSSMQCD.mod} defines the complete (electroweak and
+strong) MSSM, whereas \Code{MSSM.mod} contains only the electroweak
+subset, defined as everything except the gluon, its ghost, and the
+gluino \cite{HaS02}.  The four-sfermion couplings appear in
+\Code{MSSM.mod} even though they have both electroweak and strong parts. 
+Both model files follow the conventions of \cite{HaK85, GuH86, hhg}. 
+These conventions differ from the ones in \Code{SM.mod} by the sign of
+the SU(2) covariant derivative.  Counter-terms are currently not
+included in the MSSM model files.
+
+The symbols used for the MSSM parameters are listed in the following
+table.  The Standard-Model parameters have the same names as in
+\Code{SM.mod}, \eg \Code{MW}, and are omitted from this table.
+\biitab
+\Code{Mh0}, \Code{MHH}, \Code{MA0}, \Code{MG0} &
+	the neutral Higgs boson masses \\
+\Code{MHp}, \Code{MGp} &
+	the charged Higgs boson masses \\
+\Code{CB}, \Code{SB}, \Code{TB} &
+	$\cos\beta$, $\sin\beta$, $\tan\beta$ \\
+\Code{CA}, \Code{SA} &
+	$\cos\alpha$, $\sin\alpha$ \\
+\Code{C2A}, \Code{S2A}, \Code{C2B}, \Code{S2B} &
+	$\cos 2\alpha$, $\sin 2\alpha$,
+	$\cos 2\beta$, $\sin 2\beta$ \\
+\Code{CAB}, \Code{SAB}, \Code{CBA}, \Code{SBA} &
+	$\cos(\alpha + \beta)$, $\sin(\alpha + \beta)$,
+	$\cos(\beta - \alpha)$, $\sin(\beta - \alpha)$ \\
+\Code{MUE} &
+	the Higgs-doublet mixing parameter $\mu$ \\
+\Code{MGl} &
+	the gluino mass \\
+\Code{MNeu[\Vn]} &
+	the neutralino masses \\
+\Code{ZNeu[\Vn,\,\Vnp]} &
+	the neutralino mixing matrix \\
+\Code{MCha[\Vc]} &
+	the chargino masses \\
+\Code{UCha[\Vc,\,\Vcp]}, \Code{VCha[\Vc,\,\Vcp]} &
+	the chargino mixing matrices \\
+\Code{MSf[\Vs,\,\Vt,\,\Vg]} &
+	the sfermion masses \\
+\Code{USf[\Vt,\,\Vg][\Vs,\,\Vsp]} &
+	the sfermion mixing matrix \\
+\Code{Af[\Vt,\,\Vg]} &
+	the (scalar) soft-breaking $A$-parameters \\ \hline
+\etab
+\indextt{Mh0}\indextt{MHH}\indextt{MA0}\indextt{MG0}%
+\indextt{MHp}\indextt{MGp}%
+\indextt{CB}\indextt{SB}\indextt{TB}%
+\indextt{CA}\indextt{SA}%
+\indextt{C2A}\indextt{S2A}\indextt{C2B}\indextt{S2B}%
+\indextt{CAB}\indextt{SAB}\indextt{CBA}\indextt{SBA}%
+\indextt{MUE}%
+\indextt{MGl}%
+\indextt{MNeu}%
+\indextt{ZNeu}%
+\indextt{MCha}%
+\indextt{UCha}\indextt{VCha}%
+\indextt{MSf}%
+\indextt{USf}%
+\indextt{Af}%
+\index{sfermions}%
+\index{charginos}%
+\index{neutralinos}%
+\index{gluinos}%
+The sfermion type is denoted by $t$ and is defined similar to the fermion
+type.  The primed indices appearing in the mixing matrices enumerate the
+gauge eigenstates, the unprimed ones mass eigenstates.  The following
+indices are used in \Code{MSSM.mod} and \Code{MSSMQCD.mod}:
+\begin{alignat*}{4}
+g &= \Code{Index[Generation]} &&= 1\ldots 3\,, & \qquad\qquad
+s &= \Code{Index[Sfermion]}   &&= 1\ldots 2\,, \\
+o &= \Code{Index[Colour]}     &&= 1\ldots 3\,, &
+n &= \Code{Index[Neutralino]} &&= 1\ldots 4\,, \\
+u &= \Code{Index[Gluon]}      &&= 1\ldots 8\,, &
+c &= \Code{Index[Chargino]}   &&= 1\ldots 2\,.
+\end{alignat*}
+The particle content of \Code{MSSM.mod} and \Code{MSSMQCD.mod} is given in
+the next table.  The gluon, its ghost, and the gluino, which are defined
+only in the latter, are written in grey.  ``sc'' is short for
+self-conjugate.
+\begin{center}
+\begin{tabular}{|l|l|l|l||l|l|l|l|} \hline
+%
+\multicolumn{3}{|l|}{leptons} & mass &
+\multicolumn{3}{|l|}{sleptons} & mass \\ \hline
+$\nu_\Vg$ & & \Code{F[1,\,\Brac{\Vg}]} & \Code{0} &
+  $\tilde\nu_\Vg$ & & \Code{S[11,\,\Brac{\Vg}]} & \Code{MSf} \\
+$\ell_\Vg$ & & \Code{F[2,\,\Brac{\Vg}]} & \Code{MLE} &
+  $\tilde\ell_\Vg^\Vs$ & & \Code{S[12,\,\Brac{\Vs,\Vg}]} & \Code{MSf} \\
+\hline
+\multicolumn{6}{c}{} \\[-1ex] \hline
+%
+\multicolumn{4}{|l||}{quarks} &
+\multicolumn{4}{|l|}{squarks} \\ \hline
+$u_\Vg$ & & \Code{F[3,\,\Brac{\Vg,\Vo}]} & \Code{MQU} &
+  $\tilde u_\Vg^\Vs$ & & \Code{S[13,\,\Brac{\Vs,\Vg,\Vo}]} & \Code{MSf} \\
+$d_\Vg$ & & \Code{F[4,\,\Brac{\Vg,\Vo}]} & \Code{MQD} &
+  $\tilde d_\Vg^\Vs$ & & \Code{S[14,\,\Brac{\Vs,\Vg,\Vo}]} & \Code{MSf} \\
+\hline
+\multicolumn{6}{c}{} \\[-1ex] \hline
+%
+\multicolumn{4}{|l||}{gauge bosons} &
+\multicolumn{4}{|l|}{neutralinos, charginos} \\ \hline
+$\gamma$ & sc & \Code{V[1]} & \Code{0} &
+  $\tilde\chi_\Vn^0$ & sc & \Code{F[11,\,\Brac{\Vn}]} & \Code{MNeu} \\
+$Z$ & sc & \Code{V[2]} & \Code{MZ} &
+  $\tilde\chi_\Vc^-$ & & \Code{F[12,\,\Brac{\Vc}]} & \Code{MCha} \\ 
+$W^-$ & & \Code{V[3]} & \Code{MW} & & & & \\ \hline
+\multicolumn{6}{c}{} \\[-1ex] \hline
+%
+\multicolumn{4}{|l||}{Higgs bosons} &
+\multicolumn{4}{|l|}{ghosts} \\ \hline
+$h^0$ & sc & \Code{S[1]} & \Code{Mh0} &
+	$u_\gamma$ & & \Code{U[1]} & \Code{0} \\
+$H^0$ & sc & \Code{S[2]} & \Code{MHH} &
+	$u_Z$ & & \Code{U[2]} & \Code{MZ} \\
+$A^0$ & sc & \Code{S[3]} & \Code{MA0} &
+	$u_+$ & & \Code{U[3]} & \Code{MW} \\
+$G^0$ & sc & \Code{S[4]} & \Code{MG0} &
+	$u_-$ & & \Code{U[4]} & \Code{MW} \\
+$H^-$ & & \Code{S[5]} & \Code{MHp} &
+	\greyed{$u_{g_\Vi}$} & & \greyed{\Code{U[5,\,\Brac{\Vi}]}} &
+	\greyed{\Code{0}} \\
+$G^-$ & & \Code{S[6]} & \Code{MGp} & & & & \\ \hline
+\multicolumn{6}{c}{} \\[-1ex] \hline
+%
+\multicolumn{4}{|l||}{\greyed{gluon}} &
+\multicolumn{4}{|l|}{\greyed{gluino}} \\ \hline
+\greyed{$g_\Vi$} & \greyed{sc} & \greyed{\Code{V[5,\,\Brac{\Vi}]}} &
+  \greyed{\Code{0}} &
+	\greyed{$\tilde g_\Vi$} & \greyed{sc} &
+	\greyed{\Code{F[15,\,\Brac{\Vi}]}} &
+	\greyed{\Code{MGl}} \\
+\hline
+%
+\end{tabular}
+\end{center}
+
+\Code{MSSM.mod} and \Code{MSSMQCD.mod} define the following
+\Code{Restrictions}:
+\biitab
+\Code{NoGeneration1} &
+	exclude generation-1 fermions
+	($\nu_{\rm e}$, $e$, $u$, $d$) \\
+\Code{NoGeneration2} &
+	exclude generation-2 fermions
+	($\nu_\mu$, $\mu$, $c$, $s$) \\
+\Code{NoGeneration3} &
+	exclude generation-3 fermions
+	($\nu_\tau$, $\tau$, $t$, $b$) \\
+\Code{NoElectronHCoupling} &
+	exclude all couplings involving electrons and any Higgs
+	field \\
+\Code{NoLightFHCoupling} &
+	exclude all couplings between light fermions
+	(all fermions except the top) and any Higgs field \\
+\Code{NoSUSYParticles} &
+	exclude the particles not present in the SM: sfermions,
+	charginos, neutralinos, and the Higgs fields
+	$H^0$, $A^0$, $H^\pm$ \\
+\Code{THDMParticles} &
+	exclude the particles not present in the Two-Higgs-Doublet
+	Model: the sfermions, charginos, and neutralinos
+\etab
+\indextt{NoGeneration$n$}%
+\indextt{NoElectronHCoupling}%
+\indextt{NoLightFHCoupling}%
+\indextt{NoSUSYParticles}%
+\indextt{THDMParticles}%
+
+The complete list of all couplings defined in \Code{MSSM.mod} and 
+\Code{MSSMQCD.mod} is contained in the files \Code{MSSM.ps.gz} and
+\Code{MSSMQCD.ps.gz}, respectively, which are located in the \Code{Models}
+directory.  The ``couplings'' in these PostScript files are actually the
+coupling vectors corresponding to the kinematic vectors defined in
+\Code{Lorentz.gen}.
+
+\Code{MSSM.mod} and \Code{MSSMQCD.mod} currently do not contain any
+counter-term vertices, so that counter-term diagrams cannot be generated
+automatically yet.  This is due to the fact that, although it is in
+principle known how to renormalize theories with softly-broken
+supersymmetry \cite{HoKS00}, this is far from trivial for the MSSM and has
+so far not been worked out completely.  As long as only SM particles 
+appear at tree-level, however, one can almost directly use the SM 
+counter-terms.  Of course the self-energies from which the renormalization 
+constants are derived now have to be calculated in the MSSM.
+
+The one thing one has to observe when using the SM counter-terms for an
+MSSM process is that, for historical reasons, the SM and MSSM model files
+differ in the sign of the SU(2) covariant derivative.  Namely,
+$$
+D_\mu = \partial_\mu + \sigma\,\ri g_2 W_\mu\,,
+$$
+where $\sigma$ is $-$ in the SM and $+$ in the MSSM model files.  There is
+a simple rule for translating the two conventions: replace \Code{SW} by
+\Code{-SW} and add an additional minus sign for each Higgs field that
+appears in a coupling.
+
+
+\section{The Two-Higgs-Doublet Model}%
+\label{sect:thdm}%
+\index{THDM}%
+\indextt{THDM.mod}%
+\index{model!two-Higgs-doublet}
+
+The Two-Higgs-Doublet Model (THDM) possesses a Higgs sector similar to
+the MSSM (\ie 5 physical Higgs fields), but has no supersymmetry and
+hence no superpartners.  The Feynman rules are mostly the same as for
+the MSSM with the couplings involving superpartners omitted, except for
+the SFF, SSS, and SSSS couplings.  Model constants are given in the 
+following table. Again, the Standard-Model parameters are omitted since 
+they are the same as in \Code{SM.mod}.
+\biitab
+\Code{Mh0}, \Code{MHH}, \Code{MA0}, \Code{MG0} &
+	the neutral Higgs boson masses \\
+\Code{MHp}, \Code{MGp} &
+	the charged Higgs boson masses \\
+\Code{CB}, \Code{SB}, \Code{TB} &
+	$\cos\beta$, $\sin\beta$, $\tan\beta$ \\
+\Code{CA, SA} &
+	$\cos\alpha$, $\sin\alpha$ \\
+\Code{C2A}, \Code{S2A}, \Code{C2B}, \Code{S2B} &
+	$\cos 2\alpha$, $\sin 2\alpha$,
+	$\cos 2\beta$, $\sin 2\beta$ \\
+\Code{CAB}, \Code{SAB}, \Code{CBA}, \Code{SBA} &
+	$\cos(\alpha + \beta)$, $\sin(\alpha + \beta)$,
+	$\cos(\beta - \alpha)$, $\sin(\beta - \alpha)$ \\
+\Code{Yuk1}, \Code{Yuk2}, \Code{Yuk3} &
+	Yukawa-coupling parameters (see below)
+\etab
+\indextt{Mh0}\indextt{MHH}\indextt{MA0}\indextt{MG0}%
+\indextt{MHp}\indextt{MGp}%
+\indextt{CB}\indextt{SB}\indextt{TB}%
+\indextt{CA}\indextt{SA}%
+\indextt{C2A}\indextt{S2A}\indextt{C2B}\indextt{S2B}%
+\indextt{CAB}\indextt{SAB}\indextt{CBA}\indextt{SBA}%
+One distinguishes two types of THDM, Type I, where all fermions couple 
+only to the second Higgs doublet $H_2$, and Type II, where up-type 
+fermions couple to $H_2$ whereas down-type fermions couple to $H_1$.  In 
+the \FA\ implementation of the THDM, this choice is parameterized by 
+three Yukawa-coupling parameters which take the values
+\begin{center}
+\begin{tabular}{l|ccc}
+             & \Code{Yuk1} & \Code{Yuk2} & \Code{Yuk3} \\ \hline \\[-3ex]
+Type-I THDM  & $\hphantom{-}\dfrac{\cos\alpha}{\sin\beta}$
+             & $\hphantom{-}\dfrac{\sin\alpha}{\sin\beta}$
+             & $-\cot\beta$ \\[1.5ex] \hline \\[-3ex]
+Type-II THDM & $-\dfrac{\sin\alpha}{\cos\beta}$
+             & $\hphantom{-}\dfrac{\cos\alpha}{\cos\beta}$
+             & $\hphantom{-}\tan\beta$
+\end{tabular}
+\end{center}
+The following \Code{Restrictions} are defined in \Code{THDM.mod}:
+\biitab
+\Code{NoGeneration\Vn} &
+	exclude generation-\Vn\ fermions ($\Vn = 1, 2, 3$) \\
+\Code{NoElectronHCoupling} &
+	exclude all couplings involving electrons and any Higgs
+	field \\
+\Code{NoLightFHCoupling} &
+	exclude all couplings between light fermions
+	(all fermions except the top) and any Higgs field
+\etab
+\indextt{NoGeneration\Vn}%
+\indextt{NoElectronHCoupling}%
+\indextt{NoLightFHCoupling}
+
+
+\section{Graphics Primitives in \Code{feynarts.sty}}%
+\label{sect:fasty}%
+\indextt{feynarts.sty}%
+\index{graphics primitives}%
+\index{PostScript}%
+\index{LaTeX commands@\LaTeX\ commands}
+
+The \FA\ style is included in a \LaTeX\ $2\varepsilon$ document with
+\begin{verbatim}
+  \usepackage{feynarts}
+\end{verbatim}
+It makes three graphics primitives available with which Feynman diagrams
+can be drawn:
+\begin{itemize}
+\item \Code{\backsl FAProp} draws a propagator,
+\item \Code{\backsl FAVert} draws a vertex,
+\item \Code{\backsl FALabel} places a label.
+\end{itemize}
+In addition, it provides formatting/geometry directives:
+\begin{itemize}
+\item \Code{\backsl begin}\dots\Code{end\Brac{feynartspicture}}
+  delineates a sheet of Feynman diagrams,
+\item \Code{\backsl FADiagram} advances to the next diagram.
+\end{itemize}
+Since \Code{feynarts.sty} emits direct PostScript primitives, the 
+interpretation of which is non-standard across PostScript renderers, it 
+is guaranteed to work only with \Code{dvips}.%
+\indextt{\backsl FAProp}%
+\indextt{\backsl FAVert}%
+\indextt{\backsl FALabel}%
+\indextt{\backsl FADiagram}%
+\indextt{feynartspicture}%
+\indextt{dvips}
+
+
+\subsection{Geometry}
+
+A single Feynman diagram is always drawn on a $20\times 20$ canvas. 
+Several such canvasses are combined into a rectangular sheet which can
+optionally carry a title.  A sheet of Feynman diagrams is enclosed 
+in a \Code{feynartspicture} environment in \LaTeX:
+\begin{alltt}
+   \backsl{}begin\Brac{feynartspicture}(\(s\sb{x}\),\(s\sb{y}\))(\(n\sb{x}\),\(n\sb{y}\))
+   ...
+   \backsl{}end\Brac{feynartspicture}
+\end{alltt}
+This sheet has a size of $s_x\times s_y$ (in units of \LaTeX's
+\Code{\backsl unitlength}) with room for $n_x\times n_y$ Feynman
+diagrams.  $n_y$ need not be an integer and the extra space implied
+by the fractional part is allocated at the top for the sheet label.
+
+Note that it is not possible to distort the aspect ratio of a 
+Feynman diagram.  If the ratio $n_x/\lfloor n_y\rfloor$ is chosen 
+different from the ratio $s_x/s_y$, the sheet will fit the smaller 
+dimension exactly and be centered in the larger dimension.
+
+The overall geometry of a \Code{feynartspicture} sheet is thus as 
+follows (shown here for a $2\times 2$ sheet):
+\begin{center}
+\vspace*{-3ex}
+\begin{feynartspicture}(300,345)(2,2.3)
+\FALabel(22,47)[]{\large Title}
+
+\FADiagram{\raise 65bp\hbox{Diagram 1}}
+\FAProp(0,0)(20,0)(0,){Straight}{0}
+\FAProp(19,0)(20,0)(0,){Straight}{1}
+\FAProp(0,0)(0,20)(0,){Straight}{0}
+\FAProp(0,19)(0,20)(0,){Straight}{1}
+\FAProp(20,0)(20,20)(0,){GhostDash}{0}
+\FAProp(0,20)(20,20)(0,){GhostDash}{0}
+\FAVert(0,0){0}
+\FALabel(.5,.5)[lb]{(0,0)}
+\FAVert(20,20){0}
+\FALabel(19.5,19.5)[rt]{(20,20)}
+
+\FADiagram{\raise 65bp\hbox{Diagram 2}}
+\FAProp(0,0)(20,0)(0,){Straight}{0}
+\FAProp(19,0)(20,0)(0,){Straight}{1}
+\FAProp(0,0)(0,20)(0,){Straight}{0}
+\FAProp(0,19)(0,20)(0,){Straight}{1}
+\FAProp(20,0)(20,20)(0,){GhostDash}{0}
+\FAProp(0,20)(20,20)(0,){GhostDash}{0}
+\FAVert(0,0){0}
+\FALabel(.5,.5)[lb]{(0,0)}
+\FAVert(20,20){0}
+\FALabel(19.5,19.5)[rt]{(20,20)}
+
+\FADiagram{\raise 65bp\hbox{Diagram 3}}
+\FAProp(0,0)(20,0)(0,){Straight}{0}
+\FAProp(19,0)(20,0)(0,){Straight}{1}
+\FAProp(0,0)(0,20)(0,){Straight}{0}
+\FAProp(0,19)(0,20)(0,){Straight}{1}
+\FAProp(20,0)(20,20)(0,){GhostDash}{0}
+\FAProp(0,20)(20,20)(0,){GhostDash}{0}
+\FAVert(0,0){0}
+\FALabel(.5,.5)[lb]{(0,0)}
+\FAVert(20,20){0}
+\FALabel(19.5,19.5)[rt]{(20,20)}
+
+\FADiagram{\raise 65bp\hbox{Diagram 4}}
+\FAProp(0,0)(20,0)(0,){Straight}{0}
+\FAProp(19,0)(20,0)(0,){Straight}{1}
+\FAProp(0,0)(0,20)(0,){Straight}{0}
+\FAProp(0,19)(0,20)(0,){Straight}{1}
+\FAProp(20,0)(20,20)(0,){GhostDash}{0}
+\FAProp(0,20)(20,20)(0,){GhostDash}{0}
+\FAVert(0,0){0}
+\FALabel(.5,.5)[lb]{(0,0)}
+\FAVert(20,20){0}
+\FALabel(19.5,19.5)[rt]{(20,20)}
+\end{feynartspicture}
+\end{center}
+Inside the \Code{feynartspicture}, the macro
+\begin{alltt}
+   \backsl{}FADiagram\Brac{\(\Var{dtitle}\)}
+\end{alltt}
+advances to the next diagram, which has the title \textit{dtitle}.  The 
+size of \Var{dtitle} can be changed by redefining \Code{\backsl 
+FADiagramLabelSize} with one of the usual \LaTeX\ font-size specifiers, 
+\eg
+\begin{verbatim}
+  \def\FADiagramLabelSize{\scriptsize}
+\end{verbatim}
+The default size is \Code{\backsl small}.
+
+
+\subsection{Propagators}
+
+All propagators are circular arcs in the \FA\ style.  This includes
+conceptually the straight line as the infinite-radius limit. 
+Propagators furthermore come in two variants: tadpole propagators, where
+the initial and final vertex coincide, and `ordinary' propagators with
+distinct initial and final vertex.  This distinction is necessary
+because the information that has to be stored is different for the two
+cases.  The arguments of the \Code{\backsl FAProp} macro and their
+geometrical meaning are shown below for both variants:
+\begin{center}
+\begin{picture}(440,160)(-50,10)
+\SetWidth{1.5}
+%
+%\SetColor{Red}
+\CArc(50,100)(40,0,360)
+%\SetColor{Black}
+\Vertex(50,60){2}
+\Text(50,55)[t]{$(f_x,f_y)$}
+\Vertex(50,100){2}
+\Text(50,98)[t]{$(c_x,c_y)$}
+\Text(50,20)[]{\Code{\backsl FAProp($f_x$,$f_y$)($f_x$,$f_y$)($c_x$,$c_y$)\Brac{$g$}\Brac{$a$}}}
+%
+\SetOffset(70,0)
+%
+\SetWidth{.5}
+\SetColor{Blue}
+\Line(156.031,84.202)(211.698,116.342)
+\Line(211.698,116.342)(200,136.603)
+\SetColor{Black}
+\DashLine(250,50)(267.365,148.481){4}
+\DashLine(250,50)(156.031,84.202){4}
+\DashLine(211.698,116.342)(267.365,148.481){4}
+\SetWidth{1.5}
+%\SetColor{Red}
+\CArc(250,50)(100,80,160)
+%\SetColor{Black}
+\Vertex(267.365,148.481){2}
+\Vertex(156.031,84.202){2}
+\Vertex(250,50){2}
+\Text(271,150)[lb]{$(t_x,t_y)$}
+\Text(154,82)[rt]{$(f_x,f_y)$}
+\Text(185,98)[t]{$d$}
+\Text(210,130)[l]{$h$}
+\Text(230,100)[]{$\kappa = \dfrac hd$}
+\Text(220,20)[]{\Code{\backsl FAProp($f_x$,$f_y$)($t_x$,$t_y$)($\kappa$,)\Brac{$g$}\Brac{$a$}}}
+\end{picture}
+\end{center}
+The latter two arguments, $g$ and $a$, respectively determine line and
+arrow style:
+\begin{center}
+\vspace*{-5ex}
+\begin{feynartspicture}(360,180)(2,1)
+\FADiagram{}
+\FAProp(1,16)(10,16)(0,){Straight}{0}
+\FALabel(11,16)[l]{$g$ = Straight}
+\FAProp(1,13)(10,13)(0,){ScalarDash}{0}
+\FALabel(11,13)[l]{$g$ = ScalarDash}
+\FAProp(1,10)(10,10)(0,){GhostDash}{0}
+\FALabel(11,10)[l]{$g$ = GhostDash}
+\FAProp(1,7)(10,7)(0,){Sine}{0}
+\FALabel(11,7)[l]{$g$ = Sine}
+\FAProp(10,4)(1,4)(0,){Cycles}{0}
+\FALabel(11,4)[l]{$g$ = Cycles}
+%
+\FADiagram{}
+\FAProp(3,16)(12,16)(0,){Straight}{0}
+\FALabel(13,16)[l]{$a = 0$}
+\FAProp(3,13)(12,13)(0,){Straight}{1}
+\FALabel(13,13)[l]{$a = 1$}
+\FAProp(3,10)(12,10)(0,){Straight}{-1}
+\FALabel(13,10)[l]{$a = -1$}
+\end{feynartspicture}
+\vspace*{-5ex}
+\end{center}
+
+
+\subsection{Vertices}
+
+Vertices mark the points where propagators join.  Each propagator has a 
+counter-term order associated with it.  
+\begin{center}
+\vspace*{-10ex}
+\hspace*{20ex}\begin{feynartspicture}(200,200)(1,1)
+\FADiagram{}
+\FALabel(-1,10)[r]{\Code{\backsl FAVert($x$,$y$)\Brac{$o$}}\qquad $o =~~\cdots$}
+\FAVert(1,13){-3}
+\FALabel(1,10)[]{$-3$~}
+\FAVert(4,13){-2}
+\FALabel(4,10)[]{$-2$~}
+\FAVert(7,13){-1}
+\FALabel(7,10)[]{$-1$~}
+\FAVert(10,13){0}
+\FALabel(10,10)[]{$0$}
+\FAVert(13,13){1}
+\FALabel(13,10)[]{$1$}
+\FAVert(16,13){2}
+\FALabel(16,10)[]{$2$}
+\FAVert(19,13){3}
+\FALabel(19,10)[]{$3$}
+\FALabel(21,10)[l]{$\cdots$}
+\end{feynartspicture}
+\vspace*{-15ex}
+\end{center}
+
+
+\subsection{Labels}
+
+Labels are usually associated with propagators, but can in principle be
+set anywhere.  They are positioned with a pair of coordinates and an
+alignment, given in the usual \TeX\ manner, \ie a code of up to two
+letters for vertical and horizontal alignment: $\{\Code{t} = \text{top},
+\text{(empty)} = \text{center}, \Code{b} = \text{bottom}\}\otimes
+\{\Code{l} = \text{left}, \text{(empty)} = \text{center}, \Code{r} =
+\text{right}\}$, \eg \Code{[t]} or \Code{[rb]}.  The alignment makes it
+possible to change the label's text, in particular its width, without
+having to reposition the coordinates.
+$$
+\Code{\backsl FALabel(\Var{x},\Var{y})[\Var{align}]\Brac{\Var{text}}}
+$$
+
+
+\clearpage
+
+\section{Incompatible Changes in Version 3.3}%
+\index{compatibility}%
+\index{changes in \FA\ 3.3}
+
+From Version 3.2 on, the topology shapes are accessed in a slightly 
+different naming scheme.  This eliminates some problems with large 
+directories in some operating systems.  Shapes from \FA\ 3.1 can be 
+converted as follows: Replace the \verb=ShapeData= directory that comes 
+with the current \FA\ with your old (3.1) \verb=ShapeData= directory. 
+Then start \mma\ and type \verb=<< Convert31to32.m=.  For example,
+\begin{alltt}
+  cd FeynArts-\(n\).\(m\)
+  rm -fr ShapeData
+  cp -rp ../FeynArts-3.1/ShapeData .
+  math
+  << Convert31to32.m
+\end{alltt}
+
+\end{appendix}
+
+
+\section*{Acknowledgements}
+
+The graphics routines of \FA\ 3 have been developed on a Visiting
+Scholar grant of Wolfram Research, Inc., and I am grateful in particular
+to Michael Malak and Lou D'Andria for sharing their knowledge of \mma\
+with me.  Thanks also to the Ph.D.\ students at Karlsruhe, especially
+Christian Schappacher, for relentless beta testing.
+
+
+\clearpage
+
+\begin{flushleft}
+\begin{thebibliography}{999}
+
+\itemsep 2pt plus 2pt minus 1pt
+\frenchspacing
+
+\newcommand{\cpc}[3]{\textsl{Comp. Phys. Commun.} \textbf{#1} (#2) #3}
+\newcommand{\fp}[3]{\textsl{Fortschr. Phys.} \textbf{#1} (#2) #3}
+\newcommand{\np}[3]{\textsl{Nucl. Phys.} \textbf{#1} (#2) #3}
+\newcommand{\npps}[3]{\textsl{Nucl. Phys. Proc. Suppl.} \textbf{#1} (#2) #3}
+\newcommand{\epj}[3]{\textsl{Eur. Phys. J.} \textbf{#1} (#2) #3}
+\newcommand{\prep}[3]{\textsl{Phys. Rep.} \textbf{#1} (#2) #3}
+
+\bibitem[De93]{De93}
+A.~Denner, \fp{41}{93}{307} [arXiv:0709.1075].
+
+\bibitem[De95]{DeDW95}
+A.~Denner, S.~Dittmaier, G.~Weiglein, \np{B440}{95}{95}
+[arXiv:hep-ph/9410338].
+
+\bibitem[De92]{DeEHK92}
+A.~Denner, H.~Eck, O.~Hahn, J.~K\"ublbeck, \np{B387}{92}{467}.
+
+\bibitem[Eck95]{Eck95}
+H.~Eck, Ph.D.\ thesis, University of W\"urzburg, 1995,
+available from \Code{http://feynarts.de}.
+
+\bibitem[HaI06]{HaI06}
+T.~Hahn, J.I.~Illana, \npps{160}{2006}{101} [hep-ph/0607049].
+
+\bibitem[Gu86]{GuH86}
+J.F.~Gunion, H.E.~Haber, \np{B272}{1986}{1}.
+
+\bibitem[HHG90]{hhg}
+J.F.~Gunion, H.E.~Haber, G.~Kane, S.~Dawson, The Higgs Hunter's
+Guide, Frontiers in Physics Vol.\ 80, Addison-Wesley, 1990.
+
+\bibitem[Ha85]{HaK85}
+H.E.~Haber, G.~Kane, \prep{117}{1985}{75}.
+
+\bibitem[HaS02]{HaS02}
+T.~Hahn, C.~Schappacher, \cpc{143}{2002}{54} [hep-ph/0105349].
+
+\bibitem[Ho00]{HoKS00}
+W.~Hollik, E.~Kraus, D.~St\"ockinger, \epj{C23}{2002}{735} 
+[arXiv:hep-ph/0007134].
+
+\bibitem[K\"u90]{KuBD90}
+J.~K\"ublbeck, M.~B\"ohm, A.~Denner, \cpc{60}{90}{165}.
+
+\end{thebibliography}
+\end{flushleft}
+
+\printindex
+
+\end{document}

@@ -2,7 +2,7 @@
 	Insert.m
 		Insertion of fields into topologies created by 
 		CreateTopologies.
-		last modified 23 Oct 14 th
+		last modified 19 Jun 15 th
 
 The insertion is done in 3 levels: insertion of generic fields (Generic),
 of classes of a certain model (Classes) or of the members of the classes
@@ -249,7 +249,7 @@ ParticleLookup[ fp_, Mix[l_, r_] ] := PLookup[fp, Mix[l, r], l, r]
 
 ParticleLookup[ fp_, Rev[l_, r_] ] := PLookup[fp, Mix[l, r], r, l]
 
-ParticleLookup[ {fp_, fp_}, p_ ] := lallowed = PLookup[fp, p, p]
+ParticleLookup[ {fp_..}, p_ ] := lallowed = PLookup[fp, p, p]
 
 ParticleLookup[ fp_, p_ ] := PLookup[fp, p, AntiParticle[p], p]
 
@@ -304,7 +304,7 @@ Block[ {vx, p = ru[[i, 2]], lallowed, rallowed, allowed, prop},
     Print["Ins11: inserting field #", i, " (", p, ") on ", prop];
     Print["Ins11: fields     = ", List@@ ru];
     Print["Ins11: L-vertex   = ", LeftPartner/@ vx[[1]] ];
-    Print["Ins11: R-vertex   = ", RightPartner/@ vx[[2]] ];
+    Print["Ins11: R-vertex   = ", RightPartner/@ vx[[-1]] ];
     Print["Ins11: L-allowed  = ", lallowed];
     Print["Ins11: R-allowed  = ", rallowed];
     Print["Ins11: allowed    = ", allowed];

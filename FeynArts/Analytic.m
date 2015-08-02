@@ -2,7 +2,7 @@
 	Analytic.m
 		Translation of InsertFields output into
 		analytic expressions
-		last modified 2 Dec 14 th
+		last modified 4 Apr 15 th
 *)
 
 Begin["`Analytic`"]
@@ -56,7 +56,8 @@ CreateFeynAmp[ TopologyList[tops__], opt___Rule ] :=
 
 CreateFeynAmp[ tops:TopologyList[info___][___], options___Rule ] :=
 Block[ {alevel, pref, next, gaugeru, truncru, momcons, graphinfo, toplist,
-amps, head, topnr = 1, opt = ActualOptions[CreateFeynAmp, options]},
+amps, head, topnr = 1, p$nc = Level[P$NonCommuting, {-1}, Alternatives],
+opt = ActualOptions[CreateFeynAmp, options]},
 
   If[ (alevel = ResolveLevel[AmplitudeLevel /. opt /. {info} /.
         Options[InsertFields]]) === $Failed,
@@ -329,20 +330,31 @@ Fixgmc[ r___, c:_[__, -_] ] := dot[r, c]
 	   e.g. when computing counter terms from the self energies *)
 Fixgmc[ c1:_[__, _?SelfConjugate], r___, c2:_[__, _?SelfConjugate] ] :=
   dot[c1, r, c2] /;
-  OrderedQ[{c2[[0, 1]][ c2[[2, 1]] ], c1[[0, 1]][ c1[[1, 1]] ]}]
+  OrderedQ[{c2[[0, 1]] @ c2[[2, 1]], c1[[0, 1]] @ c1[[1, 1]]}]
 
 Fixgmc[ c__ ] := Reverse[ ReverseProp/@ dot[c] ]
 
 
-MakeFermionChains[ top_ ] := top /; FreeQ[top, P$NonCommuting]
+Chkgmc[ c_ ] := Chkgmc[Level[c, {2}][[{1, -2}]], c]
+
+Chkgmc[ {v_, v_}, c_tr ] := c
+
+Chkgmc[ {Vertex[1][_], Vertex[1][_]}, c_dot ] := c
+
+Chkgmc[ _, c_ ] := List@@ c
+
+
+NCSelect[ top_, nc_ ] := (
+  ch = {ch, BuildChain@@ gmc/@ Select[top, !FreeQ[#[[3]], nc]&]};
+  Select[top, FreeQ[#[[3]], nc]&] )
+
+
+MakeFermionChains[ top_ ] := top /; FreeQ[top, p$nc]
 
 MakeFermionChains[ top_ ] :=
-Block[ {res, ext},
-  res = Append[
-    Select[top, FreeQ[#[[3]], P$NonCommuting]&],
-    BuildChain@@ gmc/@ Select[top, !FreeQ[#[[3]], P$NonCommuting]&] /.
-      gmc -> Fixgmc
-  ] /. BuildChain -> Sequence;
+Block[ {ch = {}, res, ext},
+  res = Fold[NCSelect, top, Flatten[{P$NonCommuting}]];
+  res = Flatten[{res, Cases[ch, gmc[c__] :> Chkgmc[Fixgmc[c]], Infinity]}];
 
 	(* Since fermion chains are always traversed opposite to the
 	   fermion flow, we need the sign of the permutation that gets
@@ -403,7 +415,7 @@ Block[ {v, perm},
   If[ perm === $Failed, Return[{}] ];
   v = v[[perm]];
   If[ cto < 0,
-    I PV[ If[FreeQ[v, P$NonCommuting], Identity, NonCommutative][
+    I PV[ If[FreeQ[v, p$nc], Identity, NonCommutative][
             VertexFunction[-cto]@@ v ] ],
   (* else *)
     AnalyticalCoupling[cto]@@ v ]
@@ -802,8 +814,7 @@ merge[ prop[i_, j_], prop[j_, k_] ] := prop[i, k]
 
 FermionRouting[ gr_:{}, top:P$Topology, ___ ] := Level[
   merge@@ Apply[ prop[ #1[[1]], #2[[1]] ]&,
-    Select[AddFieldNo[top] /. List@@ gr, !FreeQ[#, P$NonCommuting]&],
-    1 ],
+    Select[AddFieldNo[top] /. List@@ gr, !FreeQ[#, p$nc]&], 1 ],
   {-1} ]
 
 

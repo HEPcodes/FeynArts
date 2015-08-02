@@ -3,7 +3,7 @@
 		Classes model file for the MSSM
 		by Thomas Hahn
 		based on the Feynman rules of the MSSM by Arnd Kraft
-		last modified 12 Mar 14 by Christian Schappacher
+		last modified 30 Apr 14 th
 
 This file contains the definition of the minimal supersymmetric standard
 model for FeynArts.  It needs the Generic model file Lorentz.gen.
@@ -207,6 +207,7 @@ M$ClassesDescription = {
 	SelfConjugate -> False,
 	Indices -> {},
 	Mass -> MHp,
+	QuantumNumbers -> {-1 Charge},
 	PropagatorLabel -> "H",
 	PropagatorType -> ScalarDash,
 	PropagatorArrow -> Forward },

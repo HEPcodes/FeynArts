@@ -4,7 +4,7 @@
                 by Thomas Fritzsche, Thomas Hahn, Sven Heinemeyer, 
                 Heidi Rzehak and Christian Schappacher		
 		based on the Feynman rules of the MSSM by Arnd Kraft
-		last modified 15 Jan 2015 by th
+		last modified 24 Mar 15 by th
 
 History:
 May 2001: MSSM.mod created by Thomas Hahn.
@@ -179,6 +179,8 @@ This file introduces the following symbols:
         D_\mu = \partial_\mu + Sign I g A^a_\mu \tau^a,
         is in Haber-Kane conventions, i.e. Sign = +1
 *)
+
+Clear[DR, OS]
 
 If[ !ValueQ[$SfScheme[4, j1]], $SfScheme[4, _] = DR[2] ];
 If[ !ValueQ[$SfScheme[2, j1]], $SfScheme[2, _] = OS[2] ];

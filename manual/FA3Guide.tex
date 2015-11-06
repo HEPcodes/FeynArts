@@ -162,7 +162,7 @@
 
 \vspace*{1ex}
 
-\hfill\hbox{June 16, 2015~~~~~Thomas Hahn}
+\hfill\hbox{October 29, 2015~~~~~Thomas Hahn}
 
 \clearpage
 
@@ -2163,10 +2163,7 @@ actual amplitudes.  The function for this is \Code{CreateFeynAmp}.
 	overall factor of the amplitude \\
 \Code{Truncated} & \Code{False} &
 	whether to remove external wave functions \\
-\Code{GaugeRules} &
-	\Code{\llap{\lbrac}\uscore GaugeXi -> 1\rlap{,}}\linebreak
-	\Code{\hbox{~~}MG0 -> MZ,}\linebreak
-	\Code{\hbox{~~}MGp -> MW\rbrac} &
+\Code{GaugeRules} & \Code{\uscore GaugeXi -> 1} &
 	rules to enforce a particular choice of gauge \\
 \Code{\rlap{MomentumConservation}} & \Code{~~True} &
 	whether to enforce momentum conservation at each vertex \\
@@ -2179,10 +2176,6 @@ actual amplitudes.  The function for this is \Code{CreateFeynAmp}.
 \indextt{Truncated}%
 \indextt{GaugeRules}%
 \indextt{GaugeXi}%
-\indextt{MG0}%
-\indextt{MZ}%
-\indextt{MGp}%
-\indextt{MW}%
 \indextt{MomentumConservation}%
 \indextt{GraphInfoFunction}%
 The default for \Code{AmplitudeLevel} is to use the same level the
@@ -2203,14 +2196,22 @@ To be able to produce amplitudes in an arbitrary gauge, the model file
 must of course contain the full gauge dependence of the propagators and
 couplings.  For example, \Code{Lorentz.gen} and \Code{SM.mod} contain the
 gauge-dependent propagators (\Code{V}, \Code{S}, \Code{U}) and couplings
-(\Code{SUU}) for an arbitrary $R_\xi$-gauge.  However, most people prefer 
-to work in the Feynman gauge which is the most convenient one for 
-calculating radiative corrections.  Therefore, the default
-\Code{GaugeRules} set all gauge parameters to unity.  On the other hand, if 
-one wants to check \eg gauge independence of an expression,
-\Code{GaugeRules -> \Brac{}} will keep the gauge parameters untouched.%
+(\Code{SUU}) for an arbitrary $R_\xi$-gauge.  Most people prefer to work
+in the Feynman gauge, which is the most convenient one for calculating
+radiative corrections, therefore the default \Code{GaugeRules} set all
+gauge parameters to unity.  On the other hand, if one wants to check
+\eg gauge independence of an expression, \Code{GaugeRules -> \Brac{}}
+will keep the gauge parameters untouched.  Take care that the choices
+\Code{0} (Landau gauge) and \Code{Infinity} (unitary gauge) actually
+imply a limit which is in general not correctly taken with the naive
+\Code{GaugeRules} substitution.  In such a case the gauge parameters
+should remain in the amplitude until after simplification, and then
+substituted.  For the unitary gauge there is a workaround in
+\Code{UnitaryLorentz.gen} and \Code{UnitarySM.mod}.%
 \index{gauge}%
-\index{Feynman gauge}
+\index{Feynman gauge}%
+\index{UnitaryLorentz.gen}%
+\index{UnitarySM.mod}
 
 It is possible to add information about the underlying graph to the 
 amplitude by giving a \Code{GraphInfoFunction}.  This function receives 

@@ -2,7 +2,7 @@
 	Insert.m
 		Insertion of fields into topologies created by 
 		CreateTopologies.
-		last modified 22 Jul 15 th
+		last modified 21 Jul 15 th
 
 The insertion is done in 3 levels: insertion of generic fields (Generic),
 of classes of a certain model (Classes) or of the members of the classes
@@ -46,7 +46,7 @@ InsertFields[ top:P$Topology, args__ ] :=
 
 InsertFields[ tops:(TopologyList | _TopologyList)[___],
   initial_ -> final_, options___Rule ] :=
-Block[ {proc, ilevel, excl, last, omit, need, 
+Block[ {proc, ilevel, level, excl, last, omit, need, 
 res, ninc, nout, pinc, pout, fields, topnr = 0, fieldnr = 0,
 opt = ActualOptions[InsertFields, options]},
 
@@ -96,7 +96,8 @@ opt = ActualOptions[InsertFields, options]},
     fields = MapIndexed[ Field@@ #2 -> #1 &,
       Join[ proc[[1]], AntiParticle/@ proc[[2]] ] ];
     ninc = Length[fields];
-    res = TopologyInsert[Last[ilevel]]/@ res
+    level = Last[ilevel];
+    res = TopologyInsert/@ res
   ];
 
   RestrictCurrentModel[];
@@ -160,33 +161,33 @@ NumberInsertions[ lev_ ][ gr___ ] :=
 
 (* TopologyInsert: insert fields into one topology *)
 
-TopologyInsert[ level_ ][ Topology[pr__] -> ins_ ] :=
-  TopologyInsert[level][Topology[1][pr] -> ins]
+TopologyInsert[ Topology[pr__] -> ins_ ] :=
+  TopologyInsert[Topology[1][pr] -> ins]
 
-TopologyInsert[ level_ ][ Topology[pr__] ] :=
-  TopologyInsert[level][Topology[1][pr]]
+TopologyInsert[ Topology[pr__] ] :=
+  TopologyInsert[Topology[1][pr]]
 
 (* start from scratch if someone wants to re-insert Generic level *)
 
-TopologyInsert[ Generic ][ top_ -> Insertions[_][__] ] :=
-  TopologyInsert[Generic][top]
+TopologyInsert[ top_ -> Insertions[_][__] ] :=
+  TopologyInsert[top] /; level === Generic
 
 (* allow insertion on top of old insertions only if external particles
    are the same: *)
 
-TopologyInsert[ level_ ][ top_ -> Insertions[_][ins_, ___] ] :=
-  TopologyInsert[level][top] /; fields =!= List@@ Take[ins, ninc]
+TopologyInsert[ top_ -> Insertions[_][ins_, ___] ] :=
+  TopologyInsert[top] /; fields =!= List@@ Take[ins, ninc]
 
 (* append Insertions template: *)
 
 ReplaceFieldNo[ p_[from_, to_, ___], {n_} ] := p[from, to, Field[n]]
 
-TopologyInsert[ level_ ][ top:Topology[_][__] ] :=
-  TopologyInsert[level][ MapIndexed[ReplaceFieldNo, top] ->
+TopologyInsert[ top:Topology[_][__] ] :=
+  TopologyInsert[ MapIndexed[ReplaceFieldNo, top] ->
     { FeynmanGraph@@ Join[fields,
       Array[Field[#] -> 0 &, Length[top] - ninc, ninc + 1]] } ]
 
-TopologyInsert[ level_ ][ top:Topology[_][__] -> ins_ ] :=
+TopologyInsert[ top:Topology[_][__] -> ins_ ] :=
 Block[ {vertli, fpoints, res, topol = top},
   fpoints = Map[ VertexFields[top],
     DeleteCases[Take[#, 2], Vertex[1][_]]&/@ top, {2} ];
@@ -203,7 +204,7 @@ Block[ {vertli, fpoints, res, topol = top},
   top -> res
 ]
 
-TopologyInsert[ _ ][ other_ ] = other
+TopologyInsert[ other_ ] = other
 
 
 (* extract field points *)

@@ -1,7 +1,7 @@
 (*
 	Graphics.m
 		Graphics routines for FeynArts
-		last modified 8 Jul 15 th
+		last modified 10 Dec 15 th
 *)
 
 Begin["`Graphics`"]
@@ -176,8 +176,9 @@ Block[ {auto, disp, cols, rows, dhead, g, topnr = 0, runnr = 0},
 
   g = Flatten[TopologyGraphics/@ List@@ tops] /. _Index -> Null;
   g = Flatten[{g, Table[Null, {Mod[rows cols - Length[g], rows cols]}]}];
-  g = ghead@@ Partition[Partition[g, cols], rows];
-  (DisplayFunction /. opt)[g, SelectOptions[Display, options]];
+  g = Level[{Partition[Partition[g, cols], rows],
+    {SelectOptions[Display, options]}}, {2}, ghead];
+  (DisplayFunction /. opt)[g];
   g
 ]
 
@@ -219,8 +220,7 @@ PGraphics[ _[type_][from_, to_, particle_, ___], height_, labelpos_ ] :=
 
 Format[ DiagramGraphics[h___][__] ] := SequenceForm["[", h, "]"]
 
-Format[ FeynArtsGraphics[h___][l__List] ] :=
-  FeynArtsGraphics[h]@@ MatrixForm/@ {l}
+Format[ (g_FeynArtsGraphics)[l__List, ___Rule] ] := MatrixForm/@ g[l]
 
 
 SetOptions[OpenWrite, CharacterEncoding -> {}]
@@ -232,9 +232,7 @@ Show[ g:FeynArtsGraphics[___][___] ] := Show/@ Render[g]
 Display[ chan_, g:FeynArtsGraphics[___][___], format___String,
   opt:P$Options ] :=
 Block[ {rg},
-  rg = Render[g, InferFormat[chan, format],
-    ImageSize -> (ImageSize /. {opt} /. Options[Display] /.
-                   ImageSize -> Automatic)];
+  rg = Render[g, InferFormat[chan, format], SelectOptions[Display, opt]];
   MapThread[Display[##, format, opt]&,
     {FilePerSheet[chan, Length[rg]], rg}]
 ]
@@ -245,9 +243,7 @@ Display[ chan_, s_String, ___ ] := (WriteString[#, s]; Close[#])& @
 Export[ chan_, g:FeynArtsGraphics[___][___], format___String,
   opt:P$Options ] :=
 Block[ {rg},
-  rg = Render[g, InferFormat[chan, format],
-    ImageSize -> (ImageSize /. {opt} /. Options[Export] /.
-                   ImageSize -> Automatic)];
+  rg = Render[g, InferFormat[chan, format], SelectOptions[Export, opt]];
   MapThread[Export[##, format, opt]&,
     {FilePerSheet[chan, Length[rg]], rg}]
 ]
@@ -286,14 +282,19 @@ prologue := prologue =
 
 epsf = ""
 
-Render[ g:FeynArtsGraphics[___][___], "EPS", opt___Rule ] :=
-Block[ {PaperSize = imgsize, epsf = " EPSF-3.0"},
-  Flatten[ Render[Head[g][#], "PS", opt]&/@ List@@ g ]
+Render[ (g_FeynArtsGraphics)[l__List, o___Rule],
+  format___String, opt___Rule ] :=
+Block[ {None = 0, Forward = 1, Backward = -1},
+  DoRender[format][o, opt][g/@ {l}]
 ]
 
-Render[ g:FeynArtsGraphics[___][___], "PS", opt___Rule ] :=
-Block[ {imgsize = getsize[opt, DefaultImageSize], bbox,
-None = 0, Forward = 1, Backward = -1},
+DoRender[ "EPS" ][ opt___ ][ g_ ] :=
+Block[ {PaperSize = imgsize, epsf = " EPSF-3.0"},
+  Flatten[ DoRender["PS"][opt]/@ g ]
+]
+
+DoRender[ "PS" ][ opt___ ][ g_ ] :=
+Block[ {imgsize = getsize[opt, DefaultImageSize], bbox},
   bbox = Round[.5 (PaperSize - imgsize)];
   bbox = {bbox, bbox + imgsize};
   { PSString[ "\
@@ -304,22 +305,22 @@ None = 0, Forward = 1, Backward = -1},
     MapIndexed[
       { "\n%%Page: ", #2, #2, "\ngsave\n",
         bbox, #1, "\ngrestore\nshowpage\n" }&,
-      PSRender[Head[g]/@ List@@ g] ], "\n\
+      PSRender[g] ], "\n\
 %%Trailer\n\
 end\n\
 %%EOF\n" ] }
 ]
 
-Render[ g:FeynArtsGraphics[___][___], "TeX", opt___Rule ] :=
-Block[ {imgsize = getsize[opt, DefaultImageSize],
-None = 0, Forward = 1, Backward = -1},
-  { "\\unitlength=1bp%\n\n" <> TeXRender[Head[g]/@ List@@ g] }
+DoRender[ "TeX" ][ opt___ ][ g_ ] :=
+Block[ {imgsize = getsize[opt, DefaultImageSize]},
+  { "\\unitlength=1bp%\n\n" <> TeXRender[g] }
 ]
 
-Render[ g:FeynArtsGraphics[___][___], ___String, opt___Rule ] :=
+DoRender[ ___ ][ opt___ ][ g_ ] :=
 Block[ {imgsize = getsize[opt, {288, 288}],
-None = 0, Forward = 1, Backward = -1},
-  MmaRender[Head[g]/@ List@@ g]
+(* magnify the labels a bit for screen viewing: *)
+LabelFontSize = 1.26 LabelFontSize},
+  MmaRender[g]
 ]
 
 
@@ -400,9 +401,7 @@ Block[ {rows, cols, g},
 ]
 
 MmaRender[ FeynArtsGraphics[h___][sheet_] ] :=
-Block[ {rows, cols, fsize, g, title,
-(* magnify the labels a bit for screen viewing: *)
-LabelFontSize = 1.26 LabelFontSize},
+Block[ {rows, cols, fsize, g, title},
   {rows, cols} = Dimensions[sheet];
   g = MapIndexed[DiagramBox, sheet, {2}];
   title = MmaRender[Title[h]];

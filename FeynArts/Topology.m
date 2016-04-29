@@ -1,7 +1,7 @@
 (*
 	Topology.m
 		Creation of topologies for Feynman graphs
-		last modified 27 Mar 12 th
+		last modified 4 Feb 16 th
 *)
 
 Begin["`Topology`"]
@@ -412,7 +412,7 @@ opt = ActualOptions[CreateTopologies, options]},
   (* else *)
     forb = Flatten[{start}];
     start = Cases[DownValues[define],
-      (_[_[Alternatives@@ forb]] :> s_) -> s];
+      _[_[_[Alternatives@@ forb]], s_] :> s];
     If[ Length[start] === 0,
       Message[CreateTopologies::nomatch, forb];
       Return[TopologyList[]] ]
@@ -627,7 +627,7 @@ Block[ {comp},
 
 SymmetryFactor[ top:P$Topology ] :=
 Block[ {ext, p, t = Topology[1]@@ top},
-  ext = Min[ 0, Cases[top, Vertex[1][n_] -> n, {2}] ];
+  ext = Min[ 0, Cases[top, Vertex[1][n_] :> n, {2}] ];
   While[ Length[ p = Flatten[MapIndexed[ChooseProp, List@@ t]] ] =!= 0,
     ++ext;
     t = TopologyCompare[
@@ -739,7 +739,7 @@ FreeWFQ[ top:P$Topology, patt1_, patt2_ ] :=
 
 
 LoopFields[ gr_:{}, top:P$Topology, ___ ] :=
-  Cases[AddFieldNo[top] /. List@@ gr, _[_Loop][_, _, f_, ___] -> f]
+  Cases[AddFieldNo[top] /. List@@ gr, _[_Loop][_, _, f_, ___] :> f]
 
 
 WFCorrectionFields[ gr_:{}, top:P$Topology, ___ ] :=
@@ -761,7 +761,7 @@ Block[ {etop, res, pos, br},
   If[ Length[pos] =!= 0,
     br = List@@ Curtail@@ MapAt[ branch[ #[[1]] ]&,
       Delete[etop, pos], {#1}&@@@ pos ];
-    res = {res, DoWF[foo, br]/@ Cases[br, branch[v_] -> v]} ];
+    res = {res, DoWF[foo, br]/@ Cases[br, branch[v_] :> v]} ];
   res
 ]
 

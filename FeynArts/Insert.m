@@ -2,7 +2,7 @@
 	Insert.m
 		Insertion of fields into topologies created by 
 		CreateTopologies.
-		last modified 22 Jul 15 th
+		last modified 4 Feb 16 th
 
 The insertion is done in 3 levels: insertion of generic fields (Generic),
 of classes of a certain model (Classes) or of the members of the classes
@@ -503,18 +503,18 @@ Block[ {ins, li, NoUnfold},
 InsertionsCompare[ _, {} ] = {}
 
 InsertionsCompare[ top_, ins_ ] :=
-Block[ {intp, loo, all, disj, fno},
+Block[ {f, cmp, fno},
 	(* only attempt to compare disjoint insertions *)
-  intp = Cases[top, Propagator[Internal][_, _, fi_] -> fi];
-  loo[ _ ] = 0;
-  Cases[top, Propagator[Loop[n_]][_, _, fi_] :> (loo[n] += fi)];
-  all = {intp, Times@@ Cases[DownValues[loo], (_ :> p_Plus) -> p]} /.
-    (List@@@ ins /. s_?Negative -> -s);
-  disj = Apply[List, ins[[ Flatten[Position[all, #, 1]] ]], {0, 1}]&/@ 
-    Union[all];
-  all = TopologyList@@ (Compare[TopologyList@@ (top /. #)]&)/@ disj;
+  _f = 4711;
+  Cases[top, Propagator[t_][_, _, fi_] :> (f[t] *= fi)];
+  _f = {};
+  cmp = {{f[Internal]}, Cases[DownValues[f], _[_[_[_Loop]], fi_] :> fi]};
+  cmp = Apply[Plus, DeleteCases[cmp /. List@@@ ins, _Integer, {4}], {2}];
+  cmp = Apply[List, ins[[ Flatten[Position[cmp, #, 1]] ]], {0, 1}]&/@ 
+    Union[cmp];
+  cmp = TopologyList@@ (Compare[TopologyList@@ (top /. #)]&)/@ cmp;
   fno = List@@ Last/@ top;
-  (FeynmanGraph[ #[[0, 1]] ]@@ Thread[fno -> Last/@ List@@ #]&)/@ all
+  (FeynmanGraph[ #[[0, 1]] ]@@ Thread[fno -> Last/@ List@@ #]&)/@ cmp
 ]
 
 End[]

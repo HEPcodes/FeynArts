@@ -1,7 +1,7 @@
 (*
 	Initialize.m
 		Functions for the initialization of models
-		last modified 4 Dec 14 th
+		last modified 4 Feb 16 th
 *)
 
 Begin["`Initialize`"]
@@ -121,7 +121,7 @@ FindDiff[ {c_ == x_, d___}, {a___, k_ == y_, b___}, diff_, add_ ] :=
 FindDiff[ {c_, d___}, old_, diff_, add_ ] :=
   FindDiff[{d}, old, diff, {add, c}]
 
-FindDiff[ {}, r__ ] := Replace[Flatten/@ {r}, x_ == _ -> x, {2}]
+FindDiff[ {}, r__ ] := Replace[Flatten/@ {r}, x_ == _ :> x, {2}]
 
 
 General::genmiss =
@@ -588,7 +588,7 @@ Block[ {SVTheC, sv, unsortedFP, unsortedCT, savecp = $ContextPath},
   _CouplingDeltas = Sequence[];
 
 	(* forming the explicit and half-generic vertex lists: *)
-  Off[Rule::rhs];
+  Off[RuleDelayed::rhs];
 
   If[ $SparseCouplings,
     SVTheC[ fi___ ][ kin_, rhs:{(0)..} ] :=
@@ -609,12 +609,12 @@ Block[ {SVTheC, sv, unsortedFP, unsortedCT, savecp = $ContextPath},
     ] ];
   SubValues[TheC] = sv;
 
-  On[Rule::rhs];
+  On[RuleDelayed::rhs];
 
   ReferenceOrder[Classes] = Union[List@@@ unsortedFP];
   FieldPointList[Classes] = FieldPoint@@@ ReferenceOrder[Classes];
 
-  L$CTOrders = Union[Cases[unsortedFP, FieldPoint[n_][__] -> n]];
+  L$CTOrders = Union[Cases[unsortedFP, FieldPoint[n_][__] :> n]];
   Scan[
     Function[ cto,
       unsortedCT = Union[Select[unsortedFP, #[[0, 1]] === cto &]];
@@ -760,7 +760,7 @@ Block[ {sign, vorig, vref, ord, o, new},
   sign = If[ PermutationSymmetry@@ ToGeneric[vert] === -1,
     Signature, 1 & ];
   vorig = vert;
-  vref = vert /. s_. (f:P$Generic)[___] -> s f;
+  vref = vert /. s_. (f:P$Generic)[___] :> s f;
   o = ord = Ordering[vref];
   Attributes[ new ] = {Orderless};
   new[ fi__ ] := (new[fi] = 0 &; SplitCoeff);
@@ -770,7 +770,7 @@ Block[ {sign, vorig, vref, ord, o, new},
 
 SplitCoeff[ coup_, comb_ ] :=
 Block[ {coeff, v, c, fn = 0},
-  o[[ord]] = Ordering[Thread[{vref, comb /. (f_ -> _) -> f}, C]];
+  o[[ord]] = Ordering[Thread[{vref, comb /. (f_ -> _) :> f}, C]];
   c = coup sign[o];
   _coeff = {};
   v = C@@ DeleteCases[
@@ -805,7 +805,7 @@ PermuteFields[ fi_, ind_ ] :=
 Attributes[ IndexBase ] = {Listable}
 
 IndexBase[ i_ ] := IndexBase[i] =
-Block[ {n = "", ib = Cases[DownValues[IndexBase], _[_, s_String] -> s]},
+Block[ {n = "", ib = Cases[DownValues[IndexBase], _[_, s_String] :> s]},
   Scan[ If[ FreeQ[ib, n = n <> #], Return[] ]&,
     Flatten[{Characters[ToLowerCase[ToString@@ i]], "j", "q", "x"}]  ];
   n
@@ -847,7 +847,7 @@ genref = ToGeneric[List@@ vert]},
     Abort[] ];
 
 	(* change symbols in model file to patterns: *)
-  lhs = vert //. {a___, j_Symbol, b___} -> {a, j_, b};
+  lhs = vert //. {a___, j_Symbol, b___} :> {a, j_, b};
 	(* this assigns TheC for all components of the coupling vector *)
   sv = MapThread[SVTheC@@ lhs, {cv /. SI[n_] :> SIs[[n]], coup}];
 
@@ -1045,7 +1045,7 @@ AntiParticle[ AntiParticle[fi_] ] = fi
 AntiParticle[ s_. part:(fi:P$Generic)[i_, ___] ] :=
   If[SelfConjugate[fi[i]], 1, -Sign[s]] *
   (Length[MixingPartners[fi[i]]] - Abs[s] + 1) part /.
-  mom_FourMomentum -> -mom
+  mom_FourMomentum :> -mom
 
 
 	(* Rev is present only at generic level and is needed to
@@ -1146,7 +1146,7 @@ Block[ {ex, exclFP, exclP, lG, lC, lP, fps},
     If[ MatchQ[#, ExcludeParticles | ExcludeFieldPoints -> _], True,
       Message[InitializeModel::badrestr, #]; False ]& ];
 
-  exclP = Union[Flatten[ Cases[ex, (ExcludeParticles -> p_) -> p] ]];
+  exclP = Union[Flatten[ Cases[ex, (ExcludeParticles -> p_) :> p] ]];
   If[ Length[exclP] > 0,
     exclP = Union[Flatten[
       Function[fi, Select[F$AllowedFields, FieldMatchQ[#, fi]&]]/@
@@ -1163,14 +1163,14 @@ Block[ {ex, exclFP, exclP, lG, lC, lP, fps},
       lP - Length[F$Particles], " Particles fields"];
   ];
 
-  exclFP = Union[Flatten[ Cases[ex, (ExcludeFieldPoints -> p_) -> p] ]];
+  exclFP = Union[Flatten[ Cases[ex, (ExcludeFieldPoints -> p_) :> p] ]];
   If[ Length[exclFP] > 0,
     exclFP = Union[ VSort/@ #,
       VSort/@ Map[AntiParticle, #, {2}] ]&[ ValidFP/@ exclFP ];
     ex = Select[exclFP, !FreeQ[#, P$Generic[_, _]]&];
     $ExcludedParticleFPs = Union[Join[$ExcludedParticleFPs, ex]];
     fps = Cases[ DownValues[CheckFieldPoint],
-      (_[_[ fp_ ]] :> True) -> fp ];
+      (_[_[ fp_ ]] :> True) :> fp ];
     exclFP = Union[Flatten[
       Function[fi, Select[fps, FieldPointMatchQ[#, fi]&]]/@
         Complement[exclFP, ex] ]];

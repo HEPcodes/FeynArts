@@ -2,7 +2,7 @@
 	Analytic.m
 		Translation of InsertFields output into
 		analytic expressions
-		last modified 29 Oct 15 th
+		last modified 4 Feb 16 th
 *)
 
 Begin["`Analytic`"]
@@ -83,7 +83,7 @@ opt = ActualOptions[CreateFeynAmp, options]},
 
   amps = CreateAmpTop/@ ( amps //.
     (_ -> Insertions[_][]) :> Seq[] /.
-    (Field[i_] -> fi:P$Generic) -> (Field[i] -> fi[Index[Generic, i]]) );
+    (Field[i_] -> fi:P$Generic) :> (Field[i] -> fi[Index[Generic, i]]) );
   FAPrint[1, "in total: ",
     Statistics[{Insertions[Generic]@@ amps}, alevel, " amplitude"]];
 
@@ -173,7 +173,7 @@ FourMomentum[ type_, n_Integer mom_ ] :=
 AppendMomentum[ Propagator[type_][from_, to_, fi_, mom_] ] :=
   Propagator[type][ from, to, fi,
     FourMomentum[type /. {Loop[_] -> ZZZ[1], Internal -> ZZZ[3]},
-      mom /. FourMomentum[_, t_] -> t] ]
+      mom /. FourMomentum[_, t_] :> t] ]
 
 AppendMomentum[ pr:Propagator[Outgoing][from_, __] ] :=
   Append[ pr,
@@ -235,7 +235,7 @@ Block[ {amp, gm, rawgm, orig, anti},
     orig[__] :> Seq[]
 ]
 
-FieldNumber[ fi_ ] := Sequence@@ Cases[fi, Field[n_] -> n, Infinity, 1] /;
+FieldNumber[ fi_ ] := Sequence@@ Cases[fi, Field[n_] :> n, Infinity, 1] /;
   !FreeQ[fi, orig]
 
 
@@ -477,7 +477,7 @@ Block[ {res},
     AnalyticalPropagator[type][part],
     0 ];
   If[ Head[res] === PV,
-    res /. Mass[fi_] -> Mass[fi, ResolveType[type]],
+    res /. Mass[fi_] :> Mass[fi, ResolveType[type]],
   (* else *)
     Message[CreateFeynAmp::noprop, part]; Propagator[part] ]
 ]
@@ -667,9 +667,9 @@ Block[ {Rule, levels, res},
 	(* Generic is always kept *)
   res = Switch[ {FreeQ[lev, Classes], FreeQ[lev, Particles]},
     {True, True},
-      tops /. (x_ -> Insertions[Classes | Particles][__]) -> x,
+      tops /. (x_ -> Insertions[Classes | Particles][__]) :> x,
     {False, True},
-      tops /. (x_ -> Insertions[Particles][__]) -> x,
+      tops /. (x_ -> Insertions[Particles][__]) :> x,
     {True, False},
       tops /. gr:Insertions[Classes][__] :>
         Insertions[Particles]@@ Join@@ TakeIns/@ gr,

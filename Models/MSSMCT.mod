@@ -4,7 +4,7 @@
                 by Thomas Fritzsche, Thomas Hahn, Sven Heinemeyer, 
                 Heidi Rzehak and Christian Schappacher		
 		based on the Feynman rules of the MSSM by Arnd Kraft
-		last modified 24 Mar 15 by th
+		last modified 15 Apr 2016 by cs
 
 History:
 May 2001: MSSM.mod created by Thomas Hahn.
@@ -42,10 +42,15 @@ Mar 2013: still missing counterterms included by Sven Heinemeyer and
 Apr 2013: QuantumNumbers added by Christian Schappacher.
 Jul 2013: RenConst completely rewritten by Thomas Hahn.
 Jul 2013: slepton sector bugfix by Heidi Rzehak.
-Sep 2013: pure OS scheme for down-type squarks added 
-          by Christian Schappacher.
+Sep 2013: on-shell scheme for down-type squarks added by Christian Schappacher.
 Oct 2013: CCN and CNN schemes added by Federico von der Pahlen.
 Dec 2013: variable renormalization schemes added by Thomas Hahn.
+Jan 2015: bugfix for H-gamma/Z-W counterterm vertices by
+          Christian Schappacher. Thanks to Sebastian Passehr.
+Mar 2016: bugfix for H-G-gamma/Z counterterm vertices and missing 
+          A0/G0-H/G-gamma/Z-W, H0/G0-h0/A0-W/Z-W/Z, G-H-gamma/W/Z-gamma/W/Z, 
+          H-G0-W-gamma/Z and G-A0-W-gamma/Z counterterm vertices added
+          by Sebastian Passehr and Christian Schappacher.
 
 
 This file contains the definition of the minimal supersymmetric standard
@@ -744,19 +749,20 @@ M$CouplingMatrices = {
  C[S[1], S[5], -S[5]] == 
   {{((-I/2)*EL*MW*(CA*(C2B + 2*CW^2)*SB - SA*(CB + CW^2*S2B*SB - 
          2*CB^3*SW^2)))/(CW^2*SW), 
-    ((I/4)*EL*(dSW1*MW^2*(2*(C2B*CA + CW^2*(2*CA - S2B*SA))*SB - 
-         (4*C2B*SAB*SW^2)/CW^2 - SA*(2*CB - 4*CB^3*SW^2)) - 
-       SW*((dMWsq1 + 2*dZe1*MW^2)*(CA*(C2B + 2*CW^2)*SB - 
-           SA*(CB + CW^2*S2B*SB - 2*CB^3*SW^2)) - 
-         MW^2*(dCB1*SA*(2 - 4*CB^2*SW^2) - CA*dSB1*(2 - 4*SB^2*SW^2) - 
-           (C2B + 2*CW^2)*SB*(SA*dZHiggs1[1, 2] + CA*(dZbarHiggs1[5, 5] + 
-               dZHiggs1[1, 1] + dZHiggs1[5, 5])) - (CB - 2*CB^3*SW^2)*
-            (CA*dZHiggs1[1, 2] - SA*(dZbarHiggs1[5, 5] + dZHiggs1[1, 1] + 
-               dZHiggs1[5, 5])) - CW^2*(S2B*(2*(CA*dCB1 - dSB1*SA) + SB*
-                (CA*dZHiggs1[1, 2] - SA*(dZbarHiggs1[5, 5] + dZHiggs1[1, 1] + 
-                   dZHiggs1[5, 5]))) - C2B*CAB*(Conjugate[dZHiggs1[6, 5]] + 
-               dZHiggs1[6, 5])) - 2*S2B*SAB*SW^2*Re[dZHiggs1[6, 5]]))))/
-     (CW^2*MW*SW^2)}}, C[S[1], S[6], -S[6]] == 
+    ((I/4)*EL*(C2B*(CA*CW^2*SB*(2*dSW1*MW^2 - 
+           SW*(dMWsq1 + MW^2*(2*dZe1 + dZbarHiggs1[5, 5] + dZHiggs1[1, 1] + 
+               dZHiggs1[5, 5]))) - MW^2*SW*(4*dSW1*SAB*SW + 
+           CW^2*SA*SB*dZHiggs1[1, 2] - CAB*CW^4*(dZHiggs1[5, 6] + 
+             dZHiggs1[6, 5]))) - CW^2*(CB*(1 + 2*CW^2*SB^2 - 2*CB^2*SW^2)*
+          (2*dSW1*MW^2*SA - SW*(dMWsq1*SA - MW^2*(CA*dZHiggs1[1, 2] - SA*
+                (2*dZe1 + dZbarHiggs1[5, 5] + dZHiggs1[1, 1] + dZHiggs1[5, 
+                  5])))) + 2*CA*(dSB1*MW^2*SW*(1 - 2*SB^2*SW^2) - 
+           CW^2*(2*dSW1*MW^2*SB - SW*(dMWsq1*SB + MW^2*(dCB1*S2B + 
+                 SB*(2*dZe1 + dZbarHiggs1[5, 5] + dZHiggs1[1, 1] + 
+                   dZHiggs1[5, 5]))))) - MW^2*SW*
+          (SA*(dCB1*(2 - 4*CB^2*SW^2) + 2*CW^2*(dSB1*S2B - SB*dZHiggs1[1, 
+                 2])) - S2B*SAB*SW^2*(dZHiggs1[5, 6] + dZHiggs1[6, 5])))))/
+     (CW^4*MW*SW^2)}}, C[S[1], S[6], -S[6]] == 
   {{((I/2)*C2B*EL*MW*SAB)/(CW^2*SW), 
     ((-I/4)*EL*(CW^2*MW^2*SW*(CA*dSB1*(2 - 4*CB^2*SW^2) - 
          dCB1*SA*(2 - 4*SB^2*SW^2) - S2B*(2*CW^2*(CA*dCB1 - dSB1*SA) - 
@@ -778,29 +784,29 @@ M$CouplingMatrices = {
     ((-I/4)*EL*(C2B*CW^4*(MW^2*SAB*SW*(2*CB^2*dTB1 - dZHiggs1[1, 2]) + 
          CAB*(2*dSW1*MW^2 - SW*(dMWsq1 + MW^2*(2*dZe1 + dZbarHiggs1[5, 5] + 
                dZHiggs1[1, 1] + dZHiggs1[6, 6])))) + 
-       (SW*(2*S2B*SW*(4*dSW1*MW^2*SAB*SW^2 + CW^2*(2*dSW1*MW^2*SAB + 
-              (dMWsq1*SAB + 2*MW^2*(CAB*CB^2*dTB1 + dZe1*SAB))*SW)) - 
-          CW^2*MW^2*(2*C2B*SAB*Conjugate[dZHiggs1[6, 5]] - 
-            2*(1 - 2*CW^2)*(CB^3*SA - CA*SB^3)*dZHiggs1[5, 6] - 
-            S2B*((CAB + 2*CAB*CW^2)*dZHiggs1[5, 6] - SW^2*(2*CAB*dZHiggs1[1, 
-                  2] - 2*SAB*(dZbarHiggs1[5, 5] + dZHiggs1[1, 1] + 
-                  dZHiggs1[6, 6]))))))/2))/(CW^4*MW*SW^2)}}, 
+       SW*(MW^2*(4*dSW1*S2B*SAB*SW^3 + CW^4*(CAB*S2B - 2*CB^3*SA + 2*CA*SB^3)*
+            dZHiggs1[5, 6]) + CW^2*S2B*SW*(2*dSW1*MW^2*SAB + 
+           SW*(dMWsq1*SAB + MW^2*(CAB*(2*CB^2*dTB1 - dZHiggs1[1, 2]) + SAB*
+                (2*dZe1 + dZbarHiggs1[5, 5] + dZHiggs1[1, 1] + dZHiggs1[6, 
+                  6])))))))/(CW^4*MW*SW^2)}}, 
  C[S[2], S[5], -S[5]] == 
   {{((-I/2)*EL*MW*((C2B + 2*CW^2)*SA*SB + CA*(CB + CW^2*S2B*SB - 
          2*CB^3*SW^2)))/(CW^2*SW), 
-    ((-I/4)*EL*(MW^2*(2*(CA*(dCB1 + CW^2*dSB1*S2B) + (dSB1 + CW^2*dCB1*S2B)*
-            SA)*SW - 4*(CA*CB^2*dCB1 + dSB1*SA*SB^2)*SW^3 - 
-         dSW1*((4*C2B*CAB*SW^2)/CW^2 + 2*((C2B + 2*CW^2)*SA*SB + 
-             CA*(CB + CW^2*S2B*SB - 2*CB^3*SW^2)))) + 
-       SW*((dMWsq1 + 2*dZe1*MW^2)*((C2B + 2*CW^2)*SA*SB + 
-           CA*(CB + CW^2*S2B*SB - 2*CB^3*SW^2)) - 
-         MW^2*((CB + CW^2*S2B*SB - 2*CB^3*SW^2)*(SA*dZHiggs1[1, 2] - 
-             CA*(dZbarHiggs1[5, 5] + dZHiggs1[2, 2] + dZHiggs1[5, 5])) - 
-           (C2B + 2*CW^2)*SB*(CA*dZHiggs1[1, 2] + SA*(dZbarHiggs1[5, 5] + 
-               dZHiggs1[2, 2] + dZHiggs1[5, 5])) + 
-           2*(C2B*CW^2*SAB + CAB*S2B*SW^2)*Re[dZHiggs1[6, 5]]))))/
-     (CW^2*MW*SW^2)}}, C[S[2], S[6], -S[6]] == 
-  {{((-I/2)*C2B*CAB*EL*MW)/(CW^2*SW), 
+    ((I/4)*EL*(C2B*(CW^2*SA*SB*(2*dSW1*MW^2 - 
+           SW*(dMWsq1 + MW^2*(2*dZe1 + dZbarHiggs1[5, 5] + dZHiggs1[2, 2] + 
+               dZHiggs1[5, 5]))) + MW^2*(4*CAB*dSW1*SW^2 + 
+           CW^4*SAB*SW*(dZHiggs1[5, 6] + dZHiggs1[6, 5]))) - 
+       CW^2*(CA*(MW^2*SW*(2*CW^2*dSB1*S2B + dCB1*(2 - 4*CB^2*SW^2) + 
+             (C2B + 2*CW^2)*SB*dZHiggs1[1, 2]) - CB*(1 + 2*CW^2*SB^2 - 
+             2*CB^2*SW^2)*(2*dSW1*MW^2 - SW*(dMWsq1 + MW^2*(2*dZe1 + 
+                 dZbarHiggs1[5, 5] + dZHiggs1[2, 2] + dZHiggs1[5, 5])))) - 
+         2*CW^2*SA*(2*dSW1*MW^2*SB - SW*(dCB1*MW^2*S2B + 
+             SB*(dMWsq1 + MW^2*(2*dZe1 + dZbarHiggs1[5, 5] - 
+                 (S2B*dZHiggs1[1, 2])/2 + dZHiggs1[2, 2] + dZHiggs1[5, 
+                  5])))) + MW^2*SW*(SA*(dSB1*(2 - 4*SB^2*SW^2) - 
+             (CB - 2*CB^3*SW^2)*dZHiggs1[1, 2]) - CAB*S2B*SW^2*
+            (dZHiggs1[5, 6] + dZHiggs1[6, 5])))))/(CW^4*MW*SW^2)}}, 
+ C[S[2], S[6], -S[6]] == {{((-I/2)*C2B*CAB*EL*MW)/(CW^2*SW), 
     ((-I/4)*EL*(CW^2*MW^2*SW*(dSB1*SA*(2 - 4*CB^2*SW^2) + 
          CA*dCB1*(2 - 4*SB^2*SW^2) - S2B*(2*CW^2*(CA*dSB1 + dCB1*SA) + 
            CAB*SW^2*(dZHiggs1[5, 6] + dZHiggs1[6, 5]))) + 
@@ -821,14 +827,13 @@ M$CouplingMatrices = {
            CW^2*(dMWsq1*SW + MW^2*(2*dSW1 + SW*(2*dZe1 + dZHiggs1[2, 2] + 
                  dZHiggs1[5, 5] + dZHiggs1[6, 6])))))))/(CW^4*MW*SW^2)}}, 
  C[S[2], S[6], -S[5]] == {{(I/2)*EL*MW*((C2B*SAB)/SW + (CAB*S2B*SW)/CW^2), 
-    ((-I/8)*EL*(2*C2B*(CAB*CW^2*MW^2*SW*Conjugate[dZHiggs1[6, 5]] + 
-         CW^4*(2*dSW1*MW^2*SAB - SW*(dMWsq1*SAB + MW^2*(CAB*(2*CB^2*dTB1 + 
-                 dZHiggs1[1, 2]) + SAB*(2*dZe1 + dZbarHiggs1[5, 5] + 
-                 dZHiggs1[2, 2] + dZHiggs1[6, 6]))))) + 
-       SW*(CW^2*MW^2*(2*S2B*SAB*SW^2*(2*CB^2*dTB1 + dZHiggs1[1, 2]) + 
-           (S2B*(CB*SA + 2*CW^2*SAB) - 2*(1 - 2*CW^2)*SA*SB^3 - 
-             CA*(2*CB^3*(1 - 2*CW^2) - S2B*SB))*dZHiggs1[5, 6]) - 
-         2*CAB*S2B*SW*(4*dSW1*MW^2*SW^2 + CW^2*(dMWsq1*SW + 
+    ((-I/4)*EL*(C2B*CW^4*(2*dSW1*MW^2*SAB - 
+         SW*(dMWsq1*SAB + MW^2*(CAB*(2*CB^2*dTB1 + dZHiggs1[1, 2]) + 
+             SAB*(2*dZe1 + dZbarHiggs1[5, 5] + dZHiggs1[2, 2] + dZHiggs1[6, 
+                6])))) + 
+       SW*(CW^2*MW^2*(S2B*SAB*SW^2*(2*CB^2*dTB1 + dZHiggs1[1, 2]) + 
+           CW^2*(2*CA*CB^3 + S2B*SAB + 2*SA*SB^3)*dZHiggs1[5, 6]) - 
+         CAB*S2B*SW*(4*dSW1*MW^2*SW^2 + CW^2*(dMWsq1*SW + 
              MW^2*(2*dSW1 + SW*(2*dZe1 + dZbarHiggs1[5, 5] + dZHiggs1[2, 2] + 
                  dZHiggs1[6, 6])))))))/(CW^4*MW*SW^2)}}, 
  C[S[3], S[5], -S[6]] == 
@@ -884,16 +889,16 @@ M$CouplingMatrices = {
            dZHiggs1[6, 6]))))/SW^2}}, C[S[1], -S[5], V[3]] == 
   {{((I/2)*CBA*EL)/SW, 
     ((-I/4)*EL*(CBA*(2*dSW1 - SW*(2*dZe1 + dZW1 + dZbarHiggs1[5, 5] + 
-           dZHiggs1[1, 1])) - SBA*SW*(Conjugate[dZHiggs1[6, 5]] - 
-         dZHiggs1[1, 2])))/SW^2}}, C[S[1], -S[6], V[3]] == 
+           dZHiggs1[1, 1])) + SBA*SW*(dZHiggs1[1, 2] - dZHiggs1[5, 6])))/
+     SW^2}}, C[S[1], -S[6], V[3]] == 
   {{((I/2)*EL*SBA)/SW, ((-I/4)*EL*(2*dSW1*SBA - 
        SW*(CBA*(dZHiggs1[1, 2] + dZHiggs1[6, 5]) + 
          SBA*(2*dZe1 + dZW1 + dZHiggs1[1, 1] + dZHiggs1[6, 6]))))/SW^2}}, 
  C[S[2], -S[5], V[3]] == {{((-I/2)*EL*SBA)/SW, 
-    ((I/4)*EL*(2*dSW1*SBA + SW*(CBA*(Conjugate[dZHiggs1[6, 5]] + 
-           dZHiggs1[1, 2]) - SBA*(2*dZe1 + dZW1 + dZbarHiggs1[5, 5] + 
-           dZHiggs1[2, 2]))))/SW^2}}, C[S[2], -S[6], V[3]] == 
-  {{((I/2)*CBA*EL)/SW, ((I/4)*EL*(SBA*SW*(dZHiggs1[1, 2] - dZHiggs1[6, 5]) - 
+    ((I/4)*EL*(2*dSW1*SBA - SW*(SBA*(2*dZe1 + dZW1 + dZbarHiggs1[5, 5] + 
+           dZHiggs1[2, 2]) - CBA*(dZHiggs1[1, 2] + dZHiggs1[5, 6]))))/SW^2}}, 
+ C[S[2], -S[6], V[3]] == {{((I/2)*CBA*EL)/SW, 
+    ((I/4)*EL*(SBA*SW*(dZHiggs1[1, 2] - dZHiggs1[6, 5]) - 
        CBA*(2*dSW1 - SW*(2*dZe1 + dZW1 + dZHiggs1[2, 2] + dZHiggs1[6, 6]))))/
      SW^2}}, C[S[3], S[5], -V[3]] == 
   {{EL/(2*SW), -(EL*(2*dSW1 - SW*(dZbarW1 + 2*dZe1 + dZHiggs1[3, 3] + 
@@ -985,14 +990,15 @@ M$CouplingMatrices = {
        C2A*(4*dSW1*SW^2 - CW^2*(4*dSW1 - SW*(4*dZe1 + 2*dZHiggs1[2, 2] + 
              dZHiggs1[3, 3] + dZHiggs1[4, 4])))))/(CW^4*SW^3)}}, 
  C[S[1], S[1], S[5], -S[5]] == 
-  {{((-I/4)*EL^2*(CW^2*(1 - S2A*S2B) + C2A*C2B*SW^2))/(CW^2*SW^2), 
-    ((-I/8)*EL^2*(C2B*(4*C2A*dSW1*SW^4 + CW^2*SW^3*(2*S2A*dZHiggs1[1, 2] + 
-           C2A*(4*dZe1 + dZbarHiggs1[5, 5] + 2*dZHiggs1[1, 1] + 
-             dZHiggs1[5, 5]))) - CW^4*(4*dSW1*(1 - S2A*S2B) - 
+  {{(-I/4)*EL^2*((C2A*C2B)/CW^2 + (1 - S2A*S2B)/SW^2), 
+    ((-I/8)*EL^2*(4*C2A*C2B*dSW1*SW^4 - CW^4*(4*dSW1*(1 - S2A*S2B) - 
          SW*(4*dZe1 + dZbarHiggs1[5, 5] + 2*dZHiggs1[1, 1] + dZHiggs1[5, 5] + 
            S2B*(2*C2A*dZHiggs1[1, 2] - S2A*(4*dZe1 + dZbarHiggs1[5, 5] + 2*
-                dZHiggs1[1, 1] + dZHiggs1[5, 5])))) + 
-       2*CW^2*SW*(C2B*CW^2*S2A + C2A*S2B*SW^2)*Re[dZHiggs1[6, 5]]))/
+                dZHiggs1[1, 1] + dZHiggs1[5, 5])) + 
+           C2B*S2A*(dZHiggs1[5, 6] + dZHiggs1[6, 5]))) + 
+       CW^2*SW^3*(2*C2B*S2A*dZHiggs1[1, 2] + 
+         C2A*(C2B*(4*dZe1 + dZbarHiggs1[5, 5] + 2*dZHiggs1[1, 1] + 
+             dZHiggs1[5, 5]) + S2B*(dZHiggs1[5, 6] + dZHiggs1[6, 5])))))/
      (CW^4*SW^3)}}, C[S[1], S[1], S[6], -S[6]] == 
   {{(I/4)*EL^2*((C2A*C2B)/CW^2 - (1 + S2A*S2B)/SW^2), 
     ((I/8)*EL^2*(4*C2A*C2B*dSW1*SW^4 + CW^2*SW^3*(2*C2B*S2A*dZHiggs1[1, 2] - 
@@ -1011,22 +1017,21 @@ M$CouplingMatrices = {
              CW^2*(4*dZe1 + 2*dZHiggs1[1, 1] + dZHiggs1[5, 5] + dZHiggs1[6, 
                 6]))))))/(CW^4*SW^3)}}, C[S[1], S[1], S[6], -S[5]] == 
   {{(-I/4)*EL^2*((C2A*S2B)/CW^2 + (C2B*S2A)/SW^2), 
-    ((-I/8)*EL^2*(SW*(CW^2*((CW^2*(1 + S2A*S2B) - C2A*C2B*SW^2)*
-            Conjugate[dZHiggs1[6, 5]] + 2*S2A*S2B*SW^2*dZHiggs1[1, 2]) + 
-         CW^4*(1 - S2A*S2B)*dZHiggs1[5, 6] + C2A*S2B*SW^2*
-          (4*dSW1*SW + CW^2*(4*dZe1 + dZbarHiggs1[5, 5] + 2*dZHiggs1[1, 1] + 
-             dZHiggs1[6, 6]))) + C2B*(C2A*CW^2*SW^3*dZHiggs1[5, 6] - 
-         CW^4*(4*dSW1*S2A + SW*(2*C2A*dZHiggs1[1, 2] - 
-             S2A*(4*dZe1 + dZbarHiggs1[5, 5] + 2*dZHiggs1[1, 1] + dZHiggs1[6, 
-                6]))))))/(CW^4*SW^3)}}, C[S[1], S[2], S[5], -S[5]] == 
+    ((I/8)*EL^2*(C2B*CW^4*(4*dSW1*S2A + SW*(2*C2A*dZHiggs1[1, 2] - 
+           S2A*(4*dZe1 + dZbarHiggs1[5, 5] + 2*dZHiggs1[1, 1] + 
+             dZHiggs1[6, 6]))) - SW*(2*CW^4*dZHiggs1[5, 6] + 
+         S2B*SW^2*(2*CW^2*S2A*dZHiggs1[1, 2] + C2A*(4*dSW1*SW + 
+             CW^2*(4*dZe1 + dZbarHiggs1[5, 5] + 2*dZHiggs1[1, 1] + dZHiggs1[
+                6, 6]))))))/(CW^4*SW^3)}}, C[S[1], S[2], S[5], -S[5]] == 
   {{(-I/4)*EL^2*((C2B*S2A)/CW^2 + (C2A*S2B)/SW^2), 
-    ((I/8)*EL^2*(C2A*CW^4*S2B*(4*dSW1 - SW*(4*dZe1 + dZbarHiggs1[5, 5] + 
-           dZHiggs1[1, 1] + dZHiggs1[2, 2] + dZHiggs1[5, 5])) - 
-       SW*(2*CW^4*dZHiggs1[1, 2] + C2B*S2A*SW^2*(4*dSW1*SW + 
-           CW^2*(4*dZe1 + dZbarHiggs1[5, 5] + dZHiggs1[1, 1] + 
-             dZHiggs1[2, 2] + dZHiggs1[5, 5])) - 
-         2*CW^2*(C2A*C2B*CW^2 - S2A*S2B*SW^2)*Re[dZHiggs1[6, 5]])))/
-     (CW^4*SW^3)}}, C[S[1], S[2], S[6], -S[6]] == 
+    ((-I/8)*EL^2*(C2B*S2A*SW^3*(4*dSW1*SW + 
+         CW^2*(4*dZe1 + dZbarHiggs1[5, 5] + dZHiggs1[1, 1] + dZHiggs1[2, 2] + 
+           dZHiggs1[5, 5])) + CW^2*SW*(2*CW^2*dZHiggs1[1, 2] + 
+         S2A*S2B*SW^2*(dZHiggs1[5, 6] + dZHiggs1[6, 5])) - 
+       C2A*CW^4*(4*dSW1*S2B - SW*(S2B*(4*dZe1 + dZbarHiggs1[5, 5] + 
+             dZHiggs1[1, 1] + dZHiggs1[2, 2] + dZHiggs1[5, 5]) - 
+           C2B*(dZHiggs1[5, 6] + dZHiggs1[6, 5])))))/(CW^4*SW^3)}}, 
+ C[S[1], S[2], S[6], -S[6]] == 
   {{(I/4)*EL^2*((C2B*S2A)/CW^2 + (C2A*S2B)/SW^2), 
     ((-I/8)*EL^2*(CW^2*SW*(2*CW^2*dZHiggs1[1, 2] + S2A*S2B*SW^2*
           (dZHiggs1[5, 6] + dZHiggs1[6, 5])) - C2B*S2A*SW^3*
@@ -1043,22 +1048,19 @@ M$CouplingMatrices = {
            dZHiggs1[5, 5] + dZHiggs1[6, 6]))))/(CW^4*SW^3)}}, 
  C[S[1], S[2], S[6], -S[5]] == 
   {{(-I/4)*EL^2*((S2A*S2B)/CW^2 - (C2A*C2B)/SW^2), 
-    ((I/8)*EL^2*(CW^2*SW*(C2A*CW^2*S2B + C2B*S2A*SW^2)*
-        Conjugate[dZHiggs1[6, 5]] - S2A*SW^3*(4*dSW1*S2B*SW + 
-         CW^2*(C2B*dZHiggs1[5, 6] + S2B*(4*dZe1 + dZbarHiggs1[5, 5] + 
-             dZHiggs1[1, 1] + dZHiggs1[2, 2] + dZHiggs1[6, 6]))) - 
-       C2A*CW^4*(S2B*SW*dZHiggs1[5, 6] + 
-         C2B*(4*dSW1 - SW*(4*dZe1 + dZbarHiggs1[5, 5] + dZHiggs1[1, 1] + 
-             dZHiggs1[2, 2] + dZHiggs1[6, 6])))))/(CW^4*SW^3)}}, 
- C[S[2], S[2], S[5], -S[5]] == 
+    ((-I/8)*EL^2*(S2A*S2B*SW^3*(4*dSW1*SW + 
+         CW^2*(4*dZe1 + dZbarHiggs1[5, 5] + dZHiggs1[1, 1] + dZHiggs1[2, 2] + 
+           dZHiggs1[6, 6])) + C2A*C2B*CW^4*(4*dSW1 - 
+         SW*(4*dZe1 + dZbarHiggs1[5, 5] + dZHiggs1[1, 1] + dZHiggs1[2, 2] + 
+           dZHiggs1[6, 6]))))/(CW^4*SW^3)}}, C[S[2], S[2], S[5], -S[5]] == 
   {{(I/4)*EL^2*((C2A*C2B)/CW^2 - (1 + S2A*S2B)/SW^2), 
-    ((I/8)*EL^2*(C2B*(4*C2A*dSW1*SW^4 - CW^2*SW^3*(2*S2A*dZHiggs1[1, 2] - 
-           C2A*(4*dZe1 + dZbarHiggs1[5, 5] + 2*dZHiggs1[2, 2] + 
-             dZHiggs1[5, 5]))) + CW^4*(4*dSW1*(1 + S2A*S2B) - 
-         SW*(4*dZe1 + dZbarHiggs1[5, 5] + 2*dZHiggs1[2, 2] + dZHiggs1[5, 5] + 
-           S2B*(2*C2A*dZHiggs1[1, 2] + S2A*(4*dZe1 + dZbarHiggs1[5, 5] + 2*
-                dZHiggs1[2, 2] + dZHiggs1[5, 5])))) + 
-       2*CW^2*SW*(C2B*CW^2*S2A + C2A*S2B*SW^2)*Re[dZHiggs1[6, 5]]))/
+    ((I/8)*EL^2*(4*C2A*C2B*dSW1*SW^4 - CW^2*SW^3*(2*C2B*S2A*dZHiggs1[1, 2] - 
+         C2A*(C2B*(4*dZe1 + dZbarHiggs1[5, 5] + 2*dZHiggs1[2, 2] + 
+             dZHiggs1[5, 5]) + S2B*(dZHiggs1[5, 6] + dZHiggs1[6, 5]))) + 
+       CW^4*(4*dSW1*(1 + S2A*S2B) - SW*(4*dZe1*(1 + S2A*S2B) + 
+           dZbarHiggs1[5, 5] + 2*(C2A*S2B*dZHiggs1[1, 2] + dZHiggs1[2, 2]) + 
+           dZHiggs1[5, 5] + S2A*(S2B*(dZbarHiggs1[5, 5] + 2*dZHiggs1[2, 2] + 
+               dZHiggs1[5, 5]) - C2B*(dZHiggs1[5, 6] + dZHiggs1[6, 5]))))))/
      (CW^4*SW^3)}}, C[S[2], S[2], S[6], -S[6]] == 
   {{(-I/4)*EL^2*((C2A*C2B)/CW^2 + (1 - S2A*S2B)/SW^2), 
     ((-I/8)*EL^2*(4*C2A*C2B*dSW1*SW^4 - CW^2*SW^3*(2*C2B*S2A*dZHiggs1[1, 2] + 
@@ -1077,14 +1079,13 @@ M$CouplingMatrices = {
              S2A*(4*dZe1 + 2*dZHiggs1[2, 2] + dZHiggs1[5, 5] + dZHiggs1[6, 
                 6]))))))/(CW^4*SW^3)}}, C[S[2], S[2], S[6], -S[5]] == 
   {{(I/4)*EL^2*((C2A*S2B)/CW^2 + (C2B*S2A)/SW^2), 
-    ((-I/8)*EL^2*(SW*(CW^2*((CW^2*(1 - S2A*S2B) + C2A*C2B*SW^2)*
-            Conjugate[dZHiggs1[6, 5]] + 2*S2A*S2B*SW^2*dZHiggs1[1, 2] + 
-           CW^2*(1 + S2A*S2B)*dZHiggs1[5, 6]) - C2A*S2B*SW^2*
-          (4*dSW1*SW + CW^2*(4*dZe1 + dZbarHiggs1[5, 5] + 2*dZHiggs1[2, 2] + 
-             dZHiggs1[6, 6]))) - C2B*(C2A*CW^2*SW^3*dZHiggs1[5, 6] - 
-         CW^4*(4*dSW1*S2A - SW*(2*C2A*dZHiggs1[1, 2] + 
-             S2A*(4*dZe1 + dZbarHiggs1[5, 5] + 2*dZHiggs1[2, 2] + dZHiggs1[6, 
-                6]))))))/(CW^4*SW^3)}}, C[S[1], S[3], S[5], -S[6]] == 
+    ((-I/8)*EL^2*(S2B*SW^3*(2*CW^2*S2A*dZHiggs1[1, 2] - 
+         C2A*(4*dSW1*SW + CW^2*(4*dZe1 + dZbarHiggs1[5, 5] + 
+             2*dZHiggs1[2, 2] + dZHiggs1[6, 6]))) + 
+       CW^4*(2*SW*dZHiggs1[5, 6] + C2B*(4*dSW1*S2A - 
+           SW*(2*C2A*dZHiggs1[1, 2] + S2A*(4*dZe1 + dZbarHiggs1[5, 5] + 2*
+                dZHiggs1[2, 2] + dZHiggs1[6, 6]))))))/(CW^4*SW^3)}}, 
+ C[S[1], S[3], S[5], -S[6]] == 
   {{-(EL^2*SBA)/(4*SW^2), 
     -(EL^2*(CB*(4*dSW1*SA + SW*(CA*(dZHiggs1[1, 2] - dZHiggs1[3, 4]) - 
             SA*(4*dZe1 + dZHiggs1[1, 1] + dZHiggs1[3, 3] + dZHiggs1[5, 
@@ -1301,16 +1302,17 @@ M$CouplingMatrices = {
     ((-I/8)*C2B*EL^2*(C2B*(4*dSW1*SW^2 - 
          CW^2*(4*dSW1 - SW*(16*CB*dCB1 + 4*dZe1 + 16*dSB1*SB + 
              dZbarHiggs1[5, 5] + 2*dZHiggs1[3, 3] + dZHiggs1[5, 5]))) + 
-       2*CW^2*S2B*SW*(dZHiggs1[3, 4] + Re[dZHiggs1[6, 5]])))/(CW^4*SW^3)}}, 
- C[S[3], S[3], S[5], -S[6]] == {{((-I/4)*C2B*EL^2*S2B)/(CW^2*SW^2), 
+       CW^2*S2B*SW*(2*dZHiggs1[3, 4] + dZHiggs1[5, 6] + dZHiggs1[6, 5])))/
+     (CW^4*SW^3)}}, C[S[3], S[3], S[5], -S[6]] == 
+  {{((-I/4)*C2B*EL^2*S2B)/(CW^2*SW^2), 
     ((-I/8)*EL^2*(2*CW^2*SW*(S2B^2*dZHiggs1[3, 4] - 
          CW^2*(dZHiggs1[3, 4] - dZHiggs1[6, 5])) + 
        C2B*S2B*(4*dSW1*SW^2 - CW^2*(4*dSW1 - SW*(16*CB*dCB1 + 4*dZe1 + 
              16*dSB1*SB + 2*dZHiggs1[3, 3] + dZHiggs1[5, 5] + 
              dZHiggs1[6, 6])))))/(CW^4*SW^3)}}, 
  C[S[3], S[3], S[6], -S[5]] == {{((-I/4)*C2B*EL^2*S2B)/(CW^2*SW^2), 
-    ((I/8)*EL^2*(CW^2*SW*((C2B^2 - 2*CW^2)*Conjugate[dZHiggs1[6, 5]] + 
-         2*(CW - S2B)*(CW + S2B)*dZHiggs1[3, 4] - C2B^2*dZHiggs1[5, 6]) - 
+    ((-I/8)*EL^2*(2*CW^2*SW*(S2B^2*dZHiggs1[3, 4] - 
+         CW^2*(dZHiggs1[3, 4] - dZHiggs1[5, 6])) + 
        C2B*S2B*(4*dSW1*SW^2 - CW^2*(4*dSW1 - SW*(16*CB*dCB1 + 4*dZe1 + 
              16*dSB1*SB + dZbarHiggs1[5, 5] + 2*dZHiggs1[3, 3] + 
              dZHiggs1[6, 6])))))/(CW^4*SW^3)}}, 
@@ -1325,8 +1327,9 @@ M$CouplingMatrices = {
     ((-I/8)*EL^2*(C2B*S2B*(4*dSW1*SW^2 - 
          CW^2*(4*dSW1 - SW*(16*CB*dCB1 + 4*dZe1 + 16*dSB1*SB + 
              dZbarHiggs1[5, 5] + dZHiggs1[3, 3] + dZHiggs1[4, 4] + 
-             dZHiggs1[5, 5]))) + SW*(2*CW^4*dZHiggs1[3, 4] - 
-         2*CW^2*(CW^2 - S2B^2)*Re[dZHiggs1[6, 5]])))/(CW^4*SW^3)}}, 
+             dZHiggs1[5, 5]))) + CW^2*SW*
+        (CW^2*(2*dZHiggs1[3, 4] - dZHiggs1[5, 6] - dZHiggs1[6, 5]) + 
+         S2B^2*(dZHiggs1[5, 6] + dZHiggs1[6, 5]))))/(CW^4*SW^3)}}, 
  C[S[3], S[4], S[5], -S[6]] == 
   {{((I/4)*EL^2*(CW - S2B)*(CW + S2B))/(CW^2*SW^2), 
     ((-I/32)*EL^2*(CW^4*(dSW1*(16 + S2B^6 - 8*(S2B^2 + S2B^4)) - 
@@ -1341,13 +1344,12 @@ M$CouplingMatrices = {
     ((-I/32)*EL^2*(CW^4*(dSW1*(16 + S2B^6 - 8*(S2B^2 + S2B^4)) - 
          4*SW*(16*CB*dCB1 + 4*dZe1 + 16*C2B^2*dSB1*SB + dZbarHiggs1[5, 5] + 
            dZHiggs1[3, 3] + dZHiggs1[4, 4] + dZHiggs1[6, 6])) - 
-       S2B*(2*SW*((dSW1*S2B*SW*(8*(CB^8 + SB^8) - (24 - 8*S2B^2 + S2B^4)*SW^
-                2))/2 + 2*C2B*CW^2*Conjugate[dZHiggs1[6, 5]]) + 
-         4*CW^2*(dSW1*S2B*(CB^8 + SB^8)*(2 - 4*SW^2) - 
-           SW*(C2B*dZHiggs1[5, 6] + S2B*(16*CB*dCB1 + 4*dZe1 + 16*dSB1*SB*
-                SW^2 + dZbarHiggs1[5, 5] + dZHiggs1[3, 3] + dZHiggs1[4, 4] + 
-               dZHiggs1[6, 6]))))))/(CW^4*SW^3)}}, 
- C[S[3], S[4], S[6], -S[6]] == {{((I/4)*C2B*EL^2*S2B)/(CW^2*SW^2), 
+       S2B^2*(dSW1*SW^2*(8*(CB^8 + SB^8) - (24 - 8*S2B^2 + S2B^4)*SW^2) + 
+         4*CW^2*(dSW1*(CB^8 + SB^8)*(2 - 4*SW^2) - 
+           SW*(16*CB*dCB1 + 4*dZe1 + 16*dSB1*SB*SW^2 + dZbarHiggs1[5, 5] + 
+             dZHiggs1[3, 3] + dZHiggs1[4, 4] + dZHiggs1[6, 6])))))/
+     (CW^4*SW^3)}}, C[S[3], S[4], S[6], -S[6]] == 
+  {{((I/4)*C2B*EL^2*S2B)/(CW^2*SW^2), 
     ((-I/8)*EL^2*(CW^2*SW*(CW^2*(2*dZHiggs1[3, 4] - dZHiggs1[5, 6] - 
            dZHiggs1[6, 5]) + S2B^2*(dZHiggs1[5, 6] + dZHiggs1[6, 5])) - 
        C2B*S2B*(4*dSW1*SW^2 - CW^2*(4*dSW1 - SW*(16*CB*dCB1 + 4*dZe1 + 
@@ -1359,33 +1361,35 @@ M$CouplingMatrices = {
            2*dZHiggs1[4, 4] + dZHiggs1[5, 5])) + 
        C2B*CW^2*SW*(C2B*(16*CB*dCB1 + 4*dZe1 + 16*dSB1*SB + 
            dZbarHiggs1[5, 5] + 2*dZHiggs1[4, 4] + dZHiggs1[5, 5]) - 
-         S2B*(2*dZHiggs1[3, 4] - 2*Re[dZHiggs1[6, 5]]))))/(CW^4*SW^3)}}, 
- C[S[4], S[4], S[5], -S[6]] == {{((I/4)*C2B*EL^2*S2B)/(CW^2*SW^2), 
+         S2B*(2*dZHiggs1[3, 4] - dZHiggs1[5, 6] - dZHiggs1[6, 5]))))/
+     (CW^4*SW^3)}}, C[S[4], S[4], S[5], -S[6]] == 
+  {{((I/4)*C2B*EL^2*S2B)/(CW^2*SW^2), 
     ((I/8)*EL^2*(SW*(2*CW^2*(CW - S2B)*(CW + S2B)*dZHiggs1[3, 4] - 
          2*CW^4*dZHiggs1[6, 5]) + C2B*S2B*(4*dSW1*SW^2 - 
          CW^2*(4*dSW1 - SW*(16*CB*dCB1 + 4*dZe1 + 16*dSB1*SB + 
              2*dZHiggs1[4, 4] + dZHiggs1[5, 5] + dZHiggs1[6, 6])))))/
      (CW^4*SW^3)}}, C[S[4], S[4], S[6], -S[5]] == 
   {{((I/4)*C2B*EL^2*S2B)/(CW^2*SW^2), 
-    ((-I/8)*EL^2*(CW^2*SW*(C2B^2*Conjugate[dZHiggs1[6, 5]] - 
-         2*(CW^2 - S2B^2)*dZHiggs1[3, 4] - (C2B^2 - 2*CW^2)*dZHiggs1[5, 6]) - 
-       C2B*S2B*(4*dSW1*SW^2 - CW^2*(4*dSW1 - SW*(16*CB*dCB1 + 4*dZe1 + 
-             16*dSB1*SB + dZbarHiggs1[5, 5] + 2*dZHiggs1[4, 4] + 
-             dZHiggs1[6, 6])))))/(CW^4*SW^3)}}, 
- C[S[4], S[4], S[6], -S[6]] == {{((-I/4)*C2B^2*EL^2)/(CW^2*SW^2), 
+    ((I/8)*EL^2*(SW*(2*CW^2*(CW - S2B)*(CW + S2B)*dZHiggs1[3, 4] - 
+         2*CW^4*dZHiggs1[5, 6]) + C2B*S2B*(4*dSW1*SW^2 - 
+         CW^2*(4*dSW1 - SW*(16*CB*dCB1 + 4*dZe1 + 16*dSB1*SB + 
+             dZbarHiggs1[5, 5] + 2*dZHiggs1[4, 4] + dZHiggs1[6, 6])))))/
+     (CW^4*SW^3)}}, C[S[4], S[4], S[6], -S[6]] == 
+  {{((-I/4)*C2B^2*EL^2)/(CW^2*SW^2), 
     ((I/8)*C2B*EL^2*(CW^2*S2B*SW*(2*dZHiggs1[3, 4] + dZHiggs1[5, 6] + 
          dZHiggs1[6, 5]) - 2*C2B*(2*dSW1*SW^2 - 
          CW^2*(2*dSW1 - SW*(8*CB*dCB1 + 2*dZe1 + 8*dSB1*SB + dZHiggs1[4, 4] + 
              dZHiggs1[6, 6])))))/(CW^4*SW^3)}}, 
  C[S[5], S[5], -S[5], -S[5]] == 
   {{((-I/2)*EL^2*(CB - SB)^2*(CB + SB)^2)/(CW^2*SW^2), 
-    ((I/2)*C2B*EL^2*((-CB^2 + SB^2)*(2*dSW1*SW^2 - 
+    ((I/2)*C2B*EL^2*(2*dSW1*SB^2*SW^2 - CB^2*(2*dSW1*SW^2 - 
          CW^2*(2*dSW1 - SW*(2*dZe1 + dZHiggs1[5, 5]))) - 
-       CW^2*SW*(C2B*dZbarHiggs1[5, 5] + 2*S2B*Re[dZHiggs1[6, 5]])))/
-     (CW^4*SW^3)}}, C[S[5], S[5], -S[5], -S[6]] == 
-  {{((-I/2)*C2B*EL^2*S2B)/(CW^2*SW^2), 
-    ((-I/4)*EL^2*((CW^2*SW*(2*S2B*(S2B*Conjugate[dZHiggs1[6, 5]] + 
-            C2B*dZbarHiggs1[5, 5]) + (2*C2B^2 - 2*CB^4 + 3*S2B^2 - 2*SB^4)*
+       CW^2*(SB^2*(2*dSW1 - SW*(2*dZe1 + dZHiggs1[5, 5])) + 
+         SW*(C2B*dZbarHiggs1[5, 5] + S2B*(dZHiggs1[5, 6] + 
+             dZHiggs1[6, 5])))))/(CW^4*SW^3)}}, 
+ C[S[5], S[5], -S[5], -S[6]] == {{((-I/2)*C2B*EL^2*S2B)/(CW^2*SW^2), 
+    ((-I/4)*EL^2*((CW^2*SW*(2*S2B*(C2B*dZbarHiggs1[5, 5] + 
+            S2B*dZHiggs1[5, 6]) + (2*C2B^2 - 2*CB^4 + 3*S2B^2 - 2*SB^4)*
            dZHiggs1[6, 5]))/2 + C2B*S2B*(4*dSW1*SW^2 - 
          CW^2*(4*dSW1 - SW*(4*dZe1 + 2*dZHiggs1[5, 5] + dZHiggs1[6, 6])))))/
      (CW^4*SW^3)}}, C[S[5], S[5], -S[6], -S[6]] == 
@@ -1394,17 +1398,15 @@ M$CouplingMatrices = {
        CW^2*(2*dSW1 - SW*(2*dZe1 + dZHiggs1[5, 5] + dZHiggs1[6, 6]))))/
      (CW^4*SW^3)}}, C[S[5], S[6], -S[5], -S[5]] == 
   {{((-I/2)*C2B*EL^2*S2B)/(CW^2*SW^2), 
-    ((-I/8)*EL^2*(8*C2B*S2B*(dSW1*SW^2 - CW^2*(dSW1 - dZe1*SW)) - 
-       CW^2*SW*(2*Conjugate[dZHiggs1[6, 5]] - 2*(CB^4 + SB^4)*
-          dZHiggs1[5, 6] - S2B*(4*C2B*dZbarHiggs1[5, 5] + (2*CB^2 - 2*SB^2)*
-            (dZHiggs1[5, 5] + dZHiggs1[6, 6])) + 
-         S2B^2*(dZHiggs1[5, 6] + 2*dZHiggs1[6, 5] - 8*Re[dZHiggs1[6, 5]]))))/
-     (CW^4*SW^3)}}, C[S[5], S[6], -S[5], -S[6]] == 
-  {{((I/4)*EL^2*(1 - 2*S2B^2))/(CW^2*SW^2), 
-    ((I/8)*EL^2*(2*C2B*CW^2*S2B*SW*(Conjugate[dZHiggs1[6, 5]] - 
-         dZHiggs1[5, 6]) + (CB^4 - (3*S2B^2)/2 + SB^4)*
-        (4*dSW1*SW^2 - CW^2*(4*dSW1 - SW*(4*dZe1 + dZbarHiggs1[5, 5] + 
-             dZHiggs1[5, 5] + 2*dZHiggs1[6, 6])))))/(CW^4*SW^3)}}, 
+    ((I/4)*EL^2*S2B*(4*dSW1*SB^2*SW^2 - CB^2*(4*dSW1*SW^2 - 
+         CW^2*(4*dSW1 - SW*(4*dZe1 + dZHiggs1[5, 5] + dZHiggs1[6, 6]))) - 
+       CW^2*(SW*(2*C2B*dZbarHiggs1[5, 5] + S2B*(dZHiggs1[5, 6] + 
+             dZHiggs1[6, 5])) + SB^2*(4*dSW1 - SW*(4*dZe1 + dZHiggs1[5, 5] + 
+             dZHiggs1[6, 6])))))/(CW^4*SW^3)}}, 
+ C[S[5], S[6], -S[5], -S[6]] == {{((I/4)*EL^2*(1 - 2*S2B^2))/(CW^2*SW^2), 
+    ((I/8)*EL^2*(1 - 2*S2B^2)*(4*dSW1*SW^2 - 
+       CW^2*(4*dSW1 - SW*(4*dZe1 + dZbarHiggs1[5, 5] + dZHiggs1[5, 5] + 
+           2*dZHiggs1[6, 6]))))/(CW^4*SW^3)}}, 
  C[S[5], S[6], -S[6], -S[6]] == {{((I/2)*C2B*EL^2*S2B)/(CW^2*SW^2), 
     ((-I/4)*EL^2*S2B*(4*dSW1*SB^2*SW^2 - 
        CB^2*(4*dSW1*SW^2 - CW^2*(4*dSW1 - SW*(4*dZe1 + dZHiggs1[5, 5] + 
@@ -1413,17 +1415,14 @@ M$CouplingMatrices = {
            2*C2B*dZHiggs1[6, 6]) - SB^2*(4*dSW1 - 
            SW*(4*dZe1 + dZHiggs1[5, 5] + dZHiggs1[6, 6])))))/(CW^4*SW^3)}}, 
  C[S[6], S[6], -S[5], -S[5]] == {{((-I/2)*EL^2*S2B^2)/(CW^2*SW^2), 
-    ((-I/2)*EL^2*S2B*(2*dSW1*S2B*SW^2 - 
-       CW^2*(2*dSW1*S2B + SW*(C2B*(Conjugate[dZHiggs1[6, 5]] - 
-             dZHiggs1[5, 6]) - S2B*(2*dZe1 + dZbarHiggs1[5, 5] + 
-             dZHiggs1[6, 6])))))/(CW^4*SW^3)}}, 
- C[S[6], S[6], -S[5], -S[6]] == {{((I/2)*C2B*EL^2*S2B)/(CW^2*SW^2), 
-    ((-I/4)*EL^2*((CW^2*SW*(2*C2B^2*Conjugate[dZHiggs1[6, 5]] - 
-          2*C2B*S2B*dZbarHiggs1[5, 5] - (2*CB^4 - 3*S2B^2 + 2*SB^4)*
-           dZHiggs1[5, 6] + 2*S2B^2*dZHiggs1[6, 5]))/2 - 
-       C2B*S2B*(4*dSW1*SW^2 - CW^2*(4*dSW1 - 
-           SW*(4*dZe1 + 3*dZHiggs1[6, 6])))))/(CW^4*SW^3)}}, 
- C[S[6], S[6], -S[6], -S[6]] == 
+    ((-I/2)*EL^2*S2B^2*(2*dSW1*SW^2 - 
+       CW^2*(2*dSW1 - SW*(2*dZe1 + dZbarHiggs1[5, 5] + dZHiggs1[6, 6]))))/
+     (CW^4*SW^3)}}, C[S[6], S[6], -S[5], -S[6]] == 
+  {{((I/2)*C2B*EL^2*S2B)/(CW^2*SW^2), 
+    ((I/4)*EL^2*S2B*(CW^2*SW*(C2B*dZbarHiggs1[5, 5] - 
+         S2B*(dZHiggs1[5, 6] + dZHiggs1[6, 5])) + 
+       C2B*(4*dSW1*SW^2 - CW^2*(4*dSW1 - SW*(4*dZe1 + 3*dZHiggs1[6, 6])))))/
+     (CW^4*SW^3)}}, C[S[6], S[6], -S[6], -S[6]] == 
   {{((-I/2)*EL^2*(CB - SB)^2*(CB + SB)^2)/(CW^2*SW^2), 
     ((I/2)*C2B*EL^2*(2*dSW1*SB^2*SW^2 - CB^2*(2*dSW1*SW^2 - 
          CW^2*(2*dSW1 - SW*(2*dZe1 + dZHiggs1[6, 6]))) + 
@@ -1450,8 +1449,8 @@ M$CouplingMatrices = {
      (CW^3*SW)}}, C[S[1], -S[5], V[1], V[3]] == 
   {{((I/2)*CBA*EL^2)/SW, 
     ((-I/4)*EL^2*(CBA*(dZZA1*SW^2 + CW*(2*dSW1 - SW*(dZAA1 + 4*dZe1 + dZW1 + 
-             dZbarHiggs1[5, 5] + dZHiggs1[1, 1]))) - 
-       CW*SBA*SW*(Conjugate[dZHiggs1[6, 5]] - dZHiggs1[1, 2])))/(CW*SW^2)}}, 
+             dZbarHiggs1[5, 5] + dZHiggs1[1, 1]))) + 
+       CW*SBA*SW*(dZHiggs1[1, 2] - dZHiggs1[5, 6])))/(CW*SW^2)}}, 
  C[S[1], -S[6], V[1], V[3]] == 
   {{((I/2)*EL^2*SBA)/SW, ((-I/4)*EL^2*(dZZA1*SBA*SW^2 + 
        CW*(2*dSW1*SBA - SW*(CBA*(dZHiggs1[1, 2] + dZHiggs1[6, 5]) + 
@@ -1460,8 +1459,8 @@ M$CouplingMatrices = {
   {{((-I/2)*CBA*EL^2)/CW, 
     ((I/4)*EL^2*(CBA*(CW^3*dZAZ1 - 2*dSW1*SW^2 - 
          CW^2*SW*(4*dZe1 + dZW1 + dZZZ1 + dZbarHiggs1[5, 5] + 
-           dZHiggs1[1, 1])) - CW^2*SBA*SW*(Conjugate[dZHiggs1[6, 5]] - 
-         dZHiggs1[1, 2])))/(CW^3*SW)}}, C[S[1], -S[6], V[2], V[3]] == 
+           dZHiggs1[1, 1])) + CW^2*SBA*SW*(dZHiggs1[1, 2] - dZHiggs1[5, 6])))/
+     (CW^3*SW)}}, C[S[1], -S[6], V[2], V[3]] == 
   {{((-I/2)*EL^2*SBA)/CW, ((I/4)*EL^2*(SBA*(CW^3*dZAZ1 - 2*dSW1*SW^2) - 
        CW^2*SW*(CBA*(dZHiggs1[1, 2] + dZHiggs1[6, 5]) + 
          SBA*(4*dZe1 + dZW1 + dZZZ1 + dZHiggs1[1, 1] + dZHiggs1[6, 6]))))/
@@ -1491,18 +1490,17 @@ M$CouplingMatrices = {
            dZHiggs1[2, 2] + dZHiggs1[6, 6]))))/(CW^3*SW)}}, 
  C[S[2], -S[5], V[1], V[3]] == 
   {{((-I/2)*EL^2*SBA)/SW, ((I/4)*EL^2*(dZZA1*SBA*SW^2 + 
-       CW*(2*dSW1*SBA + SW*(CBA*(Conjugate[dZHiggs1[6, 5]] + 
-             dZHiggs1[1, 2]) - SBA*(dZAA1 + 4*dZe1 + dZW1 + 
-             dZbarHiggs1[5, 5] + dZHiggs1[2, 2])))))/(CW*SW^2)}}, 
- C[S[2], -S[6], V[1], V[3]] == 
+       CW*(2*dSW1*SBA - SW*(SBA*(dZAA1 + 4*dZe1 + dZW1 + dZbarHiggs1[5, 5] + 
+             dZHiggs1[2, 2]) - CBA*(dZHiggs1[1, 2] + dZHiggs1[5, 6])))))/
+     (CW*SW^2)}}, C[S[2], -S[6], V[1], V[3]] == 
   {{((I/2)*CBA*EL^2)/SW, 
     ((I/4)*EL^2*(CW*SBA*SW*(dZHiggs1[1, 2] - dZHiggs1[6, 5]) - 
        CBA*(dZZA1*SW^2 + CW*(2*dSW1 - SW*(dZAA1 + 4*dZe1 + dZW1 + 
              dZHiggs1[2, 2] + dZHiggs1[6, 6])))))/(CW*SW^2)}}, 
  C[S[2], -S[5], V[2], V[3]] == 
-  {{((I/2)*EL^2*SBA)/CW, ((-I/4)*EL^2*(SBA*(CW^3*dZAZ1 - 2*dSW1*SW^2) + 
-       CW^2*SW*(CBA*(Conjugate[dZHiggs1[6, 5]] + dZHiggs1[1, 2]) - 
-         SBA*(4*dZe1 + dZW1 + dZZZ1 + dZbarHiggs1[5, 5] + dZHiggs1[2, 2]))))/
+  {{((I/2)*EL^2*SBA)/CW, ((-I/4)*EL^2*(SBA*(CW^3*dZAZ1 - 2*dSW1*SW^2) - 
+       CW^2*SW*(SBA*(4*dZe1 + dZW1 + dZZZ1 + dZbarHiggs1[5, 5] + 
+           dZHiggs1[2, 2]) - CBA*(dZHiggs1[1, 2] + dZHiggs1[5, 6]))))/
      (CW^3*SW)}}, C[S[2], -S[6], V[2], V[3]] == 
   {{((-I/2)*CBA*EL^2)/CW, 
     ((-I/4)*EL^2*(CW^2*SBA*SW*(dZHiggs1[1, 2] - dZHiggs1[6, 5]) - 
@@ -1636,12 +1634,11 @@ M$CouplingMatrices = {
              dZHiggs1[6, 6])))*Mass[F[2, {j2}]]))/(Sqrt[2]*CB*MW^3*SW^2)}, 
    {0, 0}}, C[F[2, {j1}], -F[1, {j2}], -S[5]] == 
   {{0, 0}, {(I*Sqrt[2]*EL*SB^2*IndexDelta[j1, j2]*Mass[F[2, {j1}]])/
-     (MW*S2B*SW), ((I/2)*EL*IndexDelta[j1, j2]*(MW^2*S2B*SW*dMf1[2, j1] - 
-       (CB^2*MW^2*SW*Conjugate[dZHiggs1[6, 5]] + 
-         SB*(CB*(2*dSW1*MW^2 + dMWsq1*SW) + MW^2*SW*(2*dCB1 - 
-             CB*(2*dZe1 + dZbarfL1[1, j2, j2] + dZbarHiggs1[5, 5] + dZfR1[2, 
-                j1, j1]))))*Mass[F[2, {j1}]]))/(Sqrt[2]*CB^2*MW^3*SW^2)}}, 
- C[F[2, {j1}], -F[1, {j2}], -S[6]] == 
+     (MW*S2B*SW), ((I/4)*EL*IndexDelta[j1, j2]*(2*MW^2*S2B*SW*dMf1[2, j1] - 
+       (S2B*(dMWsq1*SW + 2*MW^2*(dSW1 - dZe1*SW)) + 
+         MW^2*SW*(4*dCB1*SB - S2B*(dZbarfL1[1, j2, j2] + dZbarHiggs1[5, 5] + 
+             dZfR1[2, j1, j1]) + 2*CB^2*dZHiggs1[5, 6]))*Mass[F[2, {j1}]]))/
+     (Sqrt[2]*CB^2*MW^3*SW^2)}}, C[F[2, {j1}], -F[1, {j2}], -S[6]] == 
   {{0, 0}, {((-I)*EL*IndexDelta[j1, j2]*Mass[F[2, {j1}]])/(Sqrt[2]*MW*SW), 
     ((-I/2)*EL*IndexDelta[j1, j2]*(2*CB*MW^2*SW*dMf1[2, j1] - 
        (CB*(2*dSW1*MW^2 + dMWsq1*SW) + MW^2*SW*(2*dCB1 + SB*dZHiggs1[6, 5] - 
@@ -1838,23 +1835,22 @@ M$CouplingMatrices = {
           Mass[F[3, {j1, o1}]])))/(Sqrt[2]*MW^3*SB*SW^2)}}, 
  C[F[4, {j1, o1}], -F[3, {j2, o2}], -S[5]] == 
   {{(I*Sqrt[2]*CB^2*EL*CKM[j2, j1]*IndexDelta[o1, o2]*Mass[F[3, {j2, o1}]])/
-     (MW*S2B*SW), ((I/2)*EL*IndexDelta[o1, o2]*
-      (MW^2*S2B*SW*dCKM1[j2, j1]*Mass[F[3, {j2, o1}]] + 
-       CKM[j2, j1]*(MW^2*S2B*SW*dMf1[3, j2] + 
-         (MW^2*SB^2*SW*Conjugate[dZHiggs1[6, 5]] - 
-           CB*(2*MW^2*(dSW1*SB + dSB1*SW) + SB*SW*(dMWsq1 - MW^2*
-                (2*dZe1 + dZbarfR1[3, j2, j2] + dZbarHiggs1[5, 5] + 
-                 dZfL1[4, j1, j1]))))*Mass[F[3, {j2, o1}]])))/
-     (Sqrt[2]*MW^3*SB^2*SW^2)}, 
+     (MW*S2B*SW), ((I/4)*EL*IndexDelta[o1, o2]*
+      (2*MW^2*S2B*SW*CKM[j2, j1]*dMf1[3, j2] + 
+       (2*MW^2*S2B*SW*dCKM1[j2, j1] - CKM[j2, j1]*
+          (S2B*(dMWsq1*SW + 2*MW^2*(dSW1 - dZe1*SW)) + 
+           MW^2*SW*(4*CB*dSB1 - S2B*(dZbarfR1[3, j2, j2] + dZbarHiggs1[5, 
+                5] + dZfL1[4, j1, j1]) - 2*SB^2*dZHiggs1[5, 6])))*
+        Mass[F[3, {j2, o1}]]))/(Sqrt[2]*MW^3*SB^2*SW^2)}, 
    {(I*Sqrt[2]*EL*SB^2*CKM[j2, j1]*IndexDelta[o1, o2]*Mass[F[4, {j1, o1}]])/
-     (MW*S2B*SW), ((I/2)*EL*IndexDelta[o1, o2]*
-      (MW^2*S2B*SW*dCKM1[j2, j1]*Mass[F[4, {j1, o1}]] + 
-       CKM[j2, j1]*(MW^2*S2B*SW*dMf1[4, j1] - 
-         (CB^2*MW^2*SW*Conjugate[dZHiggs1[6, 5]] + 
-           SB*(CB*(2*dSW1*MW^2 + dMWsq1*SW) + MW^2*SW*(2*dCB1 - CB*
-                (2*dZe1 + dZbarfL1[3, j2, j2] + dZbarHiggs1[5, 5] + 
-                 dZfR1[4, j1, j1]))))*Mass[F[4, {j1, o1}]])))/
-     (Sqrt[2]*CB^2*MW^3*SW^2)}}, C[F[4, {j1, o1}], -F[3, {j2, o2}], -S[6]] == 
+     (MW*S2B*SW), ((I/4)*EL*IndexDelta[o1, o2]*
+      (2*MW^2*S2B*SW*CKM[j2, j1]*dMf1[4, j1] + 
+       (2*MW^2*S2B*SW*dCKM1[j2, j1] - CKM[j2, j1]*
+          (S2B*(dMWsq1*SW + 2*MW^2*(dSW1 - dZe1*SW)) + 
+           MW^2*SW*(4*dCB1*SB - S2B*(dZbarfL1[3, j2, j2] + dZbarHiggs1[5, 
+                5] + dZfR1[4, j1, j1]) + 2*CB^2*dZHiggs1[5, 6])))*
+        Mass[F[4, {j1, o1}]]))/(Sqrt[2]*CB^2*MW^3*SW^2)}}, 
+ C[F[4, {j1, o1}], -F[3, {j2, o2}], -S[6]] == 
   {{(I*EL*CKM[j2, j1]*IndexDelta[o1, o2]*Mass[F[3, {j2, o1}]])/
      (Sqrt[2]*MW*SW), ((I/2)*EL*IndexDelta[o1, o2]*
       (2*MW^2*SB*SW*CKM[j2, j1]*dMf1[3, j2] + 
@@ -2708,11 +2704,11 @@ M$CouplingMatrices = {
                    s1, 1] + 2*dMf1[3, j1]*USf[3, j1][s1, 2]) + dMf1[4, j2]*
                 ((MUE*S2B + 2*SB^2*Conjugate[Af[4, j2, j2]])*USf[3, j1][s1, 
                    1] + 2*Mass[F[3, {j1}]]*USf[3, j1][s1, 2])) + 
-             Conjugate[dZHiggs1[6, 5]]*(SB*(MUE*SB - CB*Conjugate[Af[4, j2, 
-                    j2]])*Conjugate[USf[4, j2][s2, 2]]*Mass[F[4, {j2}]]*
-                USf[3, j1][s1, 1] + CB*Conjugate[USf[4, j2][s2, 1]]*
-                (SB*(C2B*MW^2 + Mass[F[3, {j1}]]^2 - Mass[F[4, {j2}]]^2)*
-                  USf[3, j1][s1, 1] + (SB*Af[3, j1, j1] - CB*Conjugate[MUE])*
+             dZHiggs1[5, 6]*(SB*(MUE*SB - CB*Conjugate[Af[4, j2, j2]])*
+                Conjugate[USf[4, j2][s2, 2]]*Mass[F[4, {j2}]]*USf[3, j1][s1, 
+                 1] + CB*Conjugate[USf[4, j2][s2, 1]]*(SB*(C2B*MW^2 + 
+                   Mass[F[3, {j1}]]^2 - Mass[F[4, {j2}]]^2)*USf[3, j1][s1, 
+                   1] + (SB*Af[3, j1, j1] - CB*Conjugate[MUE])*
                   Mass[F[3, {j1}]]*USf[3, j1][s1, 2]))))/S2B)))/
      (Sqrt[2]*MW*SW^2)}}, C[S[5], S[13, {s1, j1, o1}], 
    -S[14, {s2, j2, o2}]] == 
@@ -2801,15 +2797,14 @@ M$CouplingMatrices = {
        Conjugate[USf[2, j1][s2, 1]]*(CB*MW^2*S2B - SB*Mass[F[2, {j1}]]^2)))/
      (Sqrt[2]*CB*MW*SW), ((I/2)*EL*IndexDelta[j1, j2]*
       (Conjugate[USf[2, j1][s2, 2]]*(2*CB*MW^2*SW*(CB*MUE + 
-           SB*Conjugate[Af[2, j1, j1]])*dMf1[2, j1] + 
-         (CB*(CB*(2*dMUE1*MW^2*SW - MUE*(2*dSW1*MW^2 + dMWsq1*SW)) + 
+           SB*Conjugate[Af[2, j1, j1]])*dMf1[2, j1] - 
+         (Conjugate[Af[2, j1, j1]]*((S2B*(2*dSW1*MW^2 + SW*(dMWsq1 - 
+                  MW^2*(2*dZe1 + dZbarHiggs1[5, 5] + dZbarSf1[1, 1, 1, 
+                     j1]))))/2 + MW^2*SW*(2*dCB1*SB + CB^2*dZHiggs1[5, 6])) - 
+           CB*(CB*(2*dMUE1*MW^2*SW - MUE*(2*dSW1*MW^2 + dMWsq1*SW)) + 
              MW^2*SW*(2*SB*Conjugate[dAf1[2, j1, j1]] - MUE*(2*dCB1 - 
-                 SB*Conjugate[dZHiggs1[6, 5]] - CB*(2*dZe1 + dZbarHiggs1[5, 
-                    5] + dZbarSf1[1, 1, 1, j1])))) - Conjugate[Af[2, j1, j1]]*
-            (CB^2*MW^2*SW*Conjugate[dZHiggs1[6, 5]] + 
-             SB*(2*dCB1*MW^2*SW + CB*(2*dSW1*MW^2 + SW*(dMWsq1 - 
-                   MW^2*(2*dZe1 + dZbarHiggs1[5, 5] + dZbarSf1[1, 1, 1, 
-                      j1]))))))*Mass[F[2, {j1}]]) + 
+                 CB*(2*dZe1 + dZbarHiggs1[5, 5] + dZbarSf1[1, 1, 1, j1]) - 
+                 SB*dZHiggs1[5, 6]))))*Mass[F[2, {j1}]]) + 
        CB*MW^2*SW*((CB*MUE + SB*Conjugate[Af[2, j1, j1]])*
           (Conjugate[USf[2, j1][1, 2]]*dZSf1[1, s2, 2, j2] + 
            Conjugate[USf[2, j1][2, 2]]*dZSf1[2, s2, 2, j2])*
@@ -2817,15 +2812,14 @@ M$CouplingMatrices = {
              j2] + Conjugate[USf[2, j1][2, 1]]*dZSf1[2, s2, 2, j2])*
           (CB*MW^2*S2B - SB*Mass[F[2, {j1}]]^2)) - 
        Conjugate[USf[2, j1][s2, 1]]*(2*CB^3*(dMWsq1*MW^2*SB*SW - 
-           MW^4*(2*dSW1*SB - dSB1*SW)) + MW^2*S2B*(dSW1*Mass[F[2, {j1}]]^2 + 
-           SW*(CB*MW^2*(dCB1 + CB*(2*dZe1 + dZbarHiggs1[5, 5])) - 
-             2*dMf1[2, j1]*Mass[F[2, {j1}]])) - 
-         SW*((dZe1*MW^2*S2B - SB*(CB*dMWsq1 + MW^2*(2*dCB1 - 
-                 CB*dZbarHiggs1[5, 5])))*Mass[F[2, {j1}]]^2 + 
-           CB*MW^2*(CB*Conjugate[dZHiggs1[6, 5]]*(C2B*MW^2 - Mass[F[2, {j1}]]^
-                2) - dZbarSf1[1, 1, 1, j1]*(CB*MW^2*S2B - SB*Mass[F[2, {j1}]]^
-                 2))))))/(Sqrt[2]*CB^2*MW^3*SW^2)}}, 
- C[S[5], S[11, {j1}], -S[12, {s2, j2}]] == 
+           MW^4*(2*dSW1*SB - dSB1*SW)) - MW^2*S2B*Mass[F[2, {j1}]]*
+          (2*SW*dMf1[2, j1] - dSW1*Mass[F[2, {j1}]]) + 
+         SW*(CB*MW^4*(S2B*(dCB1 + CB*(2*dZe1 + dZbarHiggs1[5, 5])) - 
+             C2B*CB*dZHiggs1[5, 6]) + ((dMWsq1*S2B + MW^2*(4*dCB1*SB - 
+                 S2B*(2*dZe1 + dZbarHiggs1[5, 5]) + 2*CB^2*dZHiggs1[5, 6]))*
+              Mass[F[2, {j1}]]^2 + MW^2*S2B*dZbarSf1[1, 1, 1, j1]*
+              (2*CB^2*MW^2 - Mass[F[2, {j1}]]^2))/2))))/
+     (Sqrt[2]*CB^2*MW^3*SW^2)}}, C[S[5], S[11, {j1}], -S[12, {s2, j2}]] == 
   {{((-I)*EL*IndexDelta[j1, j2]*((CB*MW^2*S2B - SB*Mass[F[2, {j1}]]^2)*
         USf[2, j1][s2, 1] - (SB*Af[2, j1, j1] + CB*Conjugate[MUE])*
         Mass[F[2, {j1}]]*USf[2, j1][s2, 2]))/(Sqrt[2]*CB*MW*SW), 
@@ -3771,35 +3765,35 @@ M$CouplingMatrices = {
   {{(I*EL*SB*((Conjugate[UCha[c2, 2]]*((SW*Conjugate[ZNeu[n1, 1]])/CW + 
           Conjugate[ZNeu[n1, 2]]))/Sqrt[2] - Conjugate[UCha[c2, 1]]*
         Conjugate[ZNeu[n1, 3]]))/SW, 
-    ((-I/4)*EL*(Sqrt[2]*Conjugate[UCha[c2, 2]]*
-        (SW^2*Conjugate[ZNeu[n1, 1]]*(CB*CW^2*Conjugate[dZHiggs1[6, 5]] - 
-           SB*(2*dSW1*SW + CW^2*(2*dZe1 + dZbarHiggs1[5, 5]))) + 
-         CW^2*(CW*Conjugate[ZNeu[n1, 2]]*(CB*SW*Conjugate[dZHiggs1[6, 5]] + 
-             SB*(2*dSW1 - SW*(2*dZe1 + dZbarHiggs1[5, 5]))) - 
-           SB*SW*((SW*Conjugate[ZNeu[1, 1]] + CW*Conjugate[ZNeu[1, 2]])*
+    ((I/4)*EL*(Sqrt[2]*Conjugate[UCha[c2, 2]]*(SW^2*Conjugate[ZNeu[n1, 1]]*
+          (2*dSW1*SB*SW + CW^2*(SB*(2*dZe1 + dZbarHiggs1[5, 5]) - 
+             CB*dZHiggs1[5, 6])) + 
+         CW^2*(SB*SW*((SW*Conjugate[ZNeu[1, 1]] + CW*Conjugate[ZNeu[1, 2]])*
               dZfL1[11, 1, n1] + (SW*Conjugate[ZNeu[2, 1]] + CW*Conjugate[
                  ZNeu[2, 2]])*dZfL1[11, 2, n1] + (SW*Conjugate[ZNeu[3, 1]] + 
                CW*Conjugate[ZNeu[3, 2]])*dZfL1[11, 3, n1] + 
              (SW*Conjugate[ZNeu[4, 1]] + CW*Conjugate[ZNeu[4, 2]])*
-              dZfL1[11, 4, n1]))) - CW^2*(2*CW*Conjugate[UCha[c2, 1]]*
-          (Conjugate[ZNeu[n1, 3]]*(CB*SW*Conjugate[dZHiggs1[6, 5]] + 
-             SB*(2*dSW1 - SW*(2*dZe1 + dZbarHiggs1[5, 5]))) - 
-           SB*SW*(Conjugate[ZNeu[1, 3]]*dZfL1[11, 1, n1] + 
+              dZfL1[11, 4, n1]) - CW*Conjugate[ZNeu[n1, 2]]*
+            (2*dSW1*SB - SW*(SB*(2*dZe1 + dZbarHiggs1[5, 5]) - CB*
+                dZHiggs1[5, 6])))) + 
+       CW^2*(SB*SW*((Sqrt[2]*Conjugate[UCha[1, 2]]*(SW*Conjugate[
+                 ZNeu[n1, 1]] + CW*Conjugate[ZNeu[n1, 2]]) - 
+             2*CW*Conjugate[UCha[1, 1]]*Conjugate[ZNeu[n1, 3]])*
+            dZfL1[12, 1, c2] + (Sqrt[2]*Conjugate[UCha[2, 2]]*
+              (SW*Conjugate[ZNeu[n1, 1]] + CW*Conjugate[ZNeu[n1, 2]]) - 
+             2*CW*Conjugate[UCha[2, 1]]*Conjugate[ZNeu[n1, 3]])*
+            dZfL1[12, 2, c2]) - 2*CW*Conjugate[UCha[c2, 1]]*
+          (SB*SW*(Conjugate[ZNeu[1, 3]]*dZfL1[11, 1, n1] + 
              Conjugate[ZNeu[2, 3]]*dZfL1[11, 2, n1] + Conjugate[ZNeu[3, 3]]*
-              dZfL1[11, 3, n1] + Conjugate[ZNeu[4, 3]]*dZfL1[11, 4, n1])) + 
-         SB*SW*((Sqrt[2]*Conjugate[UCha[1, 2]]*(SW*Conjugate[ZNeu[n1, 1]] + 
-               CW*Conjugate[ZNeu[n1, 2]]) - 2*CW*Conjugate[UCha[1, 1]]*
-              Conjugate[ZNeu[n1, 3]])*dZfL1[12, 1, c2] + 
-           (Sqrt[2]*Conjugate[UCha[2, 2]]*(SW*Conjugate[ZNeu[n1, 1]] + CW*
-                Conjugate[ZNeu[n1, 2]]) - 2*CW*Conjugate[UCha[2, 1]]*
-              Conjugate[ZNeu[n1, 3]])*dZfL1[12, 2, c2]))))/(CW^3*SW^2)}, 
+              dZfL1[11, 3, n1] + Conjugate[ZNeu[4, 3]]*dZfL1[11, 4, n1]) - 
+           Conjugate[ZNeu[n1, 3]]*(2*dSW1*SB - SW*(SB*(2*dZe1 + dZbarHiggs1[
+                  5, 5]) - CB*dZHiggs1[5, 6]))))))/(CW^3*SW^2)}, 
    {((-I)*CB*EL*((VCha[c2, 2]*((SW*ZNeu[n1, 1])/CW + ZNeu[n1, 2]))/Sqrt[2] + 
        VCha[c2, 1]*ZNeu[n1, 4]))/SW, 
     ((I/2)*EL*(CB*dSW1*(Sqrt[2]*VCha[c2, 2]*ZNeu[n1, 2] + 
          2*VCha[c2, 1]*ZNeu[n1, 4]) - 
-       SW*((SB*Conjugate[dZHiggs1[6, 5]] + CB*dZbarHiggs1[5, 5])*
-          ((VCha[c2, 2]*((SW*ZNeu[n1, 1])/CW + ZNeu[n1, 2]))/Sqrt[2] + 
-           VCha[c2, 1]*ZNeu[n1, 4]) + 
+       SW*(SB*dZHiggs1[5, 6]*((VCha[c2, 2]*((SW*ZNeu[n1, 1])/CW + 
+              ZNeu[n1, 2]))/Sqrt[2] + VCha[c2, 1]*ZNeu[n1, 4]) + 
          CB*(dZfR1[11, 1, n1]*((VCha[c2, 2]*((SW*ZNeu[1, 1])/CW + 
                 ZNeu[1, 2]))/Sqrt[2] + VCha[c2, 1]*ZNeu[1, 4]) + 
            dZfR1[11, 2, n1]*((VCha[c2, 2]*((SW*ZNeu[2, 1])/CW + ZNeu[2, 2]))/
@@ -3812,7 +3806,7 @@ M$CouplingMatrices = {
             ((VCha[1, 2]*((SW*ZNeu[n1, 1])/CW + ZNeu[n1, 2]))/Sqrt[2] + 
              VCha[1, 1]*ZNeu[n1, 4]) + dZfR1[12, 2, c2]*
             ((VCha[2, 2]*((SW*ZNeu[n1, 1])/CW + ZNeu[n1, 2]))/Sqrt[2] + 
-             VCha[2, 1]*ZNeu[n1, 4]) + 2*dZe1*
+             VCha[2, 1]*ZNeu[n1, 4]) + (2*dZe1 + dZbarHiggs1[5, 5])*
             ((VCha[c2, 2]*((SW*ZNeu[n1, 1])/CW + ZNeu[n1, 2]))/Sqrt[2] + 
              VCha[c2, 1]*ZNeu[n1, 4])))))/SW^2}}, 
  C[F[12, {c2}], F[11, {n1}], -S[6]] == 
@@ -5298,24 +5292,23 @@ M$CouplingMatrices = {
              SA*SB*Mass[F[4, {j2}]]^2))*USf[3, j1][s1, 1] + 
          (S2B*SBA*Conjugate[USf[4, j2][s2, 2]]*Mass[F[3, {j1}]]*
            Mass[F[4, {j2}]]*USf[3, j1][s1, 2])/2) - 
-       CKM[j1, j2]*((Conjugate[USf[4, j2][s2, 1]]*
-           (MW^2*S2B*SW*(CAB*MW^2*S2B^2 - 4*CA*CB^3*Mass[F[3, {j1}]]^2 + 
+       CKM[j1, j2]*(Conjugate[USf[4, j2][s2, 1]]*
+          ((MW^2*S2B*SW*(CAB*MW^2*S2B^2 - 4*CA*CB^3*Mass[F[3, {j1}]]^2 + 
               4*SA*SB^3*Mass[F[4, {j2}]]^2)*(dZbarSf1[1, s1, 3, j1]*
-               USf[3, j1][1, 1] + dZbarSf1[2, s1, 3, j1]*USf[3, j1][2, 1]) - 
-            (MW^4*S2B^3*(CAB*(4*dSW1 - SW*(4*dZe1 + dZbarHiggs1[5, 5] + 
-                    dZHiggs1[1, 1])) - SAB*SW*dZHiggs1[1, 2]) + 
-              S2B*(4*CB^3*Mass[F[3, {j1}]]*(4*CA*MW^2*SW*dMf1[3, j1] - 
-                  (CA*(4*dSW1*MW^2 + SW*(2*dMWsq1 - MW^2*(4*dZe1 + 
-                          dZbarHiggs1[5, 5] + dZHiggs1[1, 1]))) - MW^2*SA*SW*
-                     dZHiggs1[1, 2])*Mass[F[3, {j1}]]) - 4*SB^3*
-                 Mass[F[4, {j2}]]*(4*MW^2*SA*SW*dMf1[4, j2] - 
-                  (4*dSW1*MW^2*SA + SW*(2*dMWsq1*SA - MW^2*(SA*(4*dZe1 + 
+               USf[3, j1][1, 1] + dZbarSf1[2, s1, 3, j1]*USf[3, j1][2, 1]))/
+            8 - (CB^3*(2*CA*MW^2*S2B*SW*dMf1[3, j1]*Mass[F[3, {j1}]] + 
+               ((MW^2*S2B*SA*SW*dZHiggs1[1, 2] - CA*(4*dSW1*MW^2*S2B + 
+                    SW*(2*dMWsq1*S2B + MW^2*(8*CB*dSB1 - S2B*(4*dZe1 + 
+                          dZbarHiggs1[5, 5] + dZHiggs1[1, 1]) - 2*SB^2*
+                         dZHiggs1[5, 6]))))*Mass[F[3, {j1}]]^2)/2) + 
+             SB^3*(CB^3*MW^4*(CAB*(4*dSW1 - SW*(4*dZe1 + dZbarHiggs1[5, 5] + 
+                     dZHiggs1[1, 1])) - SAB*SW*(dZHiggs1[1, 2] + dZHiggs1[5, 
+                    6])) - 2*MW^2*S2B*SA*SW*dMf1[4, j2]*Mass[F[4, {j2}]] + 
+               ((S2B*(4*dSW1*MW^2*SA + SW*(2*dMWsq1*SA - MW^2*(SA*(4*dZe1 + 
                           dZbarHiggs1[5, 5] + dZHiggs1[1, 1]) - CA*dZHiggs1[
-                          1, 2])))*Mass[F[4, {j2}]])) - MW^2*SW*(
-                32*CA*CB^4*dSB1*Mass[F[3, {j1}]]^2 - 32*dCB1*SA*SB^4*
-                 Mass[F[4, {j2}]]^2 + S2B^2*Conjugate[dZHiggs1[6, 5]]*
-                 (MW^2*S2B*SAB - 2*(CA*CB*Mass[F[3, {j1}]]^2 + SA*SB*
-                     Mass[F[4, {j2}]]^2))))*USf[3, j1][s1, 1]))/8 - 
+                          1, 2]))))/2 + MW^2*SA*SW*(4*dCB1*SB + 
+                   CB^2*dZHiggs1[5, 6]))*Mass[F[4, {j2}]]^2))*
+            USf[3, j1][s1, 1]) - 
          (S2B*(MW^2*SW*((Conjugate[USf[4, j2][1, 1]]*dZSf1[1, s2, 4, j2] + 
                 Conjugate[USf[4, j2][2, 1]]*dZSf1[2, s2, 4, j2])*(
                 CA*CB^3*Mass[F[3, {j1}]]^2 - SB^2*(CAB*CB^2*MW^2 + 
@@ -5327,11 +5320,11 @@ M$CouplingMatrices = {
                 Mass[F[4, {j2}]]*(dZbarSf1[1, s1, 3, j1]*USf[3, j1][1, 2] + 
                  dZbarSf1[2, s1, 3, j1]*USf[3, j1][2, 2]))/2 + 
               (MW^2*S2B*SBA*SW*dMf1[4, j2]*Mass[F[3, {j1}]] + 
-                (MW^2*S2B*SBA*SW*dMf1[3, j1] - (MW^2*SB*SW*(2*dCB1*SBA + 
-                      CB*CBA*Conjugate[dZHiggs1[6, 5]]) + CB*(4*dSW1*MW^2*SB*
-                       SBA + SW*(2*dSB1*MW^2*SBA + SB*(2*dMWsq1*SBA - 
-                          MW^2*(SBA*(4*dZe1 + dZbarHiggs1[5, 5] + dZHiggs1[1, 
-                          1]) + CBA*dZHiggs1[1, 2])))))*Mass[F[3, {j1}]])*
+                (MW^2*S2B*SBA*SW*dMf1[3, j1] - (2*dCB1*MW^2*SB*SBA*SW + 
+                    CB*(4*dSW1*MW^2*SB*SBA + SW*(2*dSB1*MW^2*SBA + 
+                        SB*(2*dMWsq1*SBA - MW^2*(SBA*(4*dZe1 + dZbarHiggs1[5, 
+                          5] + dZHiggs1[1, 1]) + CBA*(dZHiggs1[1, 2] - 
+                          dZHiggs1[5, 6]))))))*Mass[F[3, {j1}]])*
                  Mass[F[4, {j2}]])*USf[3, j1][s1, 2])))/2)))/
      (MW^4*S2B^3*SW^3)}}, C[S[1], -S[6], S[14, {s2, j2, o1}], 
    -S[13, {s1, j1, o2}]] == 
@@ -5532,32 +5525,30 @@ M$CouplingMatrices = {
        (MW^2*S2B*SW*Conjugate[USf[4, j2][s2, 1]]*dCKM1[j1, j2]*
          ((C2B*MW^2*S2B^2)/4 - CB^4*Mass[F[3, {j1}]]^2 + 
           SB^4*Mass[F[4, {j2}]]^2)*USf[3, j1][s1, 1] + 
-        CKM[j1, j2]*((Conjugate[USf[4, j2][s2, 1]]*
-            (MW^2*S2B*SW*(C2B*MW^2*S2B^2 - 4*CB^4*Mass[F[3, {j1}]]^2 + 4*SB^4*
+        CKM[j1, j2]*(Conjugate[USf[4, j2][s2, 1]]*
+           ((MW^2*S2B*SW*(C2B*MW^2*S2B^2 - 4*CB^4*Mass[F[3, {j1}]]^2 + 4*SB^4*
                 Mass[F[4, {j2}]]^2)*(dZbarSf1[1, s1, 3, j1]*USf[3, j1][1, 
-                 1] + dZbarSf1[2, s1, 3, j1]*USf[3, j1][2, 1]) + 
-             (MW^4*(S2B^3*(-CB^2 + SB^2)*(4*dSW1 - SW*(4*dZe1 + dZbarHiggs1[
-                      5, 5] + dZHiggs1[3, 3])) + S2B^4*SW*(Conjugate[
-                    dZHiggs1[6, 5]] + dZHiggs1[3, 4])) - MW^2*SW*
-                (-((32*CB^5*dSB1 - 2*CB^2*S2B^2*(Conjugate[dZHiggs1[6, 5]] + 
-                      dZHiggs1[3, 4]))*Mass[F[3, {j1}]]^2) + 32*dCB1*SB^5*
-                  Mass[F[4, {j2}]]^2 + 2*S2B^2*SB^2*(Conjugate[dZHiggs1[6, 
-                     5]] + dZHiggs1[3, 4])*Mass[F[4, {j2}]]^2) - S2B*
-                (4*CB^4*Mass[F[3, {j1}]]*(4*MW^2*SW*dMf1[3, j1] - 
-                   (4*dSW1*MW^2 + SW*(2*dMWsq1 - MW^2*(4*dZe1 + dZbarHiggs1[
-                          5, 5] + dZHiggs1[3, 3])))*Mass[F[3, {j1}]]) - 
-                 4*SB^4*Mass[F[4, {j2}]]*(4*MW^2*SW*dMf1[4, j2] - 
-                   (4*dSW1*MW^2 + SW*(2*dMWsq1 - MW^2*(4*dZe1 + dZbarHiggs1[
-                          5, 5] + dZHiggs1[3, 3])))*Mass[F[4, {j2}]])))*
-              USf[3, j1][s1, 1]))/8 + (MW^2*S2B*SW*
-            ((Conjugate[USf[4, j2][1, 1]]*dZSf1[1, s2, 4, j2] + Conjugate[
-                 USf[4, j2][2, 1]]*dZSf1[2, s2, 4, j2])*((C2B*MW^2*S2B^2)/
-                4 - CB^4*Mass[F[3, {j1}]]^2 + SB^4*Mass[F[4, {j2}]]^2)*
-              USf[3, j1][s1, 1] - (S2B*Conjugate[USf[4, j2][s2, 2]]*(
-                Conjugate[dZHiggs1[6, 5]] - dZHiggs1[3, 4])*Mass[F[3, {j1}]]*
-               Mass[F[4, {j2}]]*USf[3, j1][s1, 2])/2))/2)))/
-      (MW^4*S2B^3*SW^3))}}, C[S[4], -S[6], S[14, {s2, j2, o1}], 
-   -S[13, {s1, j1, o2}]] == 
+                 1] + dZbarSf1[2, s1, 3, j1]*USf[3, j1][2, 1]))/8 - 
+            (CB^4*(2*MW^2*S2B*SW*dMf1[3, j1]*Mass[F[3, {j1}]] - 
+                (CB*(4*dSW1*MW^2*SB + SW*(4*dSB1*MW^2 + SB*(2*dMWsq1 - 
+                        MW^2*(4*dZe1 + dZbarHiggs1[5, 5] + dZHiggs1[3, 
+                          3])))) - MW^2*SB^2*SW*(dZHiggs1[3, 4] + dZHiggs1[5, 
+                     6]))*Mass[F[3, {j1}]]^2) + SB^3*(CB^3*MW^4*
+                 (C2B*(4*dSW1 - SW*(4*dZe1 + dZbarHiggs1[5, 5] + dZHiggs1[3, 
+                       3])) - S2B*SW*(dZHiggs1[3, 4] + dZHiggs1[5, 6])) - 
+                SB*(2*MW^2*S2B*SW*dMf1[4, j2]*Mass[F[4, {j2}]] - 
+                  ((S2B*(4*dSW1*MW^2 + SW*(2*dMWsq1 - MW^2*(4*dZe1 + 
+                          dZbarHiggs1[5, 5] + dZHiggs1[3, 3]))))/2 + 
+                    MW^2*SW*(4*dCB1*SB + CB^2*(dZHiggs1[3, 4] + dZHiggs1[5, 
+                         6])))*Mass[F[4, {j2}]]^2)))*USf[3, j1][s1, 1]) + 
+          (MW^2*S2B*SW*((Conjugate[USf[4, j2][1, 1]]*dZSf1[1, s2, 4, j2] + 
+               Conjugate[USf[4, j2][2, 1]]*dZSf1[2, s2, 4, j2])*
+              ((C2B*MW^2*S2B^2)/4 - CB^4*Mass[F[3, {j1}]]^2 + SB^4*
+                Mass[F[4, {j2}]]^2)*USf[3, j1][s1, 1] + 
+             (S2B*Conjugate[USf[4, j2][s2, 2]]*(dZHiggs1[3, 4] - 
+                dZHiggs1[5, 6])*Mass[F[3, {j1}]]*Mass[F[4, {j2}]]*USf[3, j1][
+                s1, 2])/2))/2)))/(MW^4*S2B^3*SW^3))}}, 
+ C[S[4], -S[6], S[14, {s2, j2, o1}], -S[13, {s1, j1, o2}]] == 
   {{(EL^2*CKM[j1, j2]*Conjugate[USf[4, j2][s2, 1]]*IndexDelta[o1, o2]*
       (C2B*MW^2 + Mass[F[3, {j1}]]^2 - Mass[F[4, {j2}]]^2)*USf[3, j1][s1, 1])/
      (2*Sqrt[2]*MW^2*SW^2), (EL^2*IndexDelta[o1, o2]*
@@ -5638,19 +5629,18 @@ M$CouplingMatrices = {
          (Conjugate[USf[4, j2][s2, 1]]*((MW^2*S2B*SW*(MW^2*S2B^2 - 2*
                 (CB^2*Mass[F[3, {j1}]]^2 + SB^2*Mass[F[4, {j2}]]^2))*
               (dZbarSf1[1, s1, 3, j1]*USf[3, j1][1, 1] + dZbarSf1[2, s1, 3, 
-                 j1]*USf[3, j1][2, 1]))/4 - 
-            ((MW^4*S2B^2*(4*dSW1*S2B - SW*(C2B*dZHiggs1[3, 4] + 
-                   S2B*(4*dZe1 + dZbarHiggs1[5, 5] + dZHiggs1[4, 4]))))/4 + 
-              CB^3*Mass[F[3, {j1}]]*(4*MW^2*SB*SW*dMf1[3, j1] - 
-                (4*MW^2*(dSW1*SB + dSB1*SW) + SB*SW*(2*dMWsq1 - MW^2*
-                     (4*dZe1 + dZbarHiggs1[5, 5])))*Mass[F[3, {j1}]]) + 
-              MW^2*(CB^3*SW*(CB*dZHiggs1[3, 4] + SB*dZHiggs1[4, 4])*
-                 Mass[F[3, {j1}]]^2 + 2*S2B*SB^2*Mass[F[4, {j2}]]*
-                 (SW*dMf1[4, j2] - dSW1*Mass[F[4, {j2}]])) - 
-              SW*(SB^3*(MW^2*(4*dCB1 + SB*dZHiggs1[3, 4]) + CB*(2*dMWsq1 - 
-                    MW^2*(4*dZe1 + dZbarHiggs1[5, 5] + dZHiggs1[4, 4])))*
-                 Mass[F[4, {j2}]]^2 - (MW^2*S2B^2*Conjugate[dZHiggs1[6, 5]]*
-                  (C2B*MW^2 + Mass[F[3, {j1}]]^2 - Mass[F[4, {j2}]]^2))/4))*
+                 j1]*USf[3, j1][2, 1]))/4 - (CB^2*(2*MW^2*S2B*SW*dMf1[3, j1]*
+                 Mass[F[3, {j1}]] - (CB*(4*dSW1*MW^2*SB + SW*(4*dSB1*MW^2 + 
+                      SB*(2*dMWsq1 - MW^2*(4*dZe1 + dZbarHiggs1[5, 5] + 
+                          dZHiggs1[4, 4])))) - MW^2*SW*(CB^2*dZHiggs1[3, 4] + 
+                    SB^2*dZHiggs1[5, 6]))*Mass[F[3, {j1}]]^2) + 
+              SB^2*(CB^2*MW^4*(4*dSW1*S2B - SW*(S2B*(4*dZe1 + dZbarHiggs1[5, 
+                       5] + dZHiggs1[4, 4]) + C2B*(dZHiggs1[3, 4] - dZHiggs1[
+                       5, 6]))) + 2*MW^2*S2B*SW*dMf1[4, j2]*Mass[
+                  F[4, {j2}]] - ((S2B*(4*dSW1*MW^2 + SW*(2*dMWsq1 - 
+                       MW^2*(4*dZe1 + dZbarHiggs1[5, 5] + dZHiggs1[4, 4]))))/
+                   2 + MW^2*SW*(4*dCB1*SB + SB^2*dZHiggs1[3, 4] + 
+                    CB^2*dZHiggs1[5, 6]))*Mass[F[4, {j2}]]^2))*
              USf[3, j1][s1, 1]) + 
           SW*((MW^4*S2B^3*(Conjugate[USf[4, j2][1, 1]]*dZSf1[1, s2, 4, j2] + 
                Conjugate[USf[4, j2][2, 1]]*dZSf1[2, s2, 4, j2])*
@@ -5713,19 +5703,18 @@ M$CouplingMatrices = {
     ((-I/8)*EL^2*IndexDelta[j1, j2]*
       (MW^2*SW*(Conjugate[USf[2, j1][1, 1]]*dZSf1[1, s2, 2, j2] + 
          Conjugate[USf[2, j1][2, 1]]*dZSf1[2, s2, 2, j2])*
-        (2*CAB*CB^3*MW^2 + S2B*SA*Mass[F[2, {j1}]]^2) + 
+        (2*CAB*CB^3*MW^2 + S2B*SA*Mass[F[2, {j1}]]^2) - 
        Conjugate[USf[2, j1][s2, 1]]*
-        (MW^4*(2*CB^3*SW*(SAB*Conjugate[dZHiggs1[6, 5]] + 
-             CAB*dZbarHiggs1[5, 5]) - 2*CB^4*
-            (CA*(4*dSW1 - SW*(4*dZe1 + dZbarSf1[1, 1, 1, j1] + dZHiggs1[1, 
-                  1])) - SA*SW*dZHiggs1[1, 2]) + CB^2*S2B*
-            (SA*(4*dSW1 - SW*dZbarSf1[1, 1, 1, j1]) - 
-             SW*(SA*(4*dZe1 + dZHiggs1[1, 1]) - CA*dZHiggs1[1, 2]))) - 
-         MW^2*SA*SW*(8*dCB1*SB + 2*CB^2*Conjugate[dZHiggs1[6, 5]])*
-          Mass[F[2, {j1}]]^2 + S2B*Mass[F[2, {j1}]]*
-          (4*MW^2*SA*SW*dMf1[2, j1] - (MW^2*SA*(4*dSW1 - SW*dZbarSf1[1, 1, 1, 
-                 j1]) + SW*(2*dMWsq1*SA - MW^2*(SA*(4*dZe1 + dZbarHiggs1[5, 
-                    5] + dZHiggs1[1, 1]) - CA*dZHiggs1[1, 2])))*
+        (MW^4*(2*CB^4*(CA*(4*dSW1 - SW*(4*dZe1 + dZbarSf1[1, 1, 1, j1] + 
+                 dZHiggs1[1, 1])) - SA*SW*dZHiggs1[1, 2]) - 
+           CB^2*S2B*(SA*(4*dSW1 - SW*dZbarSf1[1, 1, 1, j1]) - 
+             SW*(SA*(4*dZe1 + dZHiggs1[1, 1]) - CA*dZHiggs1[1, 2])) - 
+           2*CB^3*SW*(CAB*dZbarHiggs1[5, 5] + SAB*dZHiggs1[5, 6])) + 
+         MW^2*SA*SW*(8*dCB1*SB + 2*CB^2*dZHiggs1[5, 6])*Mass[F[2, {j1}]]^2 - 
+         S2B*Mass[F[2, {j1}]]*(4*MW^2*SA*SW*dMf1[2, j1] - 
+           (MW^2*SA*(4*dSW1 - SW*dZbarSf1[1, 1, 1, j1]) + 
+             SW*(2*dMWsq1*SA - MW^2*(SA*(4*dZe1 + dZbarHiggs1[5, 5] + 
+                   dZHiggs1[1, 1]) - CA*dZHiggs1[1, 2])))*
             Mass[F[2, {j1}]]))))/(Sqrt[2]*CB^3*MW^4*SW^3)}}, 
  C[S[1], -S[6], S[12, {s2, j2}], -S[11, {j1}]] == 
   {{((-I/2)*EL^2*Conjugate[USf[2, j1][s2, 1]]*IndexDelta[j1, j2]*
@@ -5815,9 +5804,9 @@ M$CouplingMatrices = {
           S2B*SB*Mass[F[2, {j1}]]^2) + Conjugate[USf[2, j1][s2, 1]]*
          (MW^4*((-4*CB^5 + CB*S2B^2)*(4*dSW1 - SW*(4*dZe1 + dZHiggs1[3, 
                  3])) + 4*CB^3*SW*(C2B*(dZbarHiggs1[5, 5] + dZbarSf1[1, 1, 1, 
-                 j1]) + S2B*(Conjugate[dZHiggs1[6, 5]] + dZHiggs1[3, 4]))) - 
-          MW^2*SW*(16*dCB1*SB^2 + 2*CB*S2B*(Conjugate[dZHiggs1[6, 5]] + 
-              dZHiggs1[3, 4]))*Mass[F[2, {j1}]]^2 + 2*S2B*SB*Mass[F[2, {j1}]]*
+                 j1]) + S2B*(dZHiggs1[3, 4] + dZHiggs1[5, 6]))) - 
+          MW^2*SW*(16*dCB1*SB^2 + 2*CB*S2B*(dZHiggs1[3, 4] + dZHiggs1[5, 6]))*
+           Mass[F[2, {j1}]]^2 + 2*S2B*SB*Mass[F[2, {j1}]]*
            (4*MW^2*SW*dMf1[2, j1] - (MW^2*(4*dSW1 - SW*dZbarSf1[1, 1, 1, 
                   j1]) + SW*(2*dMWsq1 - MW^2*(4*dZe1 + dZbarHiggs1[5, 5] + 
                   dZHiggs1[3, 3])))*Mass[F[2, {j1}]]))))/
@@ -5870,8 +5859,8 @@ M$CouplingMatrices = {
                   j1]) + SW*(2*dMWsq1 - MW^2*(4*dZe1 + dZbarHiggs1[5, 5] + 
                   dZHiggs1[4, 4])))*Mass[F[2, {j1}]]) + 
           MW^2*SW*((16*dCB1*SB + 4*SB^2*dZHiggs1[3, 4])*Mass[F[2, {j1}]]^2 - 
-            4*CB^2*Conjugate[dZHiggs1[6, 5]]*(C2B*MW^2 - Mass[F[2, {j1}]]^
-               2)))))/(16*Sqrt[2]*CB^2*MW^4*SW^3)}}, 
+            4*CB^2*dZHiggs1[5, 6]*(C2B*MW^2 - Mass[F[2, {j1}]]^2)))))/
+     (16*Sqrt[2]*CB^2*MW^4*SW^3)}}, 
  C[S[2], S[5], S[13, {s1, j1, o1}], -S[14, {s2, j2, o2}]] == 
   {{((-I)*Sqrt[2]*EL^2*Conjugate[CKM[j1, j2]]*IndexDelta[o1, o2]*
       ((Conjugate[USf[3, j1][s1, 1]]*(MW^2*S2B^2*SAB - 
@@ -5979,19 +5968,19 @@ M$CouplingMatrices = {
           ((MW^2*S2B*SW*(MW^2*S2B^2*SAB - 4*(CB^3*SA*Mass[F[3, {j1}]]^2 + 
                 CA*SB^3*Mass[F[4, {j2}]]^2))*(dZbarSf1[1, s1, 3, j1]*
                USf[3, j1][1, 1] + dZbarSf1[2, s1, 3, j1]*USf[3, j1][2, 1]))/
-            8 - ((MW^4*S2B^3*(4*dSW1*SAB - SW*(CAB*dZHiggs1[1, 2] + 
-                  SAB*(4*dZe1 + dZbarHiggs1[5, 5] + dZHiggs1[2, 2]))))/8 + 
-             CB^4*Mass[F[3, {j1}]]*(4*MW^2*SA*SB*SW*dMf1[3, j1] - 
-               (4*MW^2*SA*(dSW1*SB + dSB1*SW) + SB*SW*(2*dMWsq1*SA - 
-                   MW^2*(CA*dZHiggs1[1, 2] + SA*(4*dZe1 + dZbarHiggs1[5, 5] + 
-                       dZHiggs1[2, 2]))))*Mass[F[3, {j1}]]) + 
-             CA*SB^4*Mass[F[4, {j2}]]*(4*CB*MW^2*SW*dMf1[4, j2] - 
-               (4*dCB1*MW^2*SW + CB*(4*dSW1*MW^2 + SW*(2*dMWsq1 - 
-                     MW^2*(4*dZe1 + dZbarHiggs1[5, 5]))))*Mass[F[4, {j2}]]) - 
-             CB*MW^2*SB^2*SW*(SB^2*(SA*dZHiggs1[1, 2] - CA*dZHiggs1[2, 2])*
-                Mass[F[4, {j2}]]^2 - CB*Conjugate[dZHiggs1[6, 5]]*
-                (CB*(CAB*MW^2*SB + SA*Mass[F[3, {j1}]]^2) - CA*SB*
-                  Mass[F[4, {j2}]]^2)))*USf[3, j1][s1, 1]) + 
+            8 - (CB^3*(2*MW^2*S2B*SA*SW*dMf1[3, j1]*Mass[F[3, {j1}]] - 
+               (CB*(4*dSW1*MW^2*SA*SB + SW*(4*dSB1*MW^2*SA + 
+                     SB*(2*dMWsq1*SA - MW^2*(CA*dZHiggs1[1, 2] + SA*(4*dZe1 + 
+                          dZbarHiggs1[5, 5] + dZHiggs1[2, 2]))))) - 
+                 MW^2*SA*SB^2*SW*dZHiggs1[5, 6])*Mass[F[3, {j1}]]^2) + 
+             SB^3*(CB^3*MW^4*(4*dSW1*SAB - SW*(SAB*(4*dZe1 + dZbarHiggs1[5, 
+                      5] + dZHiggs1[2, 2]) + CAB*(dZHiggs1[1, 2] - dZHiggs1[
+                      5, 6]))) + 2*CA*MW^2*S2B*SW*dMf1[4, j2]*
+                Mass[F[4, {j2}]] - ((MW^2*S2B*SA*SW*dZHiggs1[1, 2])/2 + 
+                 CA*((S2B*(4*dSW1*MW^2 + SW*(2*dMWsq1 - MW^2*(4*dZe1 + 
+                          dZbarHiggs1[5, 5] + dZHiggs1[2, 2]))))/2 + 
+                   MW^2*SW*(4*dCB1*SB + CB^2*dZHiggs1[5, 6])))*
+                Mass[F[4, {j2}]]^2))*USf[3, j1][s1, 1]) + 
          (S2B*(MW^2*SW*(((Conjugate[USf[4, j2][1, 1]]*dZSf1[1, s2, 4, j2] + 
                  Conjugate[USf[4, j2][2, 1]]*dZSf1[2, s2, 4, j2])*
                 (MW^2*S2B^2*SAB - 4*(CB^3*SA*Mass[F[3, {j1}]]^2 + CA*SB^3*
@@ -6003,13 +5992,12 @@ M$CouplingMatrices = {
                 Mass[F[4, {j2}]]*(dZbarSf1[1, s1, 3, j1]*USf[3, j1][1, 2] + 
                  dZbarSf1[2, s1, 3, j1]*USf[3, j1][2, 2]))/2 + 
               (CBA*MW^2*S2B*SW*dMf1[4, j2]*Mass[F[3, {j1}]] + 
-                (CBA*MW^2*S2B*SW*dMf1[3, j1] - (MW^2*SB*SW*(2*CBA*dCB1 - 
-                      CB*SBA*Conjugate[dZHiggs1[6, 5]]) + CB*(MW^2*SW*
-                       (2*CBA*dSB1 - SB*SBA*dZHiggs1[1, 2]) + CBA*SB*
-                       (4*dSW1*MW^2 + SW*(2*dMWsq1 - MW^2*(4*dZe1 + 
-                          dZbarHiggs1[5, 5] + dZHiggs1[2, 2])))))*
-                   Mass[F[3, {j1}]])*Mass[F[4, {j2}]])*USf[3, j1][s1, 2])))/
-          2)))/(MW^4*S2B^3*SW^3)}}, 
+                ((2*CBA*MW^2*S2B*SW*dMf1[3, j1] - (CBA*(4*dSW1*MW^2*S2B + 
+                       SW*(2*dMWsq1*S2B + MW^2*(4*(CB*dSB1 + dCB1*SB) - 
+                          S2B*(4*dZe1 + dZbarHiggs1[5, 5] + dZHiggs1[2, 
+                          2])))) - MW^2*S2B*SBA*SW*(dZHiggs1[1, 2] + 
+                       dZHiggs1[5, 6]))*Mass[F[3, {j1}]])*Mass[F[4, {j2}]])/
+                 2)*USf[3, j1][s1, 2])))/2)))/(MW^4*S2B^3*SW^3)}}, 
  C[S[2], -S[6], S[14, {s2, j2, o1}], -S[13, {s1, j1, o2}]] == 
   {{(I*EL^2*CKM[j1, j2]*IndexDelta[o1, o2]*
       ((Conjugate[USf[4, j2][s2, 1]]*(CAB*MW^2*S2B + 
@@ -6099,17 +6087,16 @@ M$CouplingMatrices = {
          Conjugate[USf[2, j1][2, 1]]*dZSf1[2, s2, 2, j2])*
         (2*CB^3*MW^2*SAB - CA*S2B*Mass[F[2, {j1}]]^2) - 
        Conjugate[USf[2, j1][s2, 1]]*
-        (MW^4*(CB^2*S2B*(SA*SW*dZHiggs1[1, 2] + CA*(4*dSW1 - SW*(4*dZe1 + 
-                 dZHiggs1[2, 2]))) + 2*(CB^3*SW*(CAB*Conjugate[dZHiggs1[6, 
-                  5]] - SAB*(dZbarHiggs1[5, 5] + dZbarSf1[1, 1, 1, j1])) + 
-             CB^4*(4*dSW1*SA - SW*(CA*dZHiggs1[1, 2] + SA*(4*dZe1 + 
-                   dZHiggs1[2, 2]))))) - CA*MW^2*SW*(8*dCB1*SB + 
-           2*CB^2*Conjugate[dZHiggs1[6, 5]])*Mass[F[2, {j1}]]^2 + 
-         S2B*Mass[F[2, {j1}]]*(4*CA*MW^2*SW*dMf1[2, j1] + 
-           (MW^2*SW*(CA*dZbarSf1[1, 1, 1, j1] - SA*dZHiggs1[1, 2]) - 
-             CA*(4*dSW1*MW^2 + SW*(2*dMWsq1 - MW^2*(4*dZe1 + dZbarHiggs1[5, 
-                    5] + dZHiggs1[2, 2]))))*Mass[F[2, {j1}]]))))/
-     (Sqrt[2]*CB^3*MW^4*SW^3)}}, 
+        (MW^4*(2*CB^4*(4*dSW1*SA - SW*(CA*dZHiggs1[1, 2] + SA*(4*dZe1 + 
+                 dZHiggs1[2, 2]))) + CB^2*S2B*(SA*SW*dZHiggs1[1, 2] + 
+             CA*(4*dSW1 - SW*(4*dZe1 + dZHiggs1[2, 2]))) - 
+           2*CB^3*SW*(SAB*(dZbarHiggs1[5, 5] + dZbarSf1[1, 1, 1, j1]) - 
+             CAB*dZHiggs1[5, 6])) - CA*MW^2*SW*(8*dCB1*SB + 
+           2*CB^2*dZHiggs1[5, 6])*Mass[F[2, {j1}]]^2 + S2B*Mass[F[2, {j1}]]*
+          (4*CA*MW^2*SW*dMf1[2, j1] + (MW^2*SW*(CA*dZbarSf1[1, 1, 1, j1] - SA*
+                dZHiggs1[1, 2]) - CA*(4*dSW1*MW^2 + SW*(2*dMWsq1 - 
+                 MW^2*(4*dZe1 + dZbarHiggs1[5, 5] + dZHiggs1[2, 2]))))*
+            Mass[F[2, {j1}]]))))/(Sqrt[2]*CB^3*MW^4*SW^3)}}, 
  C[S[2], -S[6], S[12, {s2, j2}], -S[11, {j1}]] == 
   {{((I/2)*EL^2*Conjugate[USf[2, j1][s2, 1]]*IndexDelta[j1, j2]*
       (CAB*CB*MW^2 - CA*Mass[F[2, {j1}]]^2))/(Sqrt[2]*CB*MW^2*SW^2), 
@@ -6131,18 +6118,18 @@ M$CouplingMatrices = {
   {{((I/4)*EL^2*IndexDelta[j1, j2]*(C2B*CB^2*(1 - 2*CW^2)*MW^2 - 
        2*CW^2*SB^2*Mass[F[2, {j1}]]^2))/(CB^2*CW^2*MW^2*SW^2), 
     ((I/32)*EL^2*IndexDelta[j1, j2]*
-      (4*CB*MW^4*((4*CB^4 - S2B^2)*(dSW1*SW^2 + (-CW^2 + 2*CW^4)*
-            (dSW1 - dZe1*SW)) + C2B*CB^2*CW^2*(1 - 2*CW^2)*SW*
-          dZbarHiggs1[5, 5]) + CW^2*((1 - 2*CW^2)*MW^4*SW*
-          (-(CB*S2B^2*(dZHiggs1[5, 5] + dZSf1[1, 1, 1, j1])) + 
-           4*(C2B*CB^3*dZbarSf1[1, 1, 1, j2] + CB^5*(dZHiggs1[5, 5] + dZSf1[
-                1, 1, 1, j1])) + 8*CB^3*S2B*Re[dZHiggs1[6, 5]]) - 
-         CW^2*(4*S2B*SB*Mass[F[2, {j1}]]*(4*MW^2*SW*dMf1[2, j1] - 
-             (MW^2*(4*dSW1 - SW*(4*dZe1 + dZbarHiggs1[5, 5])) + SW*
-                (2*dMWsq1 - MW^2*(dZbarSf1[1, 1, 1, j2] + dZHiggs1[5, 5] + 
-                   dZSf1[1, 1, 1, j1])))*Mass[F[2, {j1}]]) - 
-           MW^2*SW*Mass[F[2, {j1}]]^2*(32*dCB1*SB^2 + 8*CB*S2B*
-              Re[dZHiggs1[6, 5]])))))/(CB^3*CW^4*MW^4*SW^3)}}, 
+      (CB*MW^4*(4*((4*CB^4 - S2B^2)*(dSW1*SW^2 + (-CW^2 + 2*CW^4)*
+              (dSW1 - dZe1*SW)) + C2B*CB^2*CW^2*(1 - 2*CW^2)*SW*
+            dZbarHiggs1[5, 5]) + CW^2*(1 - 2*CW^2)*SW*
+          ((4*CB^4 - S2B^2)*dZHiggs1[5, 5] + 4*CB^2*
+            (S2B*(dZHiggs1[5, 6] + dZHiggs1[6, 5]) + C2B*(dZbarSf1[1, 1, 1, 
+                j2] + dZSf1[1, 1, 1, j1])))) - 
+       CW^4*(16*MW^2*S2B*SB*SW*dMf1[2, j1]*Mass[F[2, {j1}]] - 
+         4*(MW^2*SW*(8*dCB1*SB^2 + CB*S2B*(dZHiggs1[5, 6] + dZHiggs1[6, 
+                5])) + S2B*SB*(MW^2*(4*dSW1 - SW*(4*dZe1 + dZbarHiggs1[5, 
+                  5])) + SW*(2*dMWsq1 - MW^2*(dZbarSf1[1, 1, 1, j2] + 
+                 dZHiggs1[5, 5] + dZSf1[1, 1, 1, j1]))))*
+          Mass[F[2, {j1}]]^2)))/(CB^3*CW^4*MW^4*SW^3)}}, 
  C[S[6], -S[6], S[11, {j1}], -S[11, {j2}]] == 
   {{((-I/4)*EL^2*IndexDelta[j1, j2]*(C2B*(1 - 2*CW^2)*MW^2 + 
        2*CW^2*Mass[F[2, {j1}]]^2))/(CW^2*MW^2*SW^2), 
@@ -6172,18 +6159,17 @@ M$CouplingMatrices = {
  C[S[6], -S[5], S[11, {j1}], -S[11, {j2}]] == 
   {{((-I/4)*EL^2*S2B*IndexDelta[j1, j2]*(2 - CW^(-2) - 
        Mass[F[2, {j1}]]^2/(CB^2*MW^2)))/SW^2, 
-    ((-I/8)*EL^2*IndexDelta[j1, j2]*
-      (4*S2B*((2 - CW^(-2))*dZe1*SW - dSW1*(2 - CW^(-2) + SW^2/CW^4)) + 
-       (CW^2*(S2B*(2*dMWsq1*SW + 4*MW^2*(dSW1 - dZe1*SW)) + 
-           MW^2*SW*(8*dCB1*SB + 2*(CB^2*Conjugate[dZHiggs1[6, 5]] + SB^2*
-                dZHiggs1[5, 6]) - S2B*(dZbarHiggs1[5, 5] + dZbarSf1[1, 1, 1, 
-                j2] + dZHiggs1[6, 6] + dZSf1[1, 1, 1, j1])))*
-          Mass[F[2, {j1}]]^2 + SW*(CB^2*(1 - 2*CW^2)*MW^4*
-            (C2B*(Conjugate[dZHiggs1[6, 5]] - dZHiggs1[5, 6]) - 
-             S2B*(dZbarHiggs1[5, 5] + dZbarSf1[1, 1, 1, j2] + dZHiggs1[6, 
-                6] + dZSf1[1, 1, 1, j1])) - 4*CW^2*MW^2*S2B*dMf1[2, j1]*
-            Mass[F[2, {j1}]]))/(CB^2*CW^2*MW^4)))/SW^3}}, 
- C[S[5], -S[5], S[12, {s1, j1}], -S[12, {s2, j2}]] == 
+    ((-I/8)*EL^2*IndexDelta[j1, j2]*(CW^4*(S2B*(4*dSW1*MW^2 + 2*dMWsq1*SW) + 
+         MW^2*SW*(8*dCB1*SB + 2*dZHiggs1[5, 6] - 
+           S2B*(4*dZe1 + dZbarHiggs1[5, 5] + dZbarSf1[1, 1, 1, j2] + 
+             dZHiggs1[6, 6] + dZSf1[1, 1, 1, j1])))*Mass[F[2, {j1}]]^2 - 
+       S2B*(CB^2*MW^4*(4*dSW1*SW^2 + CW^4*(8*dSW1 - 
+             2*SW*(4*dZe1 + dZbarHiggs1[5, 5])) - 
+           CW^2*(4*dSW1 - SW*(4*dZe1 + dZbarHiggs1[5, 5] + (1 - 2*CW^2)*
+                (dZbarSf1[1, 1, 1, j2] + dZHiggs1[6, 6] + dZSf1[1, 1, 1, 
+                  j1])))) + 4*CW^4*MW^2*SW*dMf1[2, j1]*Mass[F[2, {j1}]])))/
+     (CB^2*CW^4*MW^4*SW^3)}}, C[S[5], -S[5], S[12, {s1, j1}], 
+   -S[12, {s2, j2}]] == 
   {{((I/4)*EL^2*IndexDelta[j1, j2]*(C2B*Conjugate[USf[2, j1][s1, 1]]*
         USf[2, j1][s2, 1] - (2*Conjugate[USf[2, j1][s1, 2]]*
          (C2B*CB^2*MW^2*SW^2 + CW^2*SB^2*Mass[F[2, {j1}]]^2)*
@@ -6191,33 +6177,31 @@ M$CouplingMatrices = {
     ((-I/8)*EL^2*IndexDelta[j1, j2]*(2*Conjugate[USf[2, j1][s1, 2]]*
         (CB*CW^2*MW^2*SW*(C2B*CB^2*MW^2*SW^2 + CW^2*SB^2*Mass[F[2, {j1}]]^2)*
           (dZbarSf1[1, s2, 2, j2]*USf[2, j1][1, 2] + dZbarSf1[2, s2, 2, j2]*
-            USf[2, j1][2, 2]) + 
-         ((2*CB^3*MW^4*SW^3*(C2B*(4*dSW1*SW + CW^2*(4*dZe1 + dZbarHiggs1[5, 
-                   5] + dZHiggs1[5, 5])) + CW^2*S2B*(Conjugate[dZHiggs1[6, 
-                  5]] + dZHiggs1[6, 5])) - CW^4*(MW^2*SW*(8*dCB1*SB^2 + 
-                CB*S2B*(Conjugate[dZHiggs1[6, 5]] + dZHiggs1[6, 5]))*
-               Mass[F[2, {j1}]]^2 - S2B*SB*Mass[F[2, {j1}]]*(4*MW^2*SW*
-                 dMf1[2, j1] - (4*dSW1*MW^2 + SW*(2*dMWsq1 - MW^2*(4*dZe1 + 
-                      dZbarHiggs1[5, 5] + dZHiggs1[5, 5])))*Mass[
-                  F[2, {j1}]])))*USf[2, j1][s2, 2])/2) - 
-       CB*MW^2*(MW^2*Conjugate[USf[2, j1][s1, 1]]*
+            USf[2, j1][2, 2]) - 
+         (CW^4*SB*(SB*(4*dCB1*MW^2*SW + CB*(2*dMWsq1*SW + MW^2*(4*dSW1 - 
+                   SW*(4*dZe1 + dZbarHiggs1[5, 5] + dZHiggs1[5, 5])))) + 
+             CB^2*MW^2*SW*(dZHiggs1[5, 6] + dZHiggs1[6, 5]))*
+            Mass[F[2, {j1}]]^2 - CB*MW^2*SW*(CB^2*MW^2*SW^2*
+              (C2B*(4*dSW1*SW + CW^2*(4*dZe1 + dZbarHiggs1[5, 5] + 
+                   dZHiggs1[5, 5])) + CW^2*S2B*(dZHiggs1[5, 6] + dZHiggs1[6, 
+                  5])) + 4*CW^4*SB^2*dMf1[2, j1]*Mass[F[2, {j1}]]))*
+          USf[2, j1][s2, 2]) - CB*MW^2*(MW^2*Conjugate[USf[2, j1][s1, 1]]*
           (C2B*CB^2*CW^2*SW*(dZbarSf1[1, s2, 2, j2]*USf[2, j1][1, 1] + 
              dZbarSf1[2, s2, 2, j2]*USf[2, j1][2, 1]) + 
            (dSW1*(4*CB^8*SW^2 - 4*CB^2*CW^2*(1 - 2*CW^2*SB^2 + 2*C2B*SB^4*
-                  SW^2)) + CB^2*SW*(CW^2*S2B*Conjugate[dZHiggs1[6, 5]] + C2B*
-                (dSW1*S2B^2*SW + CW^2*(4*dZe1 + dZbarHiggs1[5, 5] + 
-                   dZHiggs1[5, 5])) - 2*(2*dSW1*SB^6*SW - CW^2*(4*CB*dCB1 + 
-                   dSB1*(4*SB - 8*SB^3) - (S2B*(8*dCB1*SB - 2*dSW1*S2B*
-                       (1 + 2*SB^2)*SW - dZHiggs1[6, 5]))/2))))*
-            USf[2, j1][s2, 1]) + CW^2*SW*(C2B*CB^2*MW^2*
-            (Conjugate[USf[2, j1][1, 1]]*dZSf1[1, s1, 2, j1] + 
-             Conjugate[USf[2, j1][2, 1]]*dZSf1[2, s1, 2, j1])*
-            USf[2, j1][s2, 1] - 2*(Conjugate[USf[2, j1][1, 2]]*
-              dZSf1[1, s1, 2, j1] + Conjugate[USf[2, j1][2, 2]]*
-              dZSf1[2, s1, 2, j1])*(C2B*CB^2*MW^2*SW^2 + 
-             CW^2*SB^2*Mass[F[2, {j1}]]^2)*USf[2, j1][s2, 2]))))/
-     (CB^3*CW^4*MW^4*SW^3)}}, C[S[6], -S[6], S[12, {s1, j1}], 
-   -S[12, {s2, j2}]] == 
+                  SW^2)) - CB^2*SW*(4*dSW1*SB^6*SW - C2B*(dSW1*S2B^2*SW + 
+                 CW^2*(4*dZe1 + dZbarHiggs1[5, 5] + dZHiggs1[5, 5])) - CW^2*
+                (8*CB*dCB1 + dSB1*(8*SB - 16*SB^3) - S2B*(8*dCB1*SB - 
+                   2*dSW1*S2B*(1 + 2*SB^2)*SW - dZHiggs1[5, 6] - dZHiggs1[6, 
+                    5]))))*USf[2, j1][s2, 1]) + 
+         CW^2*SW*(C2B*CB^2*MW^2*(Conjugate[USf[2, j1][1, 1]]*
+              dZSf1[1, s1, 2, j1] + Conjugate[USf[2, j1][2, 1]]*
+              dZSf1[2, s1, 2, j1])*USf[2, j1][s2, 1] - 
+           2*(Conjugate[USf[2, j1][1, 2]]*dZSf1[1, s1, 2, j1] + 
+             Conjugate[USf[2, j1][2, 2]]*dZSf1[2, s1, 2, j1])*
+            (C2B*CB^2*MW^2*SW^2 + CW^2*SB^2*Mass[F[2, {j1}]]^2)*
+            USf[2, j1][s2, 2]))))/(CB^3*CW^4*MW^4*SW^3)}}, 
+ C[S[6], -S[6], S[12, {s1, j1}], -S[12, {s2, j2}]] == 
   {{((-I/4)*EL^2*IndexDelta[j1, j2]*(C2B*MW^2*Conjugate[USf[2, j1][s1, 1]]*
         USf[2, j1][s2, 1] - 2*Conjugate[USf[2, j1][s1, 2]]*
         (C2B*MW^2*SW^2 - CW^2*Mass[F[2, {j1}]]^2)*USf[2, j1][s2, 2]))/
@@ -6277,13 +6261,12 @@ M$CouplingMatrices = {
         USf[2, j1][s2, 1] - (2*Conjugate[USf[2, j1][s1, 2]]*
          (2*CB^2*MW^2*SW^2 - CW^2*Mass[F[2, {j1}]]^2)*USf[2, j1][s2, 2])/
         (CB*MW^2)))/(CW^2*SW^2), ((I/8)*EL^2*IndexDelta[j1, j2]*
-      (CB*MW^4*Conjugate[USf[2, j1][s1, 1]]*
-        (CB*CW^2*S2B*SW*(dZbarSf1[1, s2, 2, j2]*USf[2, j1][1, 1] + 
+      (CB^3*MW^4*Conjugate[USf[2, j1][s1, 1]]*
+        (2*CW^2*SB*SW*(dZbarSf1[1, s2, 2, j2]*USf[2, j1][1, 1] + 
            dZbarSf1[2, s2, 2, j2]*USf[2, j1][2, 1]) + 
-         ((CW^2*SW*(CB^2*S2B*(12*dCB1 + 5*dSB1*S2B) + S2B^2*(dSB1 + 
-                dCB1*S2B - dSB1*SB^2*(5 - 12*(CW^2 + SW^2))) - 
-              C2B*CB*(2*Conjugate[dZHiggs1[6, 5]] - 2*dZHiggs1[5, 6])) - 
-            CB*S2B*(dSW1*(8*CW^4 - 8*SW^2) - 2*CW^2*SW*(4*dZe1 - 4*dSW1*SW + 
+         ((SB*(16*dSW1*SW^2 - 16*CW^4*(dSW1 - 3*dSB1*SB^3*SW)) + 
+            CW^2*SW*(4*dCB1*S2B*(3 + SB^2) + dSB1*(5*S2B^2 + 4*SB^2 - 
+                4*SB^4*(5 - 12*SW^2)) + 4*SB*(4*dZe1 - 4*dSW1*SW + 
                 dZbarHiggs1[5, 5] + dZHiggs1[6, 6])))*USf[2, j1][s2, 1])/2) + 
        2*((CW^2*MW^2*S2B*SW*(CB^2*MW^2*(Conjugate[USf[2, j1][1, 1]]*dZSf1[1, 
                 s1, 2, j1] + Conjugate[USf[2, j1][2, 1]]*dZSf1[2, s1, 2, j1])*
@@ -6293,15 +6276,13 @@ M$CouplingMatrices = {
           2 - Conjugate[USf[2, j1][s1, 2]]*
           ((CW^2*MW^2*S2B*SW*(2*CB^2*MW^2*SW^2 - CW^2*Mass[F[2, {j1}]]^2)*
              (dZbarSf1[1, s2, 2, j2]*USf[2, j1][1, 2] + dZbarSf1[2, s2, 2, 
-                j2]*USf[2, j1][2, 2]))/2 - 
-           ((CW^4*Mass[F[2, {j1}]]*(4*MW^2*S2B*SW*dMf1[2, j1] - 
-                (4*dSW1*MW^2*S2B + SW*(2*dMWsq1*S2B + MW^2*(8*dCB1*SB + 
-                      2*SB^2*dZHiggs1[5, 6] - S2B*(4*dZe1 + dZbarHiggs1[5, 
-                         5] + dZHiggs1[6, 6]))))*Mass[F[2, {j1}]]))/2 - 
-             CB^2*(MW^4*SW^3*(4*dSW1*S2B*SW + CW^2*(C2B*dZHiggs1[5, 6] + 
-                   S2B*(4*dZe1 + dZbarHiggs1[5, 5] + dZHiggs1[6, 6]))) - CW^2*
-                MW^2*SW*Conjugate[dZHiggs1[6, 5]]*(C2B*MW^2*SW^2 - 
-                 CW^2*Mass[F[2, {j1}]]^2)))*USf[2, j1][s2, 2]))))/
+                j2]*USf[2, j1][2, 2]))/2 + 
+           (CW^4*(MW^2*SW*(4*dCB1*SB + dZHiggs1[5, 6]) + (S2B*(2*dMWsq1*SW + 
+                  MW^2*(4*dSW1 - SW*(4*dZe1 + dZbarHiggs1[5, 5] + dZHiggs1[6, 
+                       6]))))/2)*Mass[F[2, {j1}]]^2 + 
+             (MW^2*S2B*SW*(2*CB^2*MW^2*SW^2*(4*dSW1*SW + CW^2*(4*dZe1 + 
+                    dZbarHiggs1[5, 5] + dZHiggs1[6, 6])) - 4*CW^4*dMf1[2, j1]*
+                 Mass[F[2, {j1}]]))/2)*USf[2, j1][s2, 2]))))/
      (CB^2*CW^4*MW^4*SW^3)}}, C[S[5], -S[5], S[13, {s1, j1, o1}], 
    -S[13, {s2, j2, o2}]] == 
   {{((-I/12)*EL^2*IndexDelta[o1, o2]*(Conjugate[USf[3, j1][s1, 1]]*
@@ -6322,31 +6303,31 @@ M$CouplingMatrices = {
          (CB^3*MW^4*(C2B*(4*dSW1*SW^2 - CW^4*(8*dSW1 - 2*SW*(4*dZe1 + 
                    dZbarHiggs1[5, 5] + dZHiggs1[5, 5])) - CW^2*(4*dSW1 - 
                  SW*(4*dZe1 + dZbarHiggs1[5, 5] + dZHiggs1[5, 5]))) + 
-             CW^2*(1 + 2*CW^2)*S2B*SW*(Conjugate[dZHiggs1[6, 5]] + dZHiggs1[
-                6, 5]))*IndexDelta[j1, j2] + 6*CW^4*SB*
-            (CKM[j2, 1]*Mass[F[4, {1}]]*(MW^2*S2B*SW*Conjugate[dCKM1[j1, 1]]*
-                Mass[F[4, {1}]] + Conjugate[CKM[j1, 1]]*(2*MW^2*S2B*SW*
-                  dMf1[4, 1] - ((S2B*(4*dSW1*MW^2 + SW*(2*dMWsq1 - MW^2*
-                         (4*dZe1 + dZbarHiggs1[5, 5] + dZHiggs1[5, 5]))) + 
-                    MW^2*SW*(8*dCB1*SB + 2*CB^2*(Conjugate[dZHiggs1[6, 5]] + 
-                        dZHiggs1[6, 5])))*Mass[F[4, {1}]])/2)) + 
+             CW^2*(1 + 2*CW^2)*S2B*SW*(dZHiggs1[5, 6] + dZHiggs1[6, 5]))*
+            IndexDelta[j1, j2] + 6*CW^4*SB*(CKM[j2, 1]*Mass[F[4, {1}]]*
+              (MW^2*S2B*SW*Conjugate[dCKM1[j1, 1]]*Mass[F[4, {1}]] + 
+               Conjugate[CKM[j1, 1]]*(2*MW^2*S2B*SW*dMf1[4, 1] - 
+                 ((S2B*(4*dSW1*MW^2 + SW*(2*dMWsq1 - MW^2*(4*dZe1 + 
+                          dZbarHiggs1[5, 5] + dZHiggs1[5, 5]))))/2 + 
+                   MW^2*SW*(4*dCB1*SB + CB^2*(dZHiggs1[5, 6] + dZHiggs1[6, 
+                        5])))*Mass[F[4, {1}]])) + 
              S2B*(MW^2*SW*Conjugate[CKM[j1, 1]]*dCKM1[j2, 1]*Mass[F[4, {1}]]^
                  2 + CKM[j2, 2]*Conjugate[CKM[j1, 2]]*Mass[F[4, {2}]]*
                 (2*MW^2*SW*dMf1[4, 2] - (2*dSW1*MW^2 + dMWsq1*SW)*
-                  Mass[F[4, {2}]])) + (SW*(2*MW^2*S2B*Conjugate[CKM[j1, 3]]*
-                 dCKM1[j2, 3] + CKM[j2, 3]*(2*MW^2*S2B*Conjugate[dCKM1[j1, 
-                     3]] - Conjugate[CKM[j1, 3]]*(S2B*(2*dMWsq1 - MW^2*
-                       (4*dZe1 + dZbarHiggs1[5, 5] + dZHiggs1[5, 5])) + 
-                    MW^2*(8*dCB1*SB + 2*CB^2*(Conjugate[dZHiggs1[6, 5]] + 
-                        dZHiggs1[6, 5])))))*Mass[F[4, {3}]]^2)/2 + 
-             MW^2*((SW*CKM[j2, 2]*(2*S2B*Conjugate[dCKM1[j1, 2]] - 
-                  Conjugate[CKM[j1, 2]]*(8*dCB1*SB - S2B*(4*dZe1 + 
-                      dZbarHiggs1[5, 5] + dZHiggs1[5, 5]) + 2*CB^2*
-                     (Conjugate[dZHiggs1[6, 5]] + dZHiggs1[6, 5])))*
-                 Mass[F[4, {2}]]^2)/2 + S2B*(SW*Conjugate[CKM[j1, 2]]*
-                  dCKM1[j2, 2]*Mass[F[4, {2}]]^2 + 2*CKM[j2, 3]*Conjugate[
-                   CKM[j1, 3]]*Mass[F[4, {3}]]*(SW*dMf1[4, 3] - 
-                   dSW1*Mass[F[4, {3}]])))))*USf[3, j2][s2, 1]) + 
+                  Mass[F[4, {2}]])) + SW*(SB*(2*CB*MW^2*Conjugate[CKM[j1, 3]]*
+                  dCKM1[j2, 3] + CKM[j2, 3]*(2*CB*MW^2*Conjugate[dCKM1[j1, 
+                      3]] - Conjugate[CKM[j1, 3]]*(4*dCB1*MW^2 + 
+                     CB*(2*dMWsq1 - MW^2*(4*dZe1 + dZbarHiggs1[5, 5] + 
+                         dZHiggs1[5, 5]))))) - CB^2*MW^2*CKM[j2, 3]*
+                Conjugate[CKM[j1, 3]]*(dZHiggs1[5, 6] + dZHiggs1[6, 5]))*
+              Mass[F[4, {3}]]^2 + MW^2*(SW*(S2B*Conjugate[CKM[j1, 2]]*
+                  dCKM1[j2, 2] + (CKM[j2, 2]*(2*S2B*Conjugate[dCKM1[j1, 2]] - 
+                    Conjugate[CKM[j1, 2]]*(8*dCB1*SB - S2B*(4*dZe1 + 
+                        dZbarHiggs1[5, 5] + dZHiggs1[5, 5]) + 2*CB^2*
+                       (dZHiggs1[5, 6] + dZHiggs1[6, 5]))))/2)*
+                Mass[F[4, {2}]]^2 + 2*S2B*CKM[j2, 3]*Conjugate[CKM[j1, 3]]*
+                Mass[F[4, {3}]]*(SW*dMf1[4, 3] - dSW1*Mass[F[4, {3}]]))))*
+          USf[3, j2][s2, 1]) + 
        CB*(CW^2*MW^2*SB*SW*(SB^2*(Conjugate[USf[3, j1][1, 1]]*
               dZSf1[1, s1, 3, j1] + Conjugate[USf[3, j1][2, 1]]*
               dZSf1[2, s1, 3, j1])*(C2B*CB^2*(1 + 2*CW^2)*MW^2*
@@ -6362,14 +6343,14 @@ M$CouplingMatrices = {
           (CW^2*MW^2*SB*SW*(2*C2B*MW^2*SB^2*SW^2 - 3*CB^2*CW^2*
               Mass[F[3, {j1}]]^2)*(dZbarSf1[1, s2, 3, j2]*USf[3, j2][1, 2] + 
              dZbarSf1[2, s2, 3, j2]*USf[3, j2][2, 2]) + 
-           ((4*MW^4*SB^3*SW^3*(C2B*(4*dSW1*SW + CW^2*(4*dZe1 + dZbarHiggs1[5, 
-                     5] + dZHiggs1[5, 5])) + CW^2*S2B*(Conjugate[dZHiggs1[6, 
-                    5]] + dZHiggs1[6, 5])) + CW^4*(MW^2*SW*(24*CB^2*dSB1 - 
-                  3*S2B*SB*(Conjugate[dZHiggs1[6, 5]] + dZHiggs1[6, 5]))*
-                 Mass[F[3, {j1}]]^2 - 3*CB*S2B*Mass[F[3, {j1}]]*
-                 (4*MW^2*SW*dMf1[3, j1] - (4*dSW1*MW^2 + SW*(2*dMWsq1 - 
-                      MW^2*(4*dZe1 + dZbarHiggs1[5, 5] + dZHiggs1[5, 5])))*
-                   Mass[F[3, {j1}]])))*USf[3, j2][s2, 2])/2))))/
+           (2*MW^4*SB^3*SW^3*(C2B*(4*dSW1*SW + CW^2*(4*dZe1 + dZbarHiggs1[5, 
+                    5] + dZHiggs1[5, 5])) + CW^2*S2B*(dZHiggs1[5, 6] + 
+                 dZHiggs1[6, 5])) - 3*CB*CW^4*Mass[F[3, {j1}]]*
+              (2*MW^2*S2B*SW*dMf1[3, j1] - (CB*(4*dSW1*MW^2*SB + 
+                   SW*(4*dSB1*MW^2 + SB*(2*dMWsq1 - MW^2*(4*dZe1 + 
+                         dZbarHiggs1[5, 5] + dZHiggs1[5, 5])))) - 
+                 MW^2*SB^2*SW*(dZHiggs1[5, 6] + dZHiggs1[6, 5]))*
+                Mass[F[3, {j1}]]))*USf[3, j2][s2, 2]))))/
      (CW^4*MW^4*S2B^3*SW^3)}}, C[S[6], -S[6], S[13, {s1, j1, o1}], 
    -S[13, {s2, j2, o2}]] == 
   {{((I/12)*EL^2*IndexDelta[o1, o2]*(Conjugate[USf[3, j1][s1, 1]]*
@@ -6503,65 +6484,58 @@ M$CouplingMatrices = {
         USf[3, j2][s2, 1] - 4*Conjugate[USf[3, j1][s1, 2]]*IndexDelta[j1, j2]*
         (MW^2*S2B^2*SW^2 - 3*CB^2*CW^2*Mass[F[3, {j1}]]^2)*
         USf[3, j2][s2, 2]))/(CW^2*MW^2*S2B*SW^2), 
-    ((-I/6)*EL^2*IndexDelta[o1, o2]*(SB^2*Conjugate[USf[3, j1][s1, 1]]*
-        (CW^2*MW^2*S2B*SW*(CB^2*(1 + 2*CW^2)*MW^2*IndexDelta[j1, j2] - 
-           3*CW^2*(CKM[j2, 1]*Conjugate[CKM[j1, 1]]*Mass[F[4, {1}]]^2 + 
-             CKM[j2, 2]*Conjugate[CKM[j1, 2]]*Mass[F[4, {2}]]^2 + 
-             CKM[j2, 3]*Conjugate[CKM[j1, 3]]*Mass[F[4, {3}]]^2))*
-          (dZbarSf1[1, s2, 3, j2]*USf[3, j2][1, 1] + dZbarSf1[2, s2, 3, j2]*
-            USf[3, j2][2, 1]) - (CB^2*MW^4*(C2B*CW^2*(1 + 2*CW^2)*SW*
-              (Conjugate[dZHiggs1[6, 5]] - dZHiggs1[5, 6]) - 
-             S2B*(4*dSW1*SW^2 - CW^4*(8*dSW1 - 2*SW*(4*dZe1 + dZbarHiggs1[5, 
-                    5] + dZHiggs1[6, 6])) - CW^2*(4*dSW1 - SW*(4*dZe1 + 
-                   dZbarHiggs1[5, 5] + dZHiggs1[6, 6]))))*IndexDelta[j1, 
-             j2] + 6*CW^4*(CKM[j2, 1]*Mass[F[4, {1}]]*(MW^2*S2B*SW*
-                Conjugate[dCKM1[j1, 1]]*Mass[F[4, {1}]] + Conjugate[
-                 CKM[j1, 1]]*(2*MW^2*S2B*SW*dMf1[4, 1] - 
-                 (CB^2*MW^2*SW*Conjugate[dZHiggs1[6, 5]] + 
-                   SB*(MW^2*SW*(4*dCB1 + SB*dZHiggs1[5, 6]) + 
-                     CB*(4*dSW1*MW^2 + SW*(2*dMWsq1 - MW^2*(4*dZe1 + 
-                          dZbarHiggs1[5, 5] + dZHiggs1[6, 6])))))*
-                  Mass[F[4, {1}]])) + S2B*(MW^2*SW*Conjugate[CKM[j1, 1]]*
-                dCKM1[j2, 1]*Mass[F[4, {1}]]^2 + CKM[j2, 2]*Conjugate[
-                 CKM[j1, 2]]*Mass[F[4, {2}]]*(2*MW^2*SW*dMf1[4, 2] - 
-                 (2*dSW1*MW^2 + dMWsq1*SW)*Mass[F[4, {2}]])) + 
-             SW*(MW^2*S2B*Conjugate[CKM[j1, 3]]*dCKM1[j2, 3] + (CKM[j2, 3]*
-                 (2*MW^2*S2B*Conjugate[dCKM1[j1, 3]] - Conjugate[CKM[j1, 3]]*
-                   (2*dMWsq1*S2B + MW^2*(8*dCB1*SB + 2*(CB^2*Conjugate[
-                          dZHiggs1[6, 5]] + SB^2*dZHiggs1[5, 6]) - 
-                      S2B*(4*dZe1 + dZbarHiggs1[5, 5] + dZHiggs1[6, 6])))))/
-                2)*Mass[F[4, {3}]]^2 + MW^2*((SW*CKM[j2, 2]*
-                 (2*S2B*Conjugate[dCKM1[j1, 2]] - Conjugate[CKM[j1, 2]]*
-                   (8*dCB1*SB + 2*(CB^2*Conjugate[dZHiggs1[6, 5]] + 
-                      SB^2*dZHiggs1[5, 6]) - S2B*(4*dZe1 + dZbarHiggs1[5, 
-                       5] + dZHiggs1[6, 6])))*Mass[F[4, {2}]]^2)/2 + S2B*
+    ((-I/3)*EL^2*IndexDelta[o1, o2]*(SB^2*Conjugate[USf[3, j1][s1, 1]]*
+        ((CW^2*MW^2*S2B*SW*(CB^2*(1 + 2*CW^2)*MW^2*IndexDelta[j1, j2] - 
+            3*CW^2*(CKM[j2, 1]*Conjugate[CKM[j1, 1]]*Mass[F[4, {1}]]^2 + 
+              CKM[j2, 2]*Conjugate[CKM[j1, 2]]*Mass[F[4, {2}]]^2 + 
+              CKM[j2, 3]*Conjugate[CKM[j1, 3]]*Mass[F[4, {3}]]^2))*
+           (dZbarSf1[1, s2, 3, j2]*USf[3, j2][1, 1] + dZbarSf1[2, s2, 3, j2]*
+             USf[3, j2][2, 1]))/2 + 
+         ((CB^2*MW^4*S2B*(4*dSW1*SW^2 - CW^4*(8*dSW1 - 2*SW*(4*dZe1 + 
+                  dZbarHiggs1[5, 5] + dZHiggs1[6, 6])) - CW^2*(4*dSW1 - 
+                SW*(4*dZe1 + dZbarHiggs1[5, 5] + dZHiggs1[6, 6])))*
+             IndexDelta[j1, j2])/2 - 3*CW^4*(CKM[j2, 1]*Mass[F[4, {1}]]*
+              (MW^2*S2B*SW*Conjugate[dCKM1[j1, 1]]*Mass[F[4, {1}]] + 
+               Conjugate[CKM[j1, 1]]*(2*MW^2*S2B*SW*dMf1[4, 1] - 
+                 (MW^2*SW*(4*dCB1*SB + dZHiggs1[5, 6]) + (S2B*(4*dSW1*MW^2 + 
+                      SW*(2*dMWsq1 - MW^2*(4*dZe1 + dZbarHiggs1[5, 5] + 
+                          dZHiggs1[6, 6]))))/2)*Mass[F[4, {1}]])) + 
+             S2B*(MW^2*SW*Conjugate[CKM[j1, 1]]*dCKM1[j2, 1]*Mass[F[4, {1}]]^
+                 2 + CKM[j2, 2]*Conjugate[CKM[j1, 2]]*Mass[F[4, {2}]]*
+                (2*MW^2*SW*dMf1[4, 2] - (2*dSW1*MW^2 + dMWsq1*SW)*
+                  Mass[F[4, {2}]])) + SW*(MW^2*S2B*Conjugate[CKM[j1, 3]]*
+                dCKM1[j2, 3] + (CKM[j2, 3]*(2*MW^2*S2B*Conjugate[dCKM1[j1, 
+                     3]] - Conjugate[CKM[j1, 3]]*(2*dMWsq1*S2B + 
+                    MW^2*(8*dCB1*SB + 2*dZHiggs1[5, 6] - S2B*(4*dZe1 + 
+                        dZbarHiggs1[5, 5] + dZHiggs1[6, 6])))))/2)*
+              Mass[F[4, {3}]]^2 + MW^2*((SW*CKM[j2, 2]*(2*S2B*Conjugate[
+                    dCKM1[j1, 2]] - Conjugate[CKM[j1, 2]]*(8*dCB1*SB + 
+                    2*dZHiggs1[5, 6] - S2B*(4*dZe1 + dZbarHiggs1[5, 5] + 
+                      dZHiggs1[6, 6])))*Mass[F[4, {2}]]^2)/2 + S2B*
                 (SW*Conjugate[CKM[j1, 2]]*dCKM1[j2, 2]*Mass[F[4, {2}]]^2 + 
                  2*CKM[j2, 3]*Conjugate[CKM[j1, 3]]*Mass[F[4, {3}]]*
                   (SW*dMf1[4, 3] - dSW1*Mass[F[4, {3}]])))))*
-          USf[3, j2][s2, 1]) + 2*CB*(CW^2*MW^2*SB*SW*
-          (SB^2*(Conjugate[USf[3, j1][1, 1]]*dZSf1[1, s1, 3, j1] + 
-             Conjugate[USf[3, j1][2, 1]]*dZSf1[2, s1, 3, j1])*
-            (CB^2*(1 + 2*CW^2)*MW^2*IndexDelta[j1, j2] - 
-             3*CW^2*(CKM[j2, 1]*Conjugate[CKM[j1, 1]]*Mass[F[4, {1}]]^2 + 
-               CKM[j2, 2]*Conjugate[CKM[j1, 2]]*Mass[F[4, {2}]]^2 + 
+          USf[3, j2][s2, 1]) + 
+       CB*(CW^2*MW^2*SB*SW*(SB^2*(Conjugate[USf[3, j1][1, 1]]*
+              dZSf1[1, s1, 3, j1] + Conjugate[USf[3, j1][2, 1]]*
+              dZSf1[2, s1, 3, j1])*(CB^2*(1 + 2*CW^2)*MW^2*IndexDelta[j1, 
+               j2] - 3*CW^2*(CKM[j2, 1]*Conjugate[CKM[j1, 1]]*Mass[F[4, {1}]]^
+                 2 + CKM[j2, 2]*Conjugate[CKM[j1, 2]]*Mass[F[4, {2}]]^2 + 
                CKM[j2, 3]*Conjugate[CKM[j1, 3]]*Mass[F[4, {3}]]^2))*
             USf[3, j2][s2, 1] - (Conjugate[USf[3, j1][1, 2]]*
               dZSf1[1, s1, 3, j1] + Conjugate[USf[3, j1][2, 2]]*
               dZSf1[2, s1, 3, j1])*IndexDelta[j1, j2]*(MW^2*S2B^2*SW^2 - 
              3*CB^2*CW^2*Mass[F[3, {j1}]]^2)*USf[3, j2][s2, 2]) - 
-         CB*Conjugate[USf[3, j1][s1, 2]]*IndexDelta[j1, j2]*
-          ((CW^2*MW^2*S2B*SW*(4*MW^2*SB^2*SW^2 - 3*CW^2*Mass[F[3, {j1}]]^2)*
+         (CB*Conjugate[USf[3, j1][s1, 2]]*IndexDelta[j1, j2]*
+           (CW^2*MW^2*S2B*SW*(4*MW^2*SB^2*SW^2 - 3*CW^2*Mass[F[3, {j1}]]^2)*
              (dZbarSf1[1, s2, 3, j2]*USf[3, j2][1, 2] + dZbarSf1[2, s2, 3, 
-                j2]*USf[3, j2][2, 2]))/2 + 
-           (2*MW^4*SB^2*SW^3*(4*dSW1*S2B*SW + CW^2*(C2B*dZHiggs1[5, 6] + 
-                 S2B*(4*dZe1 + dZbarHiggs1[5, 5] + dZHiggs1[6, 6]))) + 
-             CB*CW^4*Mass[F[3, {j1}]]*(SB*SW*(6*dMWsq1 - 3*MW^2*(4*dZe1 + 
-                   dZbarHiggs1[5, 5]))*Mass[F[3, {j1}]] - 12*MW^2*
-                (SB*SW*dMf1[3, j1] - (dSW1*SB + dSB1*SW)*Mass[F[3, {j1}]])) - 
-             MW^2*SW*(3*CB*CW^4*(CB*dZHiggs1[5, 6] + SB*dZHiggs1[6, 6])*
-                Mass[F[3, {j1}]]^2 + CW^2*SB^2*Conjugate[dZHiggs1[6, 5]]*
-                (2*C2B*MW^2*SW^2 + 3*CW^2*Mass[F[3, {j1}]]^2)))*
-            USf[3, j2][s2, 2]))))/(CW^4*MW^4*S2B^2*SW^3)}}, 
+                j2]*USf[3, j2][2, 2]) + (3*CW^4*(4*dSW1*MW^2*S2B + 
+                SW*(2*dMWsq1*S2B + MW^2*(8*CB*dSB1 - 2*dZHiggs1[5, 6] - 
+                    S2B*(4*dZe1 + dZbarHiggs1[5, 5] + dZHiggs1[6, 6]))))*
+               Mass[F[3, {j1}]]^2 + S2B*(4*MW^4*SB^2*SW^3*(4*dSW1*SW + 
+                  CW^2*(4*dZe1 + dZbarHiggs1[5, 5] + dZHiggs1[6, 6])) - 
+                12*CW^4*MW^2*SW*dMf1[3, j1]*Mass[F[3, {j1}]]))*
+             USf[3, j2][s2, 2]))/2)))/(CW^4*MW^4*S2B^2*SW^3)}}, 
  C[S[5], -S[5], S[14, {s1, j1, o1}], -S[14, {s2, j2, o2}]] == 
   {{((-I/12)*EL^2*IndexDelta[o1, o2]*
       ((Conjugate[USf[4, j1][s1, 1]]*(C2B*(1 - 4*CW^2)*MW^2*SB^2*
@@ -6582,31 +6556,31 @@ M$CouplingMatrices = {
          (MW^4*SB^3*(C2B*(-(CW^2*(4*dSW1 - SW*(4*dZe1 + dZbarHiggs1[5, 5] + 
                     dZHiggs1[5, 5]))) + 4*(dSW1*SW^2 + CW^4*(4*dSW1 - 
                    SW*(4*dZe1 + dZbarHiggs1[5, 5] + dZHiggs1[5, 5])))) + 
-             CW^2*(1 - 4*CW^2)*S2B*SW*(Conjugate[dZHiggs1[6, 5]] + dZHiggs1[
-                6, 5]))*IndexDelta[j1, j2] + 6*CB*CW^4*
-            (CKM[1, j1]*Mass[F[3, {1}]]*(MW^2*S2B*SW*Conjugate[dCKM1[1, j2]]*
-                Mass[F[3, {1}]] + Conjugate[CKM[1, j2]]*(2*MW^2*S2B*SW*
-                  dMf1[3, 1] - ((S2B*(4*dSW1*MW^2 + SW*(2*dMWsq1 - MW^2*
-                         (4*dZe1 + dZbarHiggs1[5, 5] + dZHiggs1[5, 5]))) + 
-                    MW^2*SW*(8*CB*dSB1 - 2*SB^2*(Conjugate[dZHiggs1[6, 5]] + 
-                        dZHiggs1[6, 5])))*Mass[F[3, {1}]])/2)) - 
-             CB*CKM[2, j1]*Mass[F[3, {2}]]*(SB*SW*(2*(dMWsq1 - 2*dZe1*MW^2)*
-                  Conjugate[CKM[2, j2]] - 2*MW^2*Conjugate[dCKM1[2, j2]])*
-                Mass[F[3, {2}]] - 4*MW^2*Conjugate[CKM[2, j2]]*
+             CW^2*(1 - 4*CW^2)*S2B*SW*(dZHiggs1[5, 6] + dZHiggs1[6, 5]))*
+            IndexDelta[j1, j2] + 6*CB*CW^4*(CKM[1, j1]*Mass[F[3, {1}]]*
+              (MW^2*S2B*SW*Conjugate[dCKM1[1, j2]]*Mass[F[3, {1}]] + 
+               Conjugate[CKM[1, j2]]*(2*MW^2*S2B*SW*dMf1[3, 1] - 
+                 ((4*dSW1*MW^2*S2B + SW*(2*dMWsq1*S2B + MW^2*(8*CB*dSB1 - 
+                        S2B*(4*dZe1 + dZbarHiggs1[5, 5] + dZHiggs1[5, 5]) - 
+                        2*SB^2*(dZHiggs1[5, 6] + dZHiggs1[6, 5]))))*
+                   Mass[F[3, {1}]])/2)) + CB*Mass[F[3, {2}]]*
+              (SB*SW*(2*MW^2*Conjugate[CKM[2, j2]]*dCKM1[2, j1] + 
+                 CKM[2, j1]*(2*MW^2*Conjugate[dCKM1[2, j2]] - 
+                   Conjugate[CKM[2, j2]]*(2*dMWsq1 - MW^2*(4*dZe1 + 
+                       dZbarHiggs1[5, 5] + dZHiggs1[5, 5]))))*
+                Mass[F[3, {2}]] + 4*MW^2*CKM[2, j1]*Conjugate[CKM[2, j2]]*
                 (SB*SW*dMf1[3, 2] - (dSW1*SB + dSB1*SW)*Mass[F[3, {2}]])) + 
              SW*(MW^2*S2B*Conjugate[CKM[1, j2]]*dCKM1[1, j1]*Mass[F[3, {1}]]^
-                 2 - (S2B*CKM[3, j1]*((dMWsq1 - 2*dZe1*MW^2)*Conjugate[
-                     CKM[3, j2]] - MW^2*Conjugate[dCKM1[3, j2]]) - 
-                 (MW^2*Conjugate[CKM[3, j2]]*(2*S2B*dCKM1[3, j1] + CKM[3, j1]*
-                     (S2B*(dZbarHiggs1[5, 5] + dZHiggs1[5, 5]) + 2*SB^2*
-                       (Conjugate[dZHiggs1[6, 5]] + dZHiggs1[6, 5]))))/2)*
-                Mass[F[3, {3}]]^2) - MW^2*(4*CB*(dSW1*SB + dSB1*SW)*
-                CKM[3, j1]*Conjugate[CKM[3, j2]]*Mass[F[3, {3}]]^2 - SW*
-                ((Conjugate[CKM[2, j2]]*(2*S2B*dCKM1[2, j1] + CKM[2, j1]*
-                     (S2B*(dZbarHiggs1[5, 5] + dZHiggs1[5, 5]) + 2*SB^2*
-                       (Conjugate[dZHiggs1[6, 5]] + dZHiggs1[6, 5])))*
-                   Mass[F[3, {2}]]^2)/2 + 2*S2B*CKM[3, j1]*Conjugate[
-                   CKM[3, j2]]*dMf1[3, 3]*Mass[F[3, {3}]]))))*
+                 2 + SB*(CB*(2*MW^2*Conjugate[CKM[3, j2]]*dCKM1[3, j1] + 
+                   CKM[3, j1]*(2*MW^2*Conjugate[dCKM1[3, j2]] - 
+                     Conjugate[CKM[3, j2]]*(2*dMWsq1 - MW^2*(4*dZe1 + 
+                         dZbarHiggs1[5, 5] + dZHiggs1[5, 5])))) + 
+                 MW^2*SB*CKM[3, j1]*Conjugate[CKM[3, j2]]*(dZHiggs1[5, 6] + 
+                   dZHiggs1[6, 5]))*Mass[F[3, {3}]]^2) + 
+             MW^2*(SB^2*SW*CKM[2, j1]*Conjugate[CKM[2, j2]]*(dZHiggs1[5, 6] + 
+                 dZHiggs1[6, 5])*Mass[F[3, {2}]]^2 + 2*CKM[3, j1]*
+                Conjugate[CKM[3, j2]]*Mass[F[3, {3}]]*(S2B*SW*dMf1[3, 3] - 
+                 (dSW1*S2B + 2*CB*dSB1*SW)*Mass[F[3, {3}]]))))*
           USf[4, j2][s2, 1]) + 
        SB*(CB*CW^2*MW^2*SW*(CB^2*(Conjugate[USf[4, j1][1, 1]]*
               dZSf1[1, s1, 4, j1] + Conjugate[USf[4, j1][2, 1]]*
@@ -6623,14 +6597,14 @@ M$CouplingMatrices = {
           (CB*CW^2*MW^2*SW*(C2B*CB^2*MW^2*SW^2 + 3*CW^2*SB^2*
               Mass[F[4, {j1}]]^2)*(dZbarSf1[1, s2, 4, j2]*USf[4, j2][1, 2] + 
              dZbarSf1[2, s2, 4, j2]*USf[4, j2][2, 2]) + 
-           ((2*CB^3*MW^4*SW^3*(C2B*(4*dSW1*SW + CW^2*(4*dZe1 + dZbarHiggs1[5, 
-                     5] + dZHiggs1[5, 5])) + CW^2*S2B*(Conjugate[dZHiggs1[6, 
-                    5]] + dZHiggs1[6, 5])) - CW^4*(MW^2*SW*(24*dCB1*SB^2 + 
-                  3*CB*S2B*(Conjugate[dZHiggs1[6, 5]] + dZHiggs1[6, 5]))*
-                 Mass[F[4, {j1}]]^2 - 3*S2B*SB*Mass[F[4, {j1}]]*
-                 (4*MW^2*SW*dMf1[4, j1] - (4*dSW1*MW^2 + SW*(2*dMWsq1 - 
-                      MW^2*(4*dZe1 + dZbarHiggs1[5, 5] + dZHiggs1[5, 5])))*
-                   Mass[F[4, {j1}]])))*USf[4, j2][s2, 2])/2))))/
+           (CB^3*MW^4*SW^3*(C2B*(4*dSW1*SW + CW^2*(4*dZe1 + dZbarHiggs1[5, 
+                    5] + dZHiggs1[5, 5])) + CW^2*S2B*(dZHiggs1[5, 6] + 
+                 dZHiggs1[6, 5])) + 3*CW^4*SB*Mass[F[4, {j1}]]*
+              (2*MW^2*S2B*SW*dMf1[4, j1] - ((S2B*(4*dSW1*MW^2 + 
+                    SW*(2*dMWsq1 - MW^2*(4*dZe1 + dZbarHiggs1[5, 5] + 
+                        dZHiggs1[5, 5]))))/2 + MW^2*SW*(4*dCB1*SB + 
+                   CB^2*(dZHiggs1[5, 6] + dZHiggs1[6, 5])))*
+                Mass[F[4, {j1}]]))*USf[4, j2][s2, 2]))))/
      (CW^4*MW^4*S2B^3*SW^3)}}, C[S[6], -S[6], S[14, {s1, j1, o1}], 
    -S[14, {s2, j2, o2}]] == 
   {{((I/12)*EL^2*IndexDelta[o1, o2]*(Conjugate[USf[4, j1][s1, 1]]*
@@ -6765,42 +6739,40 @@ M$CouplingMatrices = {
         USf[4, j2][s2, 1] + SB^2*Conjugate[USf[4, j1][s1, 2]]*
         IndexDelta[j1, j2]*(2*CB^2*MW^2*SW^2 - 3*CW^2*Mass[F[4, {j1}]]^2)*
         USf[4, j2][s2, 2]))/(CW^2*MW^2*S2B*SW^2), 
-    ((-I/6)*EL^2*IndexDelta[o1, o2]*(CB^2*Conjugate[USf[4, j1][s1, 1]]*
-        (CW^2*MW^2*S2B*SW*((1 - 4*CW^2)*MW^2*SB^2*IndexDelta[j1, j2] + 
-           3*CW^2*(CKM[1, j1]*Conjugate[CKM[1, j2]]*Mass[F[3, {1}]]^2 + 
-             CKM[2, j1]*Conjugate[CKM[2, j2]]*Mass[F[3, {2}]]^2 + 
-             CKM[3, j1]*Conjugate[CKM[3, j2]]*Mass[F[3, {3}]]^2))*
-          (dZbarSf1[1, s2, 4, j2]*USf[4, j2][1, 1] + dZbarSf1[2, s2, 4, j2]*
-            USf[4, j2][2, 1]) - (MW^4*SB^2*(C2B*CW^2*(1 - 4*CW^2)*SW*
-              (Conjugate[dZHiggs1[6, 5]] - dZHiggs1[5, 6]) - 
-             S2B*(-(CW^2*(4*dSW1 - SW*(4*dZe1 + dZbarHiggs1[5, 5] + 
-                    dZHiggs1[6, 6]))) + 4*(dSW1*SW^2 + CW^4*(4*dSW1 - 
-                   SW*(4*dZe1 + dZbarHiggs1[5, 5] + dZHiggs1[6, 6])))))*
-            IndexDelta[j1, j2] - 6*CW^4*(CKM[1, j1]*Mass[F[3, {1}]]*
+    ((-I/3)*EL^2*IndexDelta[o1, o2]*(CB^2*Conjugate[USf[4, j1][s1, 1]]*
+        ((CW^2*MW^2*S2B*SW*((1 - 4*CW^2)*MW^2*SB^2*IndexDelta[j1, j2] + 
+            3*CW^2*(CKM[1, j1]*Conjugate[CKM[1, j2]]*Mass[F[3, {1}]]^2 + 
+              CKM[2, j1]*Conjugate[CKM[2, j2]]*Mass[F[3, {2}]]^2 + 
+              CKM[3, j1]*Conjugate[CKM[3, j2]]*Mass[F[3, {3}]]^2))*
+           (dZbarSf1[1, s2, 4, j2]*USf[4, j2][1, 1] + dZbarSf1[2, s2, 4, j2]*
+             USf[4, j2][2, 1]))/2 + 
+         ((MW^4*S2B*SB^2*(-(CW^2*(4*dSW1 - SW*(4*dZe1 + dZbarHiggs1[5, 5] + 
+                   dZHiggs1[6, 6]))) + 4*(dSW1*SW^2 + CW^4*(4*dSW1 - 
+                  SW*(4*dZe1 + dZbarHiggs1[5, 5] + dZHiggs1[6, 6]))))*
+             IndexDelta[j1, j2])/2 + 3*CW^4*(CKM[1, j1]*Mass[F[3, {1}]]*
               (MW^2*S2B*SW*Conjugate[dCKM1[1, j2]]*Mass[F[3, {1}]] + 
-               Conjugate[CKM[1, j2]]*(2*MW^2*S2B*SW*dMf1[3, 1] + 
-                 (MW^2*SB^2*SW*Conjugate[dZHiggs1[6, 5]] - CB*(4*dSW1*MW^2*
-                      SB + SW*(2*dMWsq1*SB + MW^2*(4*dSB1 - CB*dZHiggs1[5, 
-                          6] - SB*(4*dZe1 + dZbarHiggs1[5, 5] + dZHiggs1[6, 
-                          6])))))*Mass[F[3, {1}]])) - CB*CKM[2, j1]*
-              Mass[F[3, {2}]]*(SB*SW*(2*(dMWsq1 - 2*dZe1*MW^2)*Conjugate[
-                   CKM[2, j2]] - 2*MW^2*Conjugate[dCKM1[2, j2]])*
-                Mass[F[3, {2}]] - 4*MW^2*Conjugate[CKM[2, j2]]*
-                (SB*SW*dMf1[3, 2] - (dSW1*SB + dSB1*SW)*Mass[F[3, {2}]])) + 
+               Conjugate[CKM[1, j2]]*(2*MW^2*S2B*SW*dMf1[3, 1] - 
+                 (2*dSW1*MW^2*S2B + (SW*(2*dMWsq1*S2B + MW^2*(8*CB*dSB1 - 
+                        2*dZHiggs1[5, 6] - S2B*(4*dZe1 + dZbarHiggs1[5, 5] + 
+                          dZHiggs1[6, 6]))))/2)*Mass[F[3, {1}]])) + 
+             CB*Mass[F[3, {2}]]*(SB*SW*(2*MW^2*Conjugate[CKM[2, j2]]*
+                  dCKM1[2, j1] + CKM[2, j1]*(2*MW^2*Conjugate[dCKM1[2, j2]] - 
+                   Conjugate[CKM[2, j2]]*(2*dMWsq1 - MW^2*(4*dZe1 + 
+                       dZbarHiggs1[5, 5]))))*Mass[F[3, {2}]] + 4*MW^2*
+                CKM[2, j1]*Conjugate[CKM[2, j2]]*(SB*SW*dMf1[3, 2] - 
+                 (dSW1*SB + dSB1*SW)*Mass[F[3, {2}]])) + 
              SW*(MW^2*S2B*Conjugate[CKM[1, j2]]*dCKM1[1, j1]*Mass[F[3, {1}]]^
-                 2 - (S2B*CKM[3, j1]*((dMWsq1 - 2*dZe1*MW^2)*Conjugate[
-                     CKM[3, j2]] - MW^2*Conjugate[dCKM1[3, j2]]) - 
-                 MW^2*Conjugate[CKM[3, j2]]*(S2B*dCKM1[3, j1] + CKM[3, j1]*
-                    (SB^2*Conjugate[dZHiggs1[6, 5]] + CB*(CB*dZHiggs1[5, 6] + 
-                       SB*(dZbarHiggs1[5, 5] + dZHiggs1[6, 6])))))*
-                Mass[F[3, {3}]]^2) - MW^2*(4*CB*(dSW1*SB + dSB1*SW)*
-                CKM[3, j1]*Conjugate[CKM[3, j2]]*Mass[F[3, {3}]]^2 - SW*
-                (Conjugate[CKM[2, j2]]*(S2B*dCKM1[2, j1] + CKM[2, j1]*
-                    (SB^2*Conjugate[dZHiggs1[6, 5]] + CB*(CB*dZHiggs1[5, 6] + 
-                       SB*(dZbarHiggs1[5, 5] + dZHiggs1[6, 6]))))*
-                  Mass[F[3, {2}]]^2 + 2*S2B*CKM[3, j1]*Conjugate[CKM[3, j2]]*
-                  dMf1[3, 3]*Mass[F[3, {3}]]))))*USf[4, j2][s2, 1]) + 
-       2*SB*(CB*CW^2*MW^2*SW*(CB^2*(Conjugate[USf[4, j1][1, 1]]*
+                 2 + (MW^2*S2B*Conjugate[CKM[3, j2]]*dCKM1[3, j1] + 
+                 (CKM[3, j1]*(2*MW^2*S2B*Conjugate[dCKM1[3, j2]] - 
+                    Conjugate[CKM[3, j2]]*(2*dMWsq1*S2B - MW^2*
+                       (2*dZHiggs1[5, 6] + S2B*(4*dZe1 + dZbarHiggs1[5, 5] + 
+                          dZHiggs1[6, 6])))))/2)*Mass[F[3, {3}]]^2) + 
+             MW^2*((SW*CKM[2, j1]*Conjugate[CKM[2, j2]]*(2*dZHiggs1[5, 6] + 
+                  S2B*dZHiggs1[6, 6])*Mass[F[3, {2}]]^2)/2 + 2*CKM[3, j1]*
+                Conjugate[CKM[3, j2]]*Mass[F[3, {3}]]*(S2B*SW*dMf1[3, 3] - 
+                 (dSW1*S2B + 2*CB*dSB1*SW)*Mass[F[3, {3}]]))))*
+          USf[4, j2][s2, 1]) + 
+       SB*(CB*CW^2*MW^2*SW*(CB^2*(Conjugate[USf[4, j1][1, 1]]*
               dZSf1[1, s1, 4, j1] + Conjugate[USf[4, j1][2, 1]]*
               dZSf1[2, s1, 4, j1])*((1 - 4*CW^2)*MW^2*SB^2*IndexDelta[j1, 
                j2] + 3*CW^2*(CKM[1, j1]*Conjugate[CKM[1, j2]]*Mass[F[3, {1}]]^
@@ -6813,15 +6785,13 @@ M$CouplingMatrices = {
          SB*Conjugate[USf[4, j1][s1, 2]]*IndexDelta[j1, j2]*
           ((CW^2*MW^2*S2B*SW*(2*CB^2*MW^2*SW^2 - 3*CW^2*Mass[F[4, {j1}]]^2)*
              (dZbarSf1[1, s2, 4, j2]*USf[4, j2][1, 2] + dZbarSf1[2, s2, 4, 
-                j2]*USf[4, j2][2, 2]))/2 - 
-           ((3*CW^4*Mass[F[4, {j1}]]*(4*MW^2*S2B*SW*dMf1[4, j1] - 
-                (4*dSW1*MW^2*S2B + SW*(2*dMWsq1*S2B + MW^2*(8*dCB1*SB + 
-                      2*SB^2*dZHiggs1[5, 6] - S2B*(4*dZe1 + dZbarHiggs1[5, 
-                         5] + dZHiggs1[6, 6]))))*Mass[F[4, {j1}]]))/2 - 
-             CB^2*(MW^4*SW^3*(4*dSW1*S2B*SW + CW^2*(C2B*dZHiggs1[5, 6] + 
-                   S2B*(4*dZe1 + dZbarHiggs1[5, 5] + dZHiggs1[6, 6]))) - CW^2*
-                MW^2*SW*Conjugate[dZHiggs1[6, 5]]*(C2B*MW^2*SW^2 - 
-                 3*CW^2*Mass[F[4, {j1}]]^2)))*USf[4, j2][s2, 2]))))/
+                j2]*USf[4, j2][2, 2]))/2 + 
+           (3*CW^4*(MW^2*SW*(4*dCB1*SB + dZHiggs1[5, 6]) + (S2B*
+                 (4*dSW1*MW^2 + SW*(2*dMWsq1 - MW^2*(4*dZe1 + dZbarHiggs1[5, 
+                       5] + dZHiggs1[6, 6]))))/2)*Mass[F[4, {j1}]]^2 + 
+             SB*(2*CB^3*MW^4*SW^3*(4*dSW1*SW + CW^2*(4*dZe1 + dZbarHiggs1[5, 
+                    5] + dZHiggs1[6, 6])) - 12*CB*CW^4*MW^2*SW*dMf1[4, j1]*
+                Mass[F[4, {j1}]]))*USf[4, j2][s2, 2]))))/
      (CW^4*MW^4*S2B^2*SW^3)}}, C[S[11, {j1}], -S[11, {j2}], V[2], V[2]] == 
   {{((I/2)*EL^2*IndexDelta[j1, j2])/(CW^2*SW^2), 
     ((I/4)*EL^2*(4*dSW1*SW^2 - CW^2*(4*dSW1 - SW*(2*(2*dZe1 + dZZZ1) + 
@@ -8573,29 +8543,84 @@ M$CouplingMatrices = {
                   IndexDelta[j1, j2]*IndexDelta[j3, j4]*IndexDelta[o1, o2]*
                   IndexDelta[o3, o4]*Mass[F[3, {j3, o3}]]*USf[3, j1][s2, 1]*
                   USf[3, j3][s4, 2])))))/(CW^4*MW^4*SB^3*SW^3)))}}, 
+ C[S[4], S[5], V[1], -V[3]] == 
+  {{0, -(EL^2*(dZHiggs1[3, 4] + dZHiggs1[6, 5]))/(4*SW)}}, 
+ C[S[4], -S[5], V[1], V[3]] == 
+  {{0, (EL^2*(dZHiggs1[3, 4] + dZHiggs1[5, 6]))/(4*SW)}}, 
+ C[S[4], S[5], V[2], -V[3]] == 
+  {{0, (EL^2*(dZHiggs1[3, 4] + dZHiggs1[6, 5]))/(4*CW)}}, 
+ C[S[4], -S[5], V[2], V[3]] == 
+  {{0, -(EL^2*(dZHiggs1[3, 4] + dZHiggs1[5, 6]))/(4*CW)}}, 
+ C[S[3], S[6], V[1], -V[3]] == 
+  {{0, -(EL^2*(dZHiggs1[3, 4] + dZHiggs1[5, 6]))/(4*SW)}}, 
+ C[S[3], -S[6], V[1], V[3]] == 
+  {{0, (EL^2*(dZHiggs1[3, 4] + dZHiggs1[6, 5]))/(4*SW)}}, 
+ C[S[3], S[6], V[2], -V[3]] == 
+  {{0, (EL^2*(dZHiggs1[3, 4] + dZHiggs1[5, 6]))/(4*CW)}}, 
+ C[S[3], -S[6], V[2], V[3]] == 
+  {{0, -(EL^2*(dZHiggs1[3, 4] + dZHiggs1[6, 5]))/(4*CW)}}, 
+ C[S[2], S[1], V[2], V[2]] == {{0, ((I/2)*EL^2*dZHiggs1[1, 2])/(CW^2*SW^2)}}, 
+ C[S[4], S[3], V[2], V[2]] == {{0, ((I/2)*EL^2*dZHiggs1[3, 4])/(CW^2*SW^2)}}, 
+ C[S[2], S[1], V[3], -V[3]] == {{0, ((I/2)*EL^2*dZHiggs1[1, 2])/SW^2}}, 
+ C[S[4], S[3], V[3], -V[3]] == {{0, ((I/2)*EL^2*dZHiggs1[3, 4])/SW^2}}, 
+ C[S[5], S[4], -V[3], V[1]] == 
+  {{0, -(EL^2*(dZHiggs1[3, 4] + dZHiggs1[6, 5]))/(4*SW)}}, 
+ C[-S[5], S[4], V[3], V[1]] == 
+  {{0, (EL^2*(dZHiggs1[3, 4] + dZHiggs1[5, 6]))/(4*SW)}}, 
+ C[S[5], S[4], -V[3], V[2]] == 
+  {{0, (EL^2*(dZHiggs1[3, 4] + dZHiggs1[6, 5]))/(4*CW)}}, 
+ C[-S[5], S[4], V[3], V[2]] == 
+  {{0, -(EL^2*(dZHiggs1[3, 4] + dZHiggs1[5, 6]))/(4*CW)}}, 
+ C[S[6], S[3], -V[3], V[1]] == 
+  {{0, -(EL^2*(dZHiggs1[3, 4] + dZHiggs1[5, 6]))/(4*SW)}}, 
+ C[-S[6], S[3], V[3], V[1]] == 
+  {{0, (EL^2*(dZHiggs1[3, 4] + dZHiggs1[6, 5]))/(4*SW)}}, 
+ C[S[6], S[3], -V[3], V[2]] == 
+  {{0, (EL^2*(dZHiggs1[3, 4] + dZHiggs1[5, 6]))/(4*CW)}}, 
+ C[-S[6], S[3], V[3], V[2]] == 
+  {{0, -(EL^2*(dZHiggs1[3, 4] + dZHiggs1[6, 5]))/(4*CW)}}, 
+ C[S[6], -S[5], V[1], V[1]] == {{0, (2*I)*EL^2*dZHiggs1[5, 6]}}, 
+ C[S[5], -S[6], V[1], V[1]] == {{0, (2*I)*EL^2*dZHiggs1[6, 5]}}, 
+ C[S[6], -S[5], V[2], V[1]] == 
+  {{0, ((-I)*(1 - 2*CW^2)*EL^2*dZHiggs1[5, 6])/(CW*SW)}}, 
+ C[S[5], -S[6], V[2], V[1]] == 
+  {{0, ((-I)*(1 - 2*CW^2)*EL^2*dZHiggs1[6, 5])/(CW*SW)}}, 
+ C[S[6], -S[5], V[2], V[2]] == 
+  {{0, ((I/2)*(EL - 2*CW^2*EL)^2*dZHiggs1[5, 6])/(CW^2*SW^2)}}, 
+ C[S[5], -S[6], V[2], V[2]] == 
+  {{0, ((I/2)*(EL - 2*CW^2*EL)^2*dZHiggs1[6, 5])/(CW^2*SW^2)}}, 
+ C[S[6], -S[5], V[3], -V[3]] == {{0, ((I/2)*EL^2*dZHiggs1[5, 6])/SW^2}}, 
+ C[S[5], -S[6], -V[3], V[3]] == {{0, ((I/2)*EL^2*dZHiggs1[6, 5])/SW^2}}, 
+ C[F[11, {n1}], F[11, {n2}], V[1]] == 
+  {{0, ((-I/4)*dZZA1*EL*(Conjugate[ZNeu[n2, 3]]*ZNeu[n1, 3] - 
+       Conjugate[ZNeu[n2, 4]]*ZNeu[n1, 4]))/(CW*SW)}, 
+   {0, ((I/4)*dZZA1*EL*(Conjugate[ZNeu[n1, 3]]*ZNeu[n2, 3] - 
+       Conjugate[ZNeu[n1, 4]]*ZNeu[n2, 4]))/(CW*SW)}}, 
  C[S[1], V[2], V[1]] == {{0, ((I/2)*dZZA1*EL*MW*SBA)/(CW^2*SW)}}, 
  C[S[2], V[2], V[1]] == {{0, ((I/2)*CBA*dZZA1*EL*MW)/(CW^2*SW)}}, 
- C[S[5], V[1], -V[3]] == {{0,
-   I/2*EL*MW*(2 CB dSB1 - 2 dCB1 SB + dZHiggs1[6, 5])}}, 
- C[-S[5], V[1], V[3]] == {{0, 
-   I/2*EL*MW*(2 CB dSB1 - 2 dCB1 SB + Conjugate[dZHiggs1[6, 5]])}}, 
- C[S[5], V[2], -V[3]] == {{0,
-   -I/2*EL*MW*SW/CW*(2 CB dSB1 - 2 dCB1 SB + dZHiggs1[6, 5])}},
- C[-S[5], V[2], V[3]] == {{0, 
-   -I/2*EL*MW*SW/CW*(2 CB dSB1 - 2 dCB1 SB + Conjugate[dZHiggs1[6, 5]])}},
+ C[S[5], V[1], -V[3]] == 
+  {{0, (I/2)*EL*MW*(2*CB*dSB1 - 2*dCB1*SB + dZHiggs1[6, 5])}}, 
+ C[-S[5], V[1], V[3]] == 
+  {{0, (I/2)*EL*MW*(2*CB*dSB1 - 2*dCB1*SB + dZHiggs1[5, 6])}}, 
+ C[S[5], V[2], -V[3]] == 
+  {{0, ((-I/2)*EL*MW*SW*(2*CB*dSB1 - 2*dCB1*SB + dZHiggs1[6, 5]))/CW}}, 
+ C[-S[5], V[2], V[3]] == 
+  {{0, ((-I/2)*EL*MW*SW*(2*CB*dSB1 - 2*dCB1*SB + dZHiggs1[5, 6]))/CW}}, 
+ C[S[1], S[3], V[1]] == {{0, (CBA*dZZA1*EL)/(4*CW*SW)}}, 
+ C[S[1], S[4], V[1]] == {{0, (dZZA1*EL*SBA)/(4*CW*SW)}}, 
+ C[S[2], S[3], V[1]] == {{0, -(dZZA1*EL*SBA)/(4*CW*SW)}}, 
+ C[S[2], S[4], V[1]] == {{0, (CBA*dZZA1*EL)/(4*CW*SW)}}, 
  C[S[5], -S[6], V[1]] == {{0, I*EL*dZHiggs1[6, 5]}}, 
- C[-S[5], S[6], V[1]] == 
-  {{0, (I/2)*EL*(Conjugate[dZHiggs1[6, 5]] + dZHiggs1[5, 6])}}, 
+ C[S[6], -S[5], V[1]] == {{0, I*EL*dZHiggs1[5, 6]}}, 
  C[S[5], -S[6], V[2]] == {{0, ((-I/2)*(1 - 2*CW^2)*EL*dZHiggs1[6, 5])/
-     (CW*SW)}}, C[-S[5], S[6], V[2]] == 
-  {{0, ((-I/4)*(1 - 2*CW^2)*EL*(Conjugate[dZHiggs1[6, 5]] + dZHiggs1[5, 6]))/
-     (CW*SW)}}, C[S[3], S[6], -V[3]] == 
-  {{0, (EL*(dZHiggs1[3, 4] + dZHiggs1[5, 6]))/(4*SW)}}, 
- C[S[3], -S[6], V[3]] == {{0, (EL*(dZHiggs1[3, 4] + dZHiggs1[6, 5]))/
-     (4*SW)}}, C[S[4], S[5], -V[3]] == 
+     (CW*SW)}}, C[S[6], -S[5], V[2]] == 
+  {{0, ((-I/2)*(1 - 2*CW^2)*EL*dZHiggs1[5, 6])/(CW*SW)}}, 
+ C[S[3], S[6], -V[3]] == {{0, (EL*(dZHiggs1[3, 4] + dZHiggs1[5, 6]))/
+     (4*SW)}}, C[S[3], -S[6], V[3]] == 
   {{0, (EL*(dZHiggs1[3, 4] + dZHiggs1[6, 5]))/(4*SW)}}, 
- C[S[4], -S[5], V[3]] == 
-  {{0, (EL*(Conjugate[dZHiggs1[6, 5]] + dZHiggs1[3, 4]))/(4*SW)}}, 
+ C[S[4], S[5], -V[3]] == {{0, (EL*(dZHiggs1[3, 4] + dZHiggs1[6, 5]))/
+     (4*SW)}}, C[S[4], -S[5], V[3]] == 
+  {{0, (EL*(dZHiggs1[3, 4] + dZHiggs1[5, 6]))/(4*SW)}}, 
  C[S[11, {j1}], -S[11, {j2}], V[1]] == 
   {{0, ((-I/4)*dZZA1*EL*IndexDelta[j1, j2])/(CW*SW)}}, 
  C[S[3], V[2]] == {{0, -(MZ*dZHiggs1[3, 4])}, {0, 0}}, 
@@ -8850,18 +8875,10 @@ M$CouplingMatrices = {
  C[F[11, {n1}], F[11, {n2}]] == 
   {{0, (-I/2)*(dZbarfL1[11, n1, n2] + dZfL1[11, n1, n2])}, 
    {0, (I/2)*(dZbarfR1[11, n1, n2] + dZfR1[11, n1, n2])}, 
-   {0, (-I/2)*(2*dMNeu1[n1, n2] + dZfL1[11, n1, n2]*MNeu[n1] + 
-      dZbarfR1[11, n1, n2]*MNeu[n2])}, 
-   {0, (-I/2)*(2*Conjugate[dMNeu1[n2, n1]] + dZfR1[11, n1, n2]*MNeu[n1] + 
-      dZbarfL1[11, n1, n2]*MNeu[n2])}}, C[F[11, {n1}], F[11, {n2}], V[1]] == 
-  {{0, ((-I/4)*dZZA1*EL*(Conjugate[ZNeu[n2, 3]]*ZNeu[n1, 3] - 
-       Conjugate[ZNeu[n2, 4]]*ZNeu[n1, 4]))/(CW*SW)}, 
-   {0, ((I/4)*dZZA1*EL*(Conjugate[ZNeu[n1, 3]]*ZNeu[n2, 3] - 
-       Conjugate[ZNeu[n1, 4]]*ZNeu[n2, 4]))/(CW*SW)}}, 
- C[S[1], S[3], V[1]] == {{0, (CBA*dZZA1*EL)/(4*CW*SW)}}, 
- C[S[1], S[4], V[1]] == {{0, (dZZA1*EL*SBA)/(4*CW*SW)}}, 
- C[S[2], S[3], V[1]] == {{0, -(dZZA1*EL*SBA)/(4*CW*SW)}}, 
- C[S[2], S[4], V[1]] == {{0, (CBA*dZZA1*EL)/(4*CW*SW)}}, 
+   {0, (-I/2)*(2*dMNeu1[n1, n2] + dZfL1[11, n1, n2]*TheMass[F[11, {n1}]] + 
+      dZbarfR1[11, n1, n2]*TheMass[F[11, {n2}]])}, 
+   {0, (-I/2)*(2*Conjugate[dMNeu1[n2, n1]] + dZfR1[11, n1, n2]*
+       TheMass[F[11, {n1}]] + dZbarfL1[11, n1, n2]*TheMass[F[11, {n2}]])}}, 
  C[-S[11, {j1}], S[11, {j2}]] == 
   {{0, (-I/2)*(dZbarSf1[1, 1, 1, j2] + dZSf1[1, 1, 1, j1])*
      IndexDelta[j1, j2]}, {0, (-I/2)*IndexDelta[j1, j2]*
@@ -8907,7 +8924,7 @@ M$CouplingMatrices = {
    {0, (-I/2)*(2*dMHiggs1[5, 5] + MHptree^2*(dZbarHiggs1[5, 5] + 
         dZHiggs1[5, 5]))}}, C[S[5], -S[6]] == {{0, (-I)*dZHiggs1[6, 5]}, 
    {0, (-I/2)*(2*dMHiggs1[6, 5] + MHptree^2*dZHiggs1[5, 6])}}, 
- C[S[6], -S[5]] == {{0, (-I/2)*(Conjugate[dZHiggs1[6, 5]] + dZHiggs1[5, 6])}, 
+ C[S[6], -S[5]] == {{0, (-I)*dZHiggs1[5, 6]}, 
    {0, (-I/2)*(2*dMHiggs1[5, 6] + MHptree^2*dZHiggs1[6, 5])}}, 
  C[S[6], -S[6]] == {{0, (-I)*dZHiggs1[6, 6]}, {0, (-I)*dMHiggs1[6, 6]}}, 
  C[-S[13, {s1, j1, o1}], S[13, {s2, j2, o2}]] == 
@@ -8930,7 +8947,8 @@ M$CouplingMatrices = {
    {0, (I/2)*(dZbarGlR1 + dZGlR1)*IndexDelta[g1, g2]}, 
    {0, (-I/2)*IndexDelta[g1, g2]*(2*dMGl1 + (dZbarGlR1 + dZGlL1)*
        TheMass[F[15, {g1}]])}, {0, (-I/2)*IndexDelta[g1, g2]*
-     (2*Conjugate[dMGl1] + (dZbarGlL1 + dZGlR1)*TheMass[F[15, {g1}]])}}}
+     (2*Conjugate[dMGl1] + (dZbarGlL1 + dZGlR1)*TheMass[F[15, {g1}]])}}
+}
 
 
 (* ------------------------ Renormalization constants ---------------------- *)
@@ -9254,7 +9272,6 @@ RenConst[dZbarfL1[11, n1_, n1_]] := dZfR1[11, n1, n1]
 
 RenConst[dZbarfR1[11, n1_, n1_]] := dZfL1[11, n1, n1]
 
-
 RenConst[dZfL1[11, n1_, n2_]] :=
   xZfL1[F[11, {n1}], F[11, {n2}], dMNeu1[n1, n2]]
 
@@ -9474,8 +9491,7 @@ RenConst[dZHiggs1[2, 3]] := 0
 RenConst[dZHiggs1[2, 4]] := 0
 RenConst[dZHiggs1[3, 4]] := (SB CB (dZH2 - dZH1))
 
-(* The following leads to IR divergent results:                              *)
-(* RenConst[dZHiggs1[5, 5]] := dZHiggs1[3, 3]                                *)
+(* RenConst[dZHiggs1[5, 5]] := dZHiggs1[3, 3] leads to IR divergent results. *)
 (* For proper on-shell conditions: add dZ^hat, see arXiv:1111.7289.          *)
 (* This cancels dZHiggs1[3, 3], leading to an IR finite result.              *)
 RenConst[dZHiggs1[5, 5]] := -ReDiag[DSelfEnergy[S[5] -> S[5], MHptree]]

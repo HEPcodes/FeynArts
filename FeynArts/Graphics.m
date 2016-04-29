@@ -1,7 +1,7 @@
 (*
 	Graphics.m
 		Graphics routines for FeynArts
-		last modified 10 Dec 15 th
+		last modified 4 Feb 16 th
 *)
 
 Begin["`Graphics`"]
@@ -185,7 +185,7 @@ Block[ {auto, disp, cols, rows, dhead, g, topnr = 0, runnr = 0},
 
 TopologyGraphics[ top_ -> gr_ ] :=
 Block[ {shapedata, gtop, vertexplot},
-  shapedata = Shape[gtop = top /. Vertex[e_, _] -> Vertex[e], auto];
+  shapedata = Shape[gtop = top /. Vertex[e_, _] :> Vertex[e], auto];
   gtop = Transpose[{
     List@@ gtop /. shapedata[[1]],
     shapedata[[2]],
@@ -831,7 +831,7 @@ vars, tadbr, tad, min, ok, c, ct, pt, shrink = {}, rev = {}, loops = {}},
   Cases[mesh2, branch[ctr:center[_][_], v_, ___] :>
     (tadbr[ctr] = Flatten[{tadbr[ctr], v /. rev}]), Infinity];
   mesh = mesh2 /. branch[__] :> Seq[];
-  vert = Cases[mesh, leaf[a_] -> a];
+  vert = Cases[mesh, leaf[a_] :> a];
   mesh = mesh /. _leaf :> Seq[];
   mesh = List@@ Fold[
     Replace[#1, x:{__, #2} :> Reverse[x], {1}] /.
@@ -1026,7 +1026,7 @@ Block[ {adj, max, new, a1, a2},
   If[ Length[adj] === 1,
     new = 2.6 xy - .8 Plus@@ adj[[1]],
   (* else *)
-    adj = Orientation@@@ (adj /. {a_, xy} -> {xy, a});
+    adj = Orientation@@@ (adj /. {a_, xy} :> {xy, a});
     max = -1;
     Outer[
       If[ (new = Abs[#2 - #1]) > max, max = new; a1 = #1; a2 = #2 ]&,
@@ -1115,7 +1115,7 @@ Shape[ top:P$Topology -> _ ] := Shape[top]
 Shape[ top:P$Topology, auto_:0 ] :=
 Block[ {edittop, topcode, shapedata, arg1, arg2, exitcode},
   edittop = Take[#, 2]&/@ Topology@@ top /.
-    External -> Incoming /. Vertex[e_, _] -> Vertex[e];
+    External -> Incoming /. Vertex[e_, _] :> Vertex[e];
   topcode = TopologyCode[edittop];
   res = auto;
   shapedata = GetShape[topcode, --res; Catch[AutoShape[edittop]]];

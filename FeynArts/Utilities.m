@@ -1,7 +1,7 @@
 (*
 	Utilities.m
 		diverse utility functions for other parts of FA
-		last modified 8 Jul 15 th
+		last modified 4 Feb 16 th
 *)
 
 Begin["`Utilities`"]
@@ -75,7 +75,7 @@ If[ System`Ordering[{1, 2}] =!= {1, 2},
 (* generic fields have no signs (attribute SelfConjugate exists
    only at classes level, i.e. there are no generic antiparticles) *)
 
-ToGeneric[ expr_ ] := expr /. _. (f:P$Generic)[__] -> f
+ToGeneric[ expr_ ] := expr /. _. (f:P$Generic)[__] :> f
 
 ToClasses[ expr_ ] := expr /. s_. (f:P$Generic)[i_, __] :> s f[i]
 
@@ -83,11 +83,11 @@ ToClasses[ expr_ ] := expr /. s_. (f:P$Generic)[i_, __] :> s f[i]
 Seq = Sequence
 
 
-TakeGraph[ gr_ -> _ ] = gr
+TakeGraph[ gr_ -> _ ] := gr
 
-TakeGraph[ gr_ ] = gr
+TakeGraph[ gr_ ] := gr
 
-TakeIns[ _ -> ins_ ] = ins
+TakeIns[ _ -> ins_ ] := ins
 
 TakeIns[ _ ] = Sequence[]
 
@@ -153,15 +153,15 @@ Block[ {perm},
 ]
 
 
-Compare[ tops:_[] ] = tops
+Compare[ tops:_[] ] := tops
 
 Compare[ tops_ ] :=
-Block[ {perm, p},
+Block[ {perm, p, t},
   perm = TopPermute/@ tops;
   ( p = Position[perm, #, 1];
-    tops[[ p[[1, 1]] ]] /.
-      Topology[s_][rest__] -> Topology[s/Length[p]][rest] )&/@
-    Union[perm]
+    t = tops[[ p[[1, 1]] ]];
+    t[[0, 1]] /= Length[p];
+    t )&/@ Union[perm]
 ]
 
 

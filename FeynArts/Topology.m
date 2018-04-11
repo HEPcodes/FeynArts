@@ -1,7 +1,7 @@
 (*
 	Topology.m
 		Creation of topologies for Feynman graphs
-		last modified 4 Feb 16 th
+		last modified 2 Nov 16 th
 *)
 
 Begin["`Topology`"]
@@ -334,7 +334,7 @@ Attributes[ TopologyList ] = {Flat}
 
 (* some shortcuts *)
 
-If[ $VersionNumber < 5.1, Except[patt_] = _?(!MatchQ[#, patt] &) ]
+If[ $VersionNumber < 5.1, Except[patt_] := _?(!MatchQ[#, patt] &) ]
 
 TadpolesOnly = ExcludeTopologies -> Loops[Except[1]]
 
@@ -595,9 +595,8 @@ TopologySort[ top:P$Topology ] :=
 TopologyOrdering[ tops_TopologyList ] := TopologyOrdering/@ tops
 
 TopologyOrdering[ top:P$Topology ] :=
-Block[ {sort = topSort[top]},
-  {Head[top]@@ Map[toVert, Head/@ sort, {2}], ord/@ sort}
-]
+  {Head[top]@@ Map[toVert, Head/@ #, {2}], ord/@ #}& @
+    topSort[top]
 
 
 (* Compare topologies *)
@@ -665,9 +664,9 @@ ChooseProp[ pr_, {n_} ] :=
    with the loops shrunk to a point named Centre[adj][n] where adj is
    the adjacency of loop n. *)
 
-$ExcludeTopologies[ Loops[n_] ] = FreeQ[ToTree[#], Centre[n]] &
+$ExcludeTopologies[ Loops[n_] ] := FreeQ[ToTree[#], Centre[n]] &
 
-$ExcludeTopologies[ CTs[n_] ] = FreeQ[#, Vertex[n, _]] &
+$ExcludeTopologies[ CTs[n_] ] := FreeQ[#, Vertex[n, _]] &
 
 $ExcludeTopologies[ Tadpoles ] = $ExcludeTopologies[ Loops[1] ]
 
@@ -693,9 +692,9 @@ $ExcludeTopologies[ Hexagons ] = $ExcludeTopologies[ Loops[6] ]
 
 $ExcludeTopologies[ HexagonCTs ] = $ExcludeTopologies[ CTs[6] ]
 
-$ExcludeTopologies[ Boxes[n_] ] = $ExcludeTopologies[ Loops[n] ]
+$ExcludeTopologies[ Boxes[n_] ] := $ExcludeTopologies[ Loops[n] ]
 
-$ExcludeTopologies[ BoxCTs[n_] ] = $ExcludeTopologies[ CTs[n] ]
+$ExcludeTopologies[ BoxCTs[n_] ] := $ExcludeTopologies[ CTs[n] ]
 
 $ExcludeTopologies[ AllBoxes ] = $ExcludeTopologies[ Loops[n_ /; n >= 4] ]
 
@@ -704,18 +703,20 @@ $ExcludeTopologies[ AllBoxCTs ] = $ExcludeTopologies[ CTs[n_ /; n >= 4] ]
 $ExcludeTopologies[ WFCorrections ] =
   FreeWFQ[ToTree[#], Centre[1], Centre[2]] &
 
-$ExcludeTopologies[ WFCorrections[patt_] ] =
+$ExcludeTopologies[ WFCorrections[patt_] ] :=
   $ExcludeTopologies[ WFCorrections ] /.
     t_ToTree :> Select[t, FreeQ[#, Vertex[1][Except[patt]]] &]
 
 $ExcludeTopologies[ WFCorrectionCTs ] =
   FreeWFQ[#, Vertex[1, _], Vertex[2, _]] &
 
-$ExcludeTopologies[ WFCorrectionCTs[patt_] ] =
+$ExcludeTopologies[ WFCorrectionCTs[patt_] ] :=
   $ExcludeTopologies[ WFCorrectionCTs ] /.
     # :> Select[#, FreeQ[#, Vertex[1][_?(!MatchQ[#, patt]&)]] &]
 
-$ExcludeTopologies[ Internal ] = FreeQ[#, Internal] &
+$ExcludeTopologies[ Reducible | Internal ] = FreeQ[#, Internal] &
+
+$ExcludeTopologies[ Irreducible ] = !FreeQ[#, Internal] &
 
 $ExcludeTopologies[ undef_ ] :=
   (Message[CreateTopologies::delundef, undef]; Seq[])
@@ -738,8 +739,29 @@ FreeWFQ[ top:P$Topology, patt1_, patt2_ ] :=
   Catch[ MapWF[Throw[False]&, top, patt1, patt2]; True ]
 
 
-LoopFields[ gr_:{}, top:P$Topology, ___ ] :=
-  Cases[AddFieldNo[top] /. List@@ gr, _[_Loop][_, _, f_, ___] :> f]
+MapWF[ foo_, top_, patt1_, patt2_ ] :=
+Block[ {etop, res, pos, br},
+  etop = top /. Incoming | Outgoing -> External;
+  res = DoWF[foo, etop]/@ Union[Cases[etop, patt2[_], {2}]];
+  pos = Position[etop, patt1[_], {2}];
+  If[ Length[pos] =!= 0,
+    br = List@@ Curtail@@ MapAt[ branch[ #[[1]] ]&,
+      Delete[etop, pos], {#1}&@@@ pos ];
+    res = {res, DoWF[foo, br]/@ Cases[br, branch[v_] :> v]} ];
+  res
+]
+
+
+DoWF[ foo_, top_ ][ v_ ] :=
+Block[ {prop = Cases[top, _[_][___, v, ___]]},
+  If[ Sort[#[[0, 1]]&/@ prop] === {External, Internal}, foo[prop], {} ]
+]
+
+
+Attributes[ Curtail ] = {Orderless, Flat}
+
+Curtail[ br:branch[a_].., _[_][c___, a_, d___] ] :=
+  Curtail[branch[c, d]] /; a[[0, 1]] - Length[{br}] < 2
 
 
 WFCorrectionFields[ gr_:{}, top:P$Topology, ___ ] :=
@@ -753,29 +775,69 @@ WFCorrectionCTFields[ gr_:{}, top:P$Topology, ___ ] :=
 WFFields[ args__ ] := Flatten[ MapWF[((#3&)@@@ #)&, args] ]
 
 
-MapWF[ foo_, top_, patt1_, patt2_ ] :=
-Block[ {etop, res, pos, br},
-  etop = top /. Incoming | Outgoing -> External;
-  res = DoWF[foo, etop]/@ Union[Cases[etop, patt2[_], {2}]];
-  pos = Position[etop, patt1[_], {2}];
-  If[ Length[pos] =!= 0,
-    br = List@@ Curtail@@ MapAt[ branch[ #[[1]] ]&,
-      Delete[etop, pos], {#1}&@@@ pos ];
-    res = {res, DoWF[foo, br]/@ Cases[br, branch[v_] :> v]} ];
-  res
+TreeFields[ gr_:{}, top:P$Topology, ___ ] :=
+  Cases[AddFieldNo[top] /. List@@ gr, _[Internal][_, _, f_, ___] :> f]
+
+
+LoopFields[ gr_:{}, top:P$Topology, ___ ] :=
+  Cases[AddFieldNo[top] /. List@@ gr, _[_Loop][_, _, f_, ___] :> f]
+
+
+IRDivergentQ[ gr_:{}, top:P$Topology, ___ ] :=
+Block[ {ins = List@@ gr, fps, adj},
+  fps = FieldPoints[top];
+  adj = Cases[top, _[_Loop][_, _, fi_] :>
+    (Delete[fps[[#1]], #2]&@@@ Position[fps, fi]) /;
+    TheMass[fi /. ins] === 0];
+  adj = Map[TheMass, adj /. ins, {3}];
+  Or@@ And@@@ Apply[SameQ, adj, {2}]
 ]
 
-DoWF[ foo_, top_ ][ v_ ] :=
-Block[ {prop = Cases[top, _[_][___, v, ___]]},
-  If[ Sort[#[[0, 1]]&/@ prop] === {External, Internal}, foo[prop], {} ]
+
+Fext[ _[Incoming][f_, t_, ___], _ ] := {f, t, {{1}}}
+
+Fext[ _[Outgoing][f_, t_, ___], _ ] := {f, t, {{-1}}}
+
+Fext[ _[f_, t_, ___], {n_} ] := {f, t, {{Fi[n]}}}
+
+
+Fsel[ ftop_ ][ v_ ] := Level[Select[ftop, MemberQ[#, v]&], {4}, Fs]
+
+
+Attributes[ Fs ] = Attributes[ Ft ] = {Orderless}
+
+Fs[ i_Integer.., Fi[n_] ] := (Fi[n] = i; Seq[])
+
+Ft[ __Integer, Fi[n_] ] := (Fi[n] = 0; Seq[])
+
+
+STChannelFields[ top:P$Topology ] := STChannelFields[top] =
+Block[ {Fi, ttop = ToTree[top]},
+  FixedPoint[Evaluate, Ft@@@
+     FixedPoint[Evaluate,
+       Fsel[MapIndexed[Fext, ttop]]/@ Vertices[ttop]]];
+  Flatten/@ Transpose[Cases[ DownValues[Fi], _[_[_[n_]], i_] :>
+    ReplacePart[{{}, {}}, Field[n], 2 - Abs[i]] ]]
 ]
 
 
-Attributes[ Curtail ] = {Orderless, Flat}
+SChannelQ[ fi_ ][ gr_:{}, top:P$Topology, ___ ] :=
+  FieldMemberQ[STChannelFields[top][[1]] /. List@@ gr, fi]
 
-Curtail[ br:branch[a_].., _[_][c___, a_, d___] ] :=
-  Curtail[branch[c, d]] /; a[[0, 1]] - Length[{br}] < 2
+TChannelQ[ fi_ ][ gr_:{}, top:P$Topology, ___ ] :=
+  FieldMemberQ[STChannelFields[top][[2]] /. List@@ gr, fi]
 
+
+Attributes[ mprop ] = {Orderless}
+
+Attributes[ merge ] = {Flat, Orderless}
+
+merge[ mprop[i_, j_], mprop[j_, k_] ] := mprop[i, k]
+
+FermionRouting[ gr_:{}, top:P$Topology, ___ ] := Level[
+  merge@@ (mprop[ #1[[1]], #2[[1]] ]&)@@@
+    Select[AddFieldNo[top] /. List@@ gr, !FreeQ[#, P$NonCommuting]&],
+  {-1} ]
 
 End[]
 

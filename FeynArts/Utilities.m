@@ -1,7 +1,7 @@
 (*
 	Utilities.m
 		diverse utility functions for other parts of FA
-		last modified 4 Feb 16 th
+		last modified 2 Nov 16 th
 *)
 
 Begin["`Utilities`"]
@@ -56,10 +56,10 @@ ResolveType[ Outgoing ] = External
 
 ResolveType[ _Loop ] = Loop
 
-ResolveType[ other_ ] = other
+ResolveType[ other_ ] := other
 
 
-ContainsQ[ expr_, {} ] = True
+ContainsQ[ _, {} ] = True
 
 ContainsQ[ expr_, {x_, ___} ] := False /; FreeQ[expr, x]
 
@@ -95,7 +95,7 @@ TakeIns[ _ ] = Sequence[]
 Subst[ expr_, i_List, j_List ] :=
   expr /. Thread[Take[i, Length[j]] -> j]
 
-Subst[ expr_, ___ ] = expr
+Subst[ expr_, ___ ] := expr
 
 
 (* Canonical ordering *)
@@ -130,7 +130,7 @@ AddFieldNo[ top:P$Topology ] := MapIndexed[ AddFieldNo, top ]
 
 AddFieldNo[ p_[from_, to_], {n_} ] := p[from, to, Field[n]]
 
-AddFieldNo[ p_, _ ] = p
+AddFieldNo[ p_, _ ] := p
 
 
 (* Compare: First build a table of all possible permutations of

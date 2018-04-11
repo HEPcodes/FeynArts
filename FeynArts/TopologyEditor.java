@@ -1,7 +1,7 @@
 /*
 	TopologyEditor.java
 		the topology editor UI, called by Shape
-		last modified 11 Jun 03 th
+		last modified 14 Nov 16 th
 */
 
 package de.FeynArts;
@@ -391,8 +391,10 @@ public class TopologyEditor extends Frame {
       ybase = (int)Math.round(size.height) - BORDER;
       unitX = (size.width - 2*BORDER)/20.;
       unitY = (size.height - 2*BORDER)/20.;
-      currentGC.dispose();
-      current = null;
+      if( current != null ) {
+        currentGC.dispose();
+        current = null;
+      }
     }
 
     public void componentMoved(ComponentEvent e) {}

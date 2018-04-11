@@ -158,11 +158,11 @@
 
 \hfill\hbox{\underline{%
 \vrule width 0pt height 0pt depth 2ex%
-\Huge \FA\ 3.9~~~~~User's Guide}}
+\Huge \FA\ 3.10~~~~~User's Guide}}
 
 \vspace*{1ex}
 
-\hfill\hbox{October 29, 2015~~~~~Thomas Hahn}
+\hfill\hbox{Mar 16, 2018~~~~~Thomas Hahn}
 
 \clearpage
 
@@ -255,7 +255,7 @@ the Two-Higgs-Doublet Model (\Code{THDM.mod}) are supplied.
 
 \item
 In addition to ordinary diagrams, \FA\ can generate counter-term diagrams
-and diagrams with placeholders for one-particle irreducible vertex
+and diagrams with placeholders for one-particle-irreducible vertex
 functions (skeleton diagrams).
 
 \item
@@ -486,7 +486,7 @@ A propagator connects two vertices, possibly carrying a field.
 \etab
 \footnotetext{The \Vn\ in \Code{Loop[\Vn]} is not the actual 
 number of the loop---which in general cannot be determined 
-unambiguously---but the number of the one-particle irreducible 
+unambiguously---but the number of the one-particle-irreducible 
 conglomerate of loops.}%
 \indextt{Propagator}%
 \indextt{Loop}%
@@ -634,10 +634,10 @@ subrenormalization.}{%
 \indextt{CreateVFTopologies}%
 \index{placeholders}%
 
-Topologies can also be created with ``placeholders'' for one-particle
-irreducible (1PI) vertex functions.  Such topologies are sometimes also
-called skeleton diagrams.  The vertex-function placeholders are
-represented graphically by a grey bubble, \eg
+Topologies can also be created with ``placeholders'' for 
+one-particle-irreducible (1PI) vertex functions.  Such topologies are 
+sometimes also called skeleton diagrams.  The vertex-function 
+placeholders are represented graphically by a grey bubble, \eg
 \vspace*{-3ex}%
 \begin{center}
 \includegraphics[width=.67\linewidth]{figs/1PIvf}
@@ -745,9 +745,12 @@ any loop number.
 	\lower 1.5ex\hbox{ on ext.\ legs} \\[3ex]
 \Two{\Code{WFCorrections[\Var{patt}]}}{\Code{WFCorrectionCTs[\Var{patt}]}} &
 	\lower 1.5ex\hbox{ditto only on ext.\ legs matching \Var{patt}} \\[3ex]
-\Code{Internal} &
-	propagators of type \Code{Internal},
-	\ie if the topology is one-particle reducible
+\Code{Reducible} &
+	tree-level-type propagators,
+	\ie if the topology is one-particle reducible \\
+\Code{Irreducible} &
+	no tree-level-type propagators,
+	\ie if the topology is one-particle irreducible
 \etab
 \indextt{Tadpoles}%
 \indextt{TadpoleCTs}%
@@ -761,8 +764,9 @@ any loop number.
 \indextt{BoxCTs}%
 \indextt{WFCorrections}%
 \indextt{WFCorrectionCTs}%
-\indextt{Internal}%
-\index{irreducible}%
+\indextt{Reducible}%
+\indextt{Irreducible}%
+\index{topology!reducible}%
 \index{topology!irreducible}%
 \index{wave-function corrections}%
 
@@ -777,7 +781,7 @@ the filters for counter-terms.
 \mmafig{figs/tops1to2}}
 \mmaex{Now the same for irreducible topologies.}{%
 {\sl In[8]:=}~CreateTopologies[1,~1~->~2,\\
-~~~~~~~~~~ExcludeTopologies~->~Internal];\\
+~~~~~~~~~~ExcludeTopologies~->~Reducible];\\
 {\sl In[9]:=}~Paint[\%,~ColumnsXRows~->~4]\\
 \mmafig{figs/tops1to2irred}}
 
@@ -1815,13 +1819,14 @@ The propagators of a bare topology are usually unlabelled.  With
 diagrams with \Code{DiagramSelect} (see Sect.\ \ref{sect:diagsel}).
 
 \Code{AutoEdit} determines whether \Code{Shape} is called when an unshaped
-topology is found.  This option is useful if your diagrams involve lots of
-unshaped topologies (\eg try painting 2-loop, $2\to 4$ diagrams) and you
-want a quick (pre)view of the diagrams without going through the effort of
-shaping them at that moment.  \FA\ uses a rather sophisticated autoshaping
-algorithm, but one should not expect too much: autoshaping offers a
-reasonable starting point, but for publishing-quality diagrams it is
-usually necessary to refine the shapes by hand.%
+topology is found, and the shape cannot be inferred from a known shape.  
+This option is useful if your diagrams involve lots of unshaped topologies 
+(\eg try painting 2-loop, $2\to 4$ diagrams) and you want a quick (pre)view
+of the diagrams without going through the effort of shaping them at that 
+moment.  \FA\ uses a rather sophisticated autoshaping algorithm, but one 
+should not expect too much: autoshaping offers a reasonable starting point, 
+but for publishing-quality diagrams it is usually necessary to refine the
+shapes by hand.%
 \index{autoshaping}%
 \index{shapes}%
 \indextt{AutoEdit}
@@ -1832,24 +1837,49 @@ are \Code{DisplayFunction -> Identity} which does not render the graphics
 at all, or \Code{DisplayFunction -> (Display["file.ps", \#]\&)} which saves
 it in a file.
 
-When running in the standalone \mma\ Kernel, \Code{Paint} automatically
-animates the screen graphics, with the sheets of output acting as the
-frames of the animation.  This is to inhibit the cluttering of the screen
-with too many windows.  The speed at which the frames are displayed by
-default is rather high, more appropriate for a movie than for viewing
-sheets of graphics.  The frame rate can be adjusted in the ``Animation
-Controls'' menu, which also allows to view single frames.  Under Unix, the
-initial frame rate can be set with the X resource \Code{Motifps*frameTime},
-\eg in \Code{.Xdefaults}:
+
+\FA' shape-finding process is informed by two objects.
+\biitab
+\Code{ShapeSources} &
+	a list of shape sources \\
+\Code{ShapeHook} &
+	a function to modify the shape data
+\etab%
+\indextt{ShapeSources}%
+\indextt{ShapeHook}%
+
+The shape finder tries the sources listed in \Code{ShapeSources} 
+in the specified order.  Valid sources are
+\begin{tabbing}
+\quad\Code{ShapeData}	\quad	\= shape in memory, \\
+\quad\Code{File}		\> shape on disk, \\
+\quad\Code{VFlip[\Var{src}]}	\> shape from vertical flip, \\
+\quad\Code{HFlip[\Var{src}]}	\> shape from horizontal flip, and \\
+\quad\Code{Automatic}		\> autoshaped,
+\end{tabbing}
+\indextt{ShapeData}%
+\indextt{File}%
+\indextt{VFlip}%
+\indextt{HFlip}%
+\indextt{Automatic}%
+where \Var{src} are itself sources.  The default setting is
 \begin{verbatim}
-  Motifps*frameTime: 1000
+   ShapeSources = {ShapeData, File, VFlip[ShapeData, File], 
+      HFlip[ShapeData, File, VFlip[ShapeData, File]], Automatic}
 \end{verbatim}
-\indextt{\$DisplayFunction}%
-\indextt{.Xdefaults}%
-\indextt{motifps}%
-\indextt{frameTime}%
-\index{animation}%
-\index{frame rate}%
+
+\Code{ShapeHook[\Vs,\,\Var{top},\,\Var{code},\,\Var{src}]} is a 
+function the user may override for the final say over the shape.  
+It is invoked with the foreseen shape data \Vs, the topology
+\Var{top}, the topology code \Var{code} (this is the filename
+underneath \Code{\$ShapeDataDir} where the shape data would be
+stored) \Var{code}, and the source \Var{src} from which \Vs\ was
+determined.  The default is to just pass on the shape data, \ie
+\begin{verbatim}
+   ShapeHook[s_, ___] := s
+\end{verbatim}
+
+%<<<
 
 
 \subsection{Things to do with the Paint Output}
@@ -3437,20 +3467,16 @@ clarity.  (\mma\ automatically threads multiplications over lists, \eg
 
 \index{counter-terms}%
 It is possible to enter counter-terms only for a subset of couplings.
-The components of the coupling vector must however always be filled up to
-the same counter-term order.
+The components of the coupling vector must always be filled up to the
+same counter-term order, however.
 
-In the special case where the kinematic vector has only one element, one
-level of lists may be omitted, so for example
+The field pattern may optionally include the type of propagator the
+particle is running on (\Code{External}, \Code{Internal}, or
+\Code{Loop}), as in:
 \begin{verbatim}
-  C[ S[2], S[2], V[3], -V[3] ] == I EL^2/(2 SW^2) *
-    { {1, 2 dZe1 - 2 dSW1/SW + dZW1 + dZchi1} }
+  C[ S[1, t1], S[1, t2], S[2, t3] ] == ...
 \end{verbatim}
-is equivalent to
-\begin{verbatim}
-  C[ S[2], S[2], V[3], -V[3] ] == I EL^2/(2 SW^2) *
-    {1, 2 dZe1 - 2 dSW1/SW + dZW1 + dZchi1}
-\end{verbatim}
+where for example \Code{t1} might be used for \Code{TheMass[S[1],\,t1]}.
 
 The classes fields in \Code{C[\Var{f_1},\,\Var{f_2},\,\dots]} must be in
 the same generic order as the corresponding \Code{AnalyticalCoupling}
@@ -3672,8 +3698,8 @@ the model specification.
 \index{Feynman rules}%
 \index{ModelMaker@\MM}
 
-\FA\ includes an add-on package called \MM\ which can generate the Feynman
-rules for the classes model file from the Lagrangian.  While entering the
+\FA\ includes an add-on package \MM\ which can generate the Feynman rules
+for the classes model file from the Lagrangian.  While entering the
 Lagrangian requires an effort comparable to typing in the Feynman rules
 directly, it is often nicer to have the Lagrangian available rather than
 only the Feynman rules.  For example, in situations where particles mix to
@@ -3708,7 +3734,7 @@ procedure to generate \Code{MODEL.mod} is the following:
 The \MM\ functions used above are
 \biitab
 \Code{FeynmanRules[\Var{\cal L}]} &
-	derives the Feynman rules from the Lagrangian \Var{\cal L} \\
+	derives Feynman rules from the Lagrangian \Var{\cal L} \\
 \Code{CouplingVector[\Vr]} &
 	extracts the coupling vector of each Feynman rule in \Vr\
 	according to the corresponding kinematic vector in the currently 

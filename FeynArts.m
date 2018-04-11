@@ -1,8 +1,8 @@
 (*
 
-This is FeynArts, Version 3.9
-Copyright by Sepp Kueblbeck, Hagen Eck, and Thomas Hahn 1991-2015
-last modified 23 Sep 15 by Thomas Hahn
+This is FeynArts, Version 3.10
+Copyright by Sepp Kueblbeck, Hagen Eck, and Thomas Hahn 1991-2017
+last modified 16 Mar 18 by Thomas Hahn
 
 Release notes:
 
@@ -145,9 +145,9 @@ TopologyList::usage =
 
 Propagator::usage =
 "Propagator[v1, v2] is an (undirected) propagator joining the two 
-vertices v1 and v2.\n
+vertices v1 and v2. 
 Propagator[v1, v2, f] is a (directed) propagator transporting field f
-from vertex v1 to v2.\n
+from vertex v1 to v2. 
 Propagator[t][...] is the representation of a propagator of type t.
 Possible types are: Incoming, Outgoing, External, Internal and Loop[n]."
 
@@ -158,14 +158,14 @@ Outgoing::usage =
 "Propagator[Outgoing][...] denotes an outgoing propagator."
 
 External::usage =
-"Propagator[External][...] denotes an external propagator.\n
+"Propagator[External][...] denotes an external propagator. 
 External is also used in SumOver[index, range, External] to indicate
 that the index to be summed belongs to an external particle."
 
 Internal::usage =
-"Propagator[Internal][...] denotes an internal propagator.\n
-ExcludeTopologies -> Internal excludes topologies that contain
-Propagator[Internal], i.e. the one-particle reducible ones."
+"Propagator[Internal][...] denotes an internal propagator. 
+ExcludeTopologies -> Internal is the same as
+ExcludeTopologies -> Irreducible."
 
 Loop::usage =
 "Propagator[Loop[n]][...] denotes a propagator on loop n."
@@ -180,7 +180,7 @@ CreateTopologies::usage =
 i incoming and o outgoing legs and l loops (at the moment l = 0...3)."
 
 ExcludeTopologies::usage =
-"ExcludeTopologies is an option of CreateTopologies which specifies
+"ExcludeTopologies is an option of Create[CT]Topologies which specifies
 filters for excluding topologies.  You may use the built-in filters:
 Tadpoles, TadpoleCTs, SelfEnergies, SelfEnergyCTs, WFCorrections,
 WFCorrectionCTs, Triangles, TriangleCTs, Boxes[n], BoxCTs[n], AllBoxes,
@@ -193,90 +193,98 @@ ExcludeTopologies -> {filt, ...}.  It must be defined as a pure function
 the topology shall not be discarded."
 
 Loops::usage =
-"Loops[n] is a filter used with ExcludeTopologies.  It excludes
-topologies containing loops that are connected to the rest of the graph
-with n propagators."
+"ExcludeTopologies -> Loops[n] makes Create[CT]Topologies exclude
+topologies containing loops connected to the rest of the graph with
+n propagators."
 
 CTs::usage =
-"CTs[n] is a filter used with ExcludeTopologies.  It excludes the
+"ExcludeTopologies -> CTs[n] makes Create[CT]Topologies exclude the
 counter-term topologies corresponding to Loops[n]."
 
+Irreducible::usage =
+"ExcludeTopologies -> Irreducible makes Create[CT]Topologies exclude
+one-particle-reducible topologies."
+
+Reducible::usage =
+"ExcludeTopologies -> Reducible makes Create[CT]Topologies exclude
+one-particle-irreducible topologies."
+
 Tadpoles::usage =
-"Tadpoles is a filter used with ExcludeTopologies.  It excludes
-topologies containing loops that are connected to the rest of the graph
-with one propagator."
+"ExcludeTopologies -> Tadpoles makes Create[CT]Topologies exclude
+topologies containing loops connected to the rest of the graph with
+one propagator."
 
 TadpoleCTs::usage =
-"TadpoleCTs is a filter used with ExcludeTopologies.  It excludes
+"ExcludeTopologies -> TadpoleCTs makes Create[CT]Topologies exclude
 counter-term topologies corresponding to Tadpoles."
 
 SelfEnergies::usage =
-"SelfEnergies is a filter used with ExcludeTopologies.  It excludes
-topologies containing loops that are connected to the rest of the graph
-with two propagators."
+"ExcludeTopologies -> SelfEnergies makes Create[CT]Topologies exclude
+topologies containing loops connected to the rest of the graph with
+two propagators."
 
 SelfEnergyCTs::usage =
-"SelfEnergyCTs is a filter used with ExcludeTopologies.  It excludes
+"ExcludeTopologies -> SelfEnergyCTs  makes Create[CT]Topologies exclude
 counter-term topologies corresponding to SelfEnergies."
 
 WFCorrections::usage =
-"WFCorrections is a filter used with ExcludeTopologies.  It excludes
+"ExcludeTopologies -> WFCorrections  makes Create[CT]Topologies exclude
 wave-function-correction topologies, i.e. self-energy insertions and
-tadpoles on external legs.  It can also be used in the form
-WFCorrections[patt], which limits the selection to only those external 
-lines matching patt."
+tadpoles on external legs.
+It can also be used in the form WFCorrections[patt], which limits the
+selection to only those external lines matching patt."
 
 WFCorrectionCTs::usage =
-"WFCorrectionCTs is a filter used with ExcludeTopologies.  It excludes
+"ExcludeTopologies -> WFCorrectionCTs makes Create[CT]Topologies exclude
 wave-function-correction counter-term topologies, i.e. the counter-terms
-corresponding to WFCorrections.  It can also be used in the form
-WFCorrectionCTs[patt], which limits the selection to only those external
-lines matching patt."
+corresponding to WFCorrections.
+It can also be used in the form WFCorrectionCTs[patt], which limits the
+selection to only those external lines matching patt."
 
 Triangles::usage =
-"Triangles is a filter used with ExcludeTopologies.  It excludes
-topologies containing loops that are connected to the rest of the graph
-with three propagators."
+"ExcludeTopologies -> Triangles makes Create[CT]Topologies exclude
+topologies containing loops connected to the rest of the graph with
+three propagators."
 
 TriangleCTs::usage =
-"TriangleCTs is a filter used with ExcludeTopologies.  It excludes the
-counter-term topologies corresponding to Triangles."
+"ExcludeTopologies -> TriangleCTs makes Create[CT]Topologies exclude
+the counter-term topologies corresponding to Triangles."
 
 Boxes::usage =
-"Boxes is a filter used with ExcludeTopologies.  It excludes
-topologies containing loops that are connected to the rest of the graph
-with four propagators."
+"ExcludeTopologies -> Boxes makes Create[CT]Topologies exclude
+topologies containing loops connected to the rest of the graph with
+four propagators."
 
 BoxCTs::usage =
-"BoxCTs is a filter used with ExcludeTopologies.  It excludes the
+"ExcludeTopologies -> BoxCTs makes Create[CT]Topologies exclude the
 counter-term topologies corresponding to Boxes."
 
 Pentagons::usage =
-"Pentagons is a filter used with ExcludeTopologies.  It excludes
-topologies containing loops that are connected to the rest of the graph
-with five propagators."
+"ExcludeTopologies -> Pentagons makes Create[CT]Topologies exclude
+topologies containing loops connected to the rest of the graph with
+five propagators."
 
 PentagonCTs::usage =
-"PentagonCTs is a filter used with ExcludeTopologies.  It excludes the
-counter-term topologies corresponding to Pentagons."
+"ExcludeTopologies -> PentagonCTs makes Create[CT]Topologies exclude
+the counter-term topologies corresponding to Pentagons."
 
 Hexagons::usage =
-"Hexagons is a filter used with ExcludeTopologies.  It excludes
-topologies containing loops that are connected to the rest of the graph
-with six propagators."
+"ExcludeTopologies -> Hexagons makes Create[CT]Topologies exclude
+topologies containing loops connected to the rest of the graph with
+six propagators."
 
 HexagonCTs::usage =
-"HexagonCTs is a filter used with ExcludeTopologies.  It excludes the
-counter-term topologies corresponding to Hexagons."
+"ExcludeTopologies -> HexagonCTs makes Create[CT]Topologies exclude
+the counter-term topologies corresponding to Hexagons."
 
 AllBoxes::usage =
-"AllBoxes is a filter used with ExcludeTopologies.  It excludes
-topologies containing loops that are connected to the rest of the graph
-with four or more propagators."
+"ExcludeTopologies -> AllBoxes makes Create[CT]Topologies exclude
+topologies containing loops connected to the rest of the graph with
+four or more propagators."
 
 AllBoxCTs::usage =
-"AllBoxCTs is a filter used with ExcludeTopologies.  It excludes
-counter-term topologies corresponding to AllBoxes."
+"ExcludeTopologies -> AllBoxCTs makes Create[CT]Topologies exclude
+the counter-term topologies corresponding to AllBoxes."
 
 TadpolesOnly::usage =
 "TadpolesOnly is a short-cut used with CreateTopologies to keep only
@@ -340,29 +348,60 @@ one-point vertices specified by patt1 and two-point vertices specified
 by patt2 on external legs.  For example, the WFCorrections filter uses
 FreeWFQ[ToTree[top], Centre[1], Centre[2]]&."
 
-LoopFields::usage =
-"LoopFields[top] returns a list of the fields that are part of any
-loop in the topology top.  LoopFields[rul, top] first substitutes
-the insertion rules rul into the bare topology top before proceeding. 
-This function is typically used as a filter for DiagramSelect or
-DiagramGrouping, as in
-DiagramSelect[diags, FreeQ[LoopFields[##], V[1]]&]."
-
 WFCorrectionFields::usage =
 "WFCorrectionFields[top] extracts the fields external to any
-wave-function correction from topology top.
+wave-function correction from topology top. 
 WFCorrectionFields[rul, top] first substitutes the insertion rules rul
-into the bare topology top before proceeding.  This function is 
-typically used as a filter for DiagramSelect, as in  
+into the bare topology top before proceeding. 
+This function is typically used as a filter for DiagramSelect, as in
 DiagramSelect[diags, UnsameQ@@ WFCorrectionFields[##] &]."
 
 WFCorrectionCTFields::usage =
 "WFCorrectionCTFields[top] extracts the fields external to any
-wave-function-correction counter-term from topology top.
+wave-function-correction counter-term from topology top. 
 WFCorrectionFields[rul, top] first substitutes the insertion rules rul
-into the bare topology top before proceeding.  This function is 
-typically used as a filter for DiagramSelect, as in  
+into the bare topology top before proceeding. 
+This function is typically used as a filter for DiagramSelect, as in
 DiagramSelect[diags, UnsameQ@@ WFCorrectionCTFields[##] &]."
+
+LoopFields::usage =
+"LoopFields[top] returns a list of the fields that are part of any
+loop in the topology top. 
+LoopFields[ins, top] first substitutes the insertion rules ins into the
+bare topology top before proceeding. 
+This function is typically used as a filter for DiagramSelect or
+DiagramGrouping, as in DiagramSelect[diags, FreeQ[LoopFields[##], fi]&]."
+
+TreeFields::usage =
+"TreeFields[top] returns a list of the fields running on the tree
+part (not including external lines) of the topology top. 
+TreeFields[ins, top] first substitutes the insertion rules ins into
+the bare topology top before proceeding. 
+This function is typically used as a filter for DiagramSelect or
+DiagramGrouping, as in DiagramSelect[diags, FreeQ[TreeFields[##], fi]&]."
+
+IRDivergentQ::usage =
+"IRDivergentQ[ins, top] returns True if the diagram contains a massless
+propagator attached on both sides to two fields of identical mass.  Such
+diagrams give rise to IR singularities. 
+This function is typically used as a filter for DiagramSelect or
+DiagramGrouping, as in DiagramSelect[diags, IRDivergentQ]."
+
+STChannelFields::usage =
+"STChannelFields[top] returns a list {fs, ft}, where fs(ft) contains the
+fields running on s(t)-channel-like propagators of topology top."
+
+SChannelQ::usage =
+"SChannelQ[fi][ins, top] returns True if field fi runs on any
+s-channel-like propagator of topology top. 
+This function is typically used as a filter for DiagramSelect or
+DiagramGrouping, as in DiagramSelect[diags, SChannelQ[fi]]."
+
+TChannelQ::usage =
+"TChannelQ[fi][ins, top] returns True if field fi runs on any
+t-channel-like propagator of topology top. 
+This function is typically used as a filter for DiagramSelect or
+DiagramGrouping, as in DiagramSelect[diags, TChannelQ[fi]]."
 
 StartingTopologies::usage =
 "StartingTopologies is an option of CreateTopologies.  It specifies a
@@ -639,6 +678,9 @@ Conjugate[A[1, j, i]])/2."
 RenConst::usage =
 "RenConst[rc] := ... defines the renormalization constant rc."
 
+MassShift::usage =
+"MassShift[ms] := ... defines the mass shift ms."
+
 ReferenceOrder::usage =
 "ReferenceOrder[x] gives a list of all field points of the current model
 in (unsorted) list form.  x can be Generic or Classes."
@@ -694,16 +736,16 @@ L$CTOrders::usage =
 Mom::usage =
 "Mom[n] is the momentum of the nth field in the kinematic vector."
 
-KI1::usage = KI2::usage = KI3::usage = KI4::usage =
+KI1::usage = KI2::usage = KI3::usage = KI4::usage = KI5::usage = KI6::usage =
 "KIi[n] is the ith kinematic index of the nth field in the kinematic
 vector."
 
-KIs = {KI1, KI2, KI3, KI4}
+KIs = {KI1, KI2, KI3, KI4, KI5, KI6}
 
 SI::usage = "SI[n] is the nth summation index in a component of the
 kinematic vector."
 
-SIs = {SI1_, SI2_, SI3_, SI4}
+SIs = {SI1_, SI2_, SI3_, SI4_, SI5_, SI6_}
 
 CI::usage = "CI[n] is the classes index of the nth field in the
 kinematic vector."
@@ -866,7 +908,7 @@ carried by the fields in the loop."
 
 SelfConjugate::usage =
 "SelfConjugate -> True | False is an entry in the M$ClassesDescription
-list.\n
+list. 
 SelfConjugate[p] is True if field p is self-conjugate and False
 otherwise."
 
@@ -879,7 +921,7 @@ InsertOnly::usage =
 "InsertOnly is an entry in the M$ClassesDescription list.  It specifies
 the types of progators the particle may be inserted into.  If not
 explicitly specified, the particle may be inserted into all types of
-propagators.\n
+propagators. 
 InsertOnly[p] returns the types of propagators in which field p may be
 inserted into."
 
@@ -892,7 +934,7 @@ specified by the model file)."
 
 MixingPartners::usage =
 "MixingPartners -> {...} is an entry in the M$ClassesDescription list
-for mixing fields and specifies their mixing partners.\n
+for mixing fields and specifies their mixing partners. 
 MixingPartners[p] returns the partners of mixing field p."
 
 QuantumNumbers::usage =
@@ -974,7 +1016,7 @@ TheC::usage =
 
 C::usage =
 "C[cto][fields][kinpart] is the symbolic form of a coupling that is
-returned when CreateFeynAmp fails to resolve a classes coupling.\n
+returned when CreateFeynAmp fails to resolve a classes coupling. 
 C[fi] == coupl used as an entry in the M$CouplingMatrices list in the
 classes model file defines the coupling of the fields fi."
 
@@ -1300,16 +1342,61 @@ ComposedChar[t, Null, sup] is a label with a superscript only."
 Shape::usage =
 "Shape[tops] edits the shapes of the topologies tops."
 
+NumberFrom::usage =
+"NumberFrom is an option of Shape.  It sets the initial value for the
+topology numbering in the informative messages on screen."
+
+ShapeEdit::usage =
+"ShapeEdit is an option of Shape.  It sets the edit mode and can have
+values True (always edit), Automatic (edit only if a shape was not
+derived from its mirror image), and False (never edit)."
+
+FlipEdit::usage =
+"FlipEdit is an option of Shape.  If set the edit mode for shapes
+derived by flip and can have values True (edit the original shape
+before flipping it), False (never edit the original shape), and
+Automatic (edit if Shape is called on a single topology only)."
+
+SkipFlipped::usage =
+"SkipFlipped is a value for the ShapeEdit option of Shape.  If chosen,
+a shape that has been obtained by flipping another one will be skipped
+by Shape."
+
 ShapeData::usage =
 "ShapeData[topcode] is the database of shapes currently in memory.  
-It is indexed by the three strings given by TopologyCode."
+It is indexed by the string given by TopologyCode."
 
 TopologyCode::usage =
 "TopologyCode[top] returns a list of three strings identifying the
-topology.  This code is unique as far painting the topology is
+topology.  This code is unique as far as painting the topology is
 concerned."
 
-{TopBottom, LeftRight}	(* visible for printing *)
+ShapeHook::usage =
+"ShapeHook[shapedata, top, topcode, source] is a function invoked during
+the lookup of a topology's shape.  It must return shapedata (possibly
+modified) and can act on the other information, where source is one of
+the elements of FindShapeSources: ShapeData, File, VFlip, HFlip,
+Automatic."
+
+ShapeSources::usage =
+"ShapeSources is a list of sources which are tried in the given order
+when a topology's shape is sought.  Valid sources are ShapeData
+(shape in memory), File (shape on disk), VFlip[flipsrc] (shape from
+vertical flip), HFlip[flipsrc] (shape from horizontal flip), and
+Automatic (autoshaped), where flipsrc lists the sources the mirror
+image is taken from."
+
+VFlip::usage =
+"VFlip[flipsrc] used as a member of FindShapeSources indicates that
+a topology's shape is to be derived from its vertical mirror image.  
+The argument flipsrc determines where the mirror image is taken from
+and has the same format as FindShapeSources."
+
+HFlip::usage =
+"HFlip[flipsrc] used as a member of FindShapeSources indicates that
+a topology's shape is to be derived from its horizontal mirror image.  
+The argument flipsrc determines where the mirror image is taken from
+and has the same format as FindShapeSources."
 
 
 (* FeynArts system constants *)
@@ -1346,9 +1433,12 @@ P$Generic::usage =
 "P$Generic is the pattern for generic fields."
 
 P$NonCommuting::usage =
-"P$NonCommuting is the pattern for the non-commuting generic fields.
-A list {patt1, patt2, ...} (e.g. {F, U}) means that chains are built
-first particles matching patt1, then for patt2, etc."
+"P$NonCommuting is the pattern for the non-commuting generic fields."
+
+P$ChainBuildOrder::usage =
+"P$ChainBuildOrder determines the order in which chains of non-commuting
+fields are built.  A list {patt1, patt2, ...} (e.g. {F, U}) means that
+chains are built first particles matching patt1, then for patt2, etc."
 
 P$InsertionObjects::usage =
 "P$InsertionObjects matches the objects in the generic amplitude that
@@ -1359,7 +1449,9 @@ P$Topology = Topology[__] | Topology[_][__]
 
 P$Generic = F | S | V | T | U | _Mix | _Rev
 
-P$NonCommuting = {F, U}
+P$NonCommuting = F | U
+
+P$ChainBuildOrder = {F, U}
 
 P$InsertionObjects = G[_][_][__][__] | _Mass | _GaugeXi |
   VertexFunction[_][__]
@@ -1367,9 +1459,9 @@ P$InsertionObjects = G[_][_][__][__] | _Mass | _GaugeXi |
 P$Options = (_Rule | _RuleDelayed)...
 
 
-$FeynArts = 3.9
+$FeynArts = 3.10
 
-$FeynArtsVersion = "FeynArts 3.9 (23 Sep 2015)"
+$FeynArtsVersion = "FeynArts 3.10 (12 Mar 2018)"
 
 $FeynArtsDir = DirectoryName[
   $InputFileName /. HoldPattern[$InputFileName] :>

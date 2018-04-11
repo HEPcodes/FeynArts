@@ -3,11 +3,12 @@ all: TopologyEditor.jar FeynArts.pro FeynArts.texpro
 CC = gcc
 CPP = $(CC) -E -P -C -x c-header
 
-JLINK = /opt/Wolfram/Mathematica/5.2/AddOns/JLink/JLink.jar
+JLINK = /opt/Wolfram/Mathematica/11.0/SystemFiles/Links/JLink/JLink.jar
+JOPT = -source 1.4 -target 1.4
 
 TopologyEditor.jar: TopologyEditor.java
 	rm -fr de TopologyEditor.jar
-	CLASSPATH=$(JLINK): javac -d . TopologyEditor.java
+	CLASSPATH=$(JLINK): javac $(JOPT) -d . TopologyEditor.java
 	jar cvf TopologyEditor.jar de
 	rm -fr de
 

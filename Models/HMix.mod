@@ -4,7 +4,7 @@
 		S[0,  {h}] = Sum[UHiggs[h,i] S[i], {i, 3}]
 		S[10, {h}] = Sum[ZHiggs[h,i] S[i], {i, 3}]
 		this file is part of FeynArts
-		last modified 8 Sep 08 th
+		last modified 22 Jun 16 th
 *)
 
 
@@ -16,6 +16,7 @@ M$ClassesDescription = Flatten[{
 	SelfConjugate -> True,
 	Indices -> {Index[Higgs]},
 	Mass -> MHiggs,
+	Mass[Loop] -> MHiggstree,
 	PropagatorLabel -> ComposedChar["H", Index[Higgs]],
 	PropagatorType -> ScalarDash,
 	PropagatorArrow -> None },

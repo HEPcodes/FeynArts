@@ -2,7 +2,7 @@
 	Insert.m
 		Insertion of fields into topologies created by 
 		CreateTopologies.
-		last modified 4 Feb 16 th
+		last modified 12 Mar 18 th
 
 The insertion is done in 3 levels: insertion of generic fields (Generic),
 of classes of a certain model (Classes) or of the members of the classes
@@ -117,7 +117,7 @@ InsertFields[ ___ ] := (Message[InsertFields::syntax]; $Failed)
 
 CheckProperField[ fi_Alternatives ] := CheckProperField/@ fi
 
-CheckProperField[ fi:P$Generic | _. P$Generic[__] ] = fi
+CheckProperField[ fi:P$Generic | _. P$Generic[__] ] := fi
 
 CheckProperField[ fi_ ] := (Message[InsertFields::badsel, fi]; Seq[])
 
@@ -203,14 +203,14 @@ Block[ {vertli, fpoints, res, topol = top},
   top -> res
 ]
 
-TopologyInsert[ _ ][ other_ ] = other
+TopologyInsert[ _ ][ other_ ] := other
 
 
 (* extract field points *)
 
-VertexFields[ top_ ][ v_ ] := FieldPoint[CTO[v]]@@ TakeInc[v]/@ top
+VertexFields[ top_ ][ v_ ] := Level[TakeInc[v]/@ top, {2}, FieldPoint[CTO[v]]]
 
-CTO[ Vertex[_, c_][__] ] = c
+CTO[ Vertex[_, c_][__] ] := c
 
 CTO[ _ ] = 0
 
@@ -221,13 +221,13 @@ FieldPoints[ gr_:{}, top:P$Topology, ___ ] := Sort/@
 
 (* get particle which is incoming in vertex v from propagator pr *)
 
-TakeInc[ v_ ][ _[v_, v_, f_, ___] ] := Sequence[IncField[f], OutField[f]]
+TakeInc[ v_ ][ _[v_, v_, f_, ___] ] := {IncField[f], OutField[f]}
 
-TakeInc[ v_ ][ _[v_, _, f_, ___] ] := IncField[f]
+TakeInc[ v_ ][ _[v_, _, f_, ___] ] := {IncField[f]}
 
-TakeInc[ v_ ][ _[_, v_, f_, ___] ] := OutField[f]
+TakeInc[ v_ ][ _[_, v_, f_, ___] ] := {OutField[f]}
 
-TakeInc[ _ ][ _ ] = Sequence[]
+TakeInc[ _ ][ _ ] = {}
 
 
 IncField[ s_. fi_[ind__, fr_ -> _] ] := AntiParticle[s fi[ind, fr]]
@@ -236,7 +236,7 @@ IncField[ fi_ ] := AntiParticle[fi]
 
 OutField[ s_. fi_[ind__, _ -> to_] ] := s fi[ind, to]
 
-OutField[ fi_ ] = fi
+OutField[ fi_ ] := fi
 
 
 LeftPartner[ fi_ ] := MixingPartners[fi][[1]] /; FreeQ[fi, Field]
@@ -261,7 +261,7 @@ PLookup[ fp_, mp_, p_ ] := Flatten[ Compatibles[mp, #]&/@
   FieldLookup[ fp[[0, 1]] ][p, FieldPoint@@ (fp /. _Field -> p)] ]
 
 
-FieldLookup[ cto_?NonNegative ] = PossibleFields[cto]
+FieldLookup[ cto_?NonNegative ] := PossibleFields[cto]
 
 FieldLookup[ cto_ ][ 0, fp_ ] := PossibleFields[-cto][0, fp]
 
@@ -397,7 +397,7 @@ Block[ {theins, rul, freesites, filter, pfilter},
 
 Attributes[ IndexDelta ] = {Orderless}
 
-IndexDelta[ n_, n_ ] = 1
+IndexDelta[ n_, n_ ] := 1
 
 	(* Caveat: do not discard the n on n_Integer, or else
 	   the IndexDelta[n_, n_] rule will apply! *)
@@ -419,7 +419,7 @@ AppendIndex[ Field[n_] -> s_. fi_[i_, j_List] ] :=
     Append[#, n]&/@ Drop[Indices[fi[i]], Length[j]] ]]) /;
   Length[j] < Length[Indices[fi[i]]]
 
-AppendIndex[ ru_ ] = ru
+AppendIndex[ ru_ ] := ru
 
 
 ProvideIndices[ ru_ ] :=
@@ -429,7 +429,7 @@ Block[ {indexru, extind, deltas},
     Union@@ Cases[Take[indexru, ninc], _List, Infinity],
     _Integer ];
   deltas = Union[ Flatten[
-    CouplingDeltas[VSort[#]]&/@ Flatten[vertli /.
+    CouplingDeltas/@ VSort/@ Flatten[vertli /.
       Distribute[
         Thread[MapAt[MixingPartners, #, 2]]&/@ List@@ indexru,
         List ]] ] ];

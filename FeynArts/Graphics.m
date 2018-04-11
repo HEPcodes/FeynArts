@@ -1,7 +1,7 @@
 (*
 	Graphics.m
 		Graphics routines for FeynArts
-		last modified 4 Feb 16 th
+		last modified 16 Mar 18 th
 *)
 
 Begin["`Graphics`"]
@@ -84,6 +84,8 @@ Paint::nolevel =
 Paint::colrows =
 "ColumnsXRows is not an integer or a pair of integers."
 
+Paint[ _[], ___ ] = Null
+
 Paint[ top:P$Topology, opt:P$Options ] :=
   Paint[ TopologyList[top], opt ]
 
@@ -92,7 +94,7 @@ Paint[ top:(P$Topology -> _), opt:P$Options ] :=
 
 Paint[ tops_TopologyList, options:P$Options ] :=
 Block[ {fnum, ghead, opt = ActualOptions[Paint, Display, options]},
-  fnum = FieldNumbers /. opt;
+  fnum = If[ TrueQ[FieldNumbers /. opt], 1, 0 ];
   ghead = Switch[ ghead = SheetHeader /. opt,
     None | False,
       FeynArtsGraphics[],
@@ -108,8 +110,8 @@ Block[ {fnum, ghead, opt = ActualOptions[Paint, Display, options]},
 ]
 
 Paint[ tops:TopologyList[info___][___], options:P$Options ] :=
-Block[ {plevel, ins, ghead,
-fnum = False, opt = ActualOptions[Paint, Display, options]},
+Block[ {plevel, ins, ghead, fnum = 0,
+opt = ActualOptions[Paint, Display, options]},
   If[ (plevel = ResolveLevel[PaintLevel /. opt /. {info} /.
         Options[InsertFields]]) === $Failed,
     Return[$Failed] ];
@@ -147,8 +149,8 @@ fnum = False, opt = ActualOptions[Paint, Display, options]},
 
 
 PaintSheet[ tops_, options___ ] :=
-Block[ {auto, disp, cols, rows, dhead, g, topnr = 0, runnr = 0},
-  auto = AutoEdit /. opt /. {False -> 2, _ -> 1};
+Block[ {auto, disp, cols, rows, dhead, edit, editor, closeEditor, g,
+topnr = 0, runnr = 0},
   Switch[ cols = ColumnsXRows /. opt,
     _Integer,
       rows = cols,
@@ -174,7 +176,10 @@ Block[ {auto, disp, cols, rows, dhead, g, topnr = 0, runnr = 0},
       _dhead = DiagramGraphics[]
   ];
 
+  edit[_][Automatic] = AutoEdit /. opt;
   g = Flatten[TopologyGraphics/@ List@@ tops] /. _Index -> Null;
+  closeEditor[];
+
   g = Flatten[{g, Table[Null, {Mod[rows cols - Length[g], rows cols]}]}];
   g = Level[{Partition[Partition[g, cols], rows],
     {SelectOptions[Display, options]}}, {2}, ghead];
@@ -184,26 +189,20 @@ Block[ {auto, disp, cols, rows, dhead, g, topnr = 0, runnr = 0},
 
 
 TopologyGraphics[ top_ -> gr_ ] :=
-Block[ {shapedata, gtop, vertexplot},
-  shapedata = Shape[gtop = top /. Vertex[e_, _] :> Vertex[e], auto];
-  gtop = Transpose[{
-    List@@ gtop /. shapedata[[1]],
-    shapedata[[2]],
-    shapedata[[3]] }];
-  vertexplot = VGraphics/@ Vertices[top] /. shapedata[[1]];
-  ++topnr;
-  FAPrint[2, "> Top. ", topnr, ": ", NumberOf[{Length[gr]}, " diagram"]];
-  dhead[#]@@ Flatten[{
-    PGraphics@@@ (gtop /. List@@ # /. Field[_] -> 0),
-    vertexplot }]&/@ List@@ gr
+Block[ {v, p, s},
+  ( v = VGraphics/@ Vertices[top] /. #1;
+    p = Transpose[{List@@ top /. Vertex[e_, _] :> Vertex[e] /. #1, #2, #3}];
+    s = #4
+  )&@@ FindShape[top, ShapeSources,
+    ShapeInfo[++topnr, ", ", NumberOf[{Length[gr]}, " diagram"]]];
+  Level[{PGraphics@@@ (p /. List@@ # /. Field[_] -> 0), v, {s}},
+    {2}, dhead[#]]&/@ List@@ gr
 ]
 
 TopologyGraphics[ top_ ] :=
-  TopologyGraphics[
-    MapIndexed[Append[ Take[#1, 2], #2[[1]] ]&, top] -> {{}} ] /; fnum
-
-TopologyGraphics[ top_ ] :=
-  TopologyGraphics[ Append[Take[#, 2], 0]&/@ top -> {{}} ]
+Block[ {n = 0},
+  TopologyGraphics[ Append[Take[#1, 2], n += fnum]&/@ top -> {{}} ]
+]
 
 
 VGraphics[ _[e_, c_:0][n_] ] := VertexGraphics[c][ Vertex[e][n] ]
@@ -240,26 +239,28 @@ Block[ {rg},
 Display[ chan_, s_String, ___ ] := (WriteString[#, s]; Close[#])& @
   OpenWrite[chan, CharacterEncoding -> "ISO8859-1"]
 
-Export[ chan_, g:FeynArtsGraphics[___][___], format___String,
-  opt:P$Options ] :=
-Block[ {rg},
-  rg = Render[g, InferFormat[chan, format], SelectOptions[Export, opt]];
-  MapThread[Export[##, format, opt]&,
-    {FilePerSheet[chan, Length[rg]], rg}]
-]
-
-Export[ chan_, s_String, ___ ] := (WriteString[#, s]; Close[#])& @
-  OpenWrite[chan, CharacterEncoding -> "ISO8859-1"]
-
 	(* we have to play some tricks to get our definitions
 	   for Export before Mma's ones *)
-DownValues[Export] =
-  Sort[DownValues[Export], !FreeQ[#1, chan] && FreeQ[#2, chan] &]
+DownValues[Export] = Flatten[{
+  Block[ {Export},
+    Export[ chan_, s_String, ___ ] := (WriteString[#, s]; Close[#])& @
+      OpenWrite[chan, CharacterEncoding -> "ISO8859-1"];
+    Export[ chan_, g:FeynArtsGraphics[___][___],
+      format___String, opt:Evaluate[P$Options] ] :=
+    Block[ {rg},
+      rg = Render[g, InferFormat[chan, format], SelectOptions[Export, opt]];
+      MapThread[Export[##, format, opt]&,
+        {FilePerSheet[chan, Length[rg]], rg}]
+    ];
+    DownValues[Export]
+  ],
+  DownValues[Export]
+}]
 
 Protect[Show, Display, Export]
 
 
-InferFormat[ _, format_ ] = format
+InferFormat[ _, format_ ] := format
 
 InferFormat[ file_String ] := "PS" /; StringMatchQ[file, "*.ps"]
 
@@ -341,25 +342,27 @@ Block[ {p, pre, post},
 FilePerSheet[ file_, n_ ] := Table[file, {n}]
 
 
-PSString[ s_String ] = s
+Attributes[ PSNumber ] = {Listable}
+
+PSNumber[ x_ ] := {ToString[x], " "}
+
+
+PSString[ s_String ] := s
 
 PSString[ RGBColor[r_, g_, b_, ___] ] :=
-  ToString[r] <> " " <> ToString[g] <> " " <> ToString[b] <>
-  " setrgbcolor "
+  PSNumber[{r, g, b}] <> "setrgbcolor "
 
 PSString[ CMYKColor[c_, m_, y_, k_, ___] ] :=
-  ToString[c] <> " " <> ToString[m] <> " " <> ToString[y] <>
-  " " <> ToString[k] <> " setcmykcolor "
+  PSNumber[{c, m, y, k}] <> "setcmykcolor "
 
 PSString[ Hue[h_, s_:1, b_:1, ___] ] :=
-  ToString[h] <> " " <> ToString[s] <> " " <> ToString[b] <>
-  " sethsbcolor "
+  PSNumber[{h, s, b}] <> "sethsbcolor "
 
-PSString[ GrayLevel[g_, ___] ] := ToString[g] <> " setgray "
+PSString[ GrayLevel[g_, ___] ] := PSNumber[g] <> "setgray "
 
-PSString[ Thickness[t_] ] := ToString[t DiagramSize] <> " setlinewidth "
+PSString[ Thickness[t_] ] := PSNumber[t DiagramSize] <> "setlinewidth "
 
-PSString[ s_ ] := ToString[s] <> " " /; Head[s] =!= List
+PSString[ s_ ] := StringJoin[PSNumber[s]] /; Head[s] =!= List
 
 PSString[ s__ ] := StringJoin[PSString/@ Flatten[{s}]]
 
@@ -430,24 +433,28 @@ Title[ t_ ] := (
   LabelText[t, {.5 cols, rows - .12} DiagramSize, {0, 0}, 1.2, 0] )
 
 
-PSRender[ DiagramGraphics[h___][pv__] ] :=
-  "\n(" <> h <> ") Diagram\n" <> Transpose[PSRender[{pv}]]
+PSRender[ DiagramGraphics[h___][pv__, s_] ] := "\n\
+(" <> h <> ") Diagram\n\
+% " <> ToString[s] <> "\n" <> Transpose[PSRender[{pv}]]
 
 PSRender[ Null ] = "\n() Diagram\n"
 
-TeXRender[ DiagramGraphics[h___][pv__] ] :=
-  "\n\\FADiagram{" <> h <> "}\n" <> Transpose[TeXRender[{pv}]]
+TeXRender[ DiagramGraphics[h___][pv__, s_] ] := "\n\
+\\FADiagram{" <> h <> "}\n\
+% " <> ToString[s] <> "\n" <> Transpose[TeXRender[{pv}]]
 
 TeXRender[ Null ] = "\n\\FADiagram{}\n"
 
-MmaRender[ DiagramGraphics[h___][pv__] ] :=
-Block[ {g = Transpose[MmaRender[{pv}]]},
-  Graphics[
-    Flatten[{
-      PropagatorThickness, g[[1]],
-      scope[ VertexThickness, g[[2]] ],
-      DiagLabel[h]
-    }] /. scope[a__] :> scope@@ Flatten[{a}] /. scope -> List,
+MmaRender[ DiagramGraphics[h___][pv__, s_] ] :=
+Block[ {g},
+  g = Flatten[{
+    PropagatorThickness, #1,
+    scope[VertexThickness, #2],
+    DiagLabel[h]
+  }]&@@ Transpose[MmaRender[{pv}]];
+  g = g /. scope[a__] :> scope@@ Flatten[{a}] /. scope -> List;
+  If[ NameQ["System`Tooltip"], g = Tooltip[g, s] ];
+  Graphics[ g,
     PlotRange -> {{0, DiagramSize}, {0, DiagramSize}} - DiagramBorder,
     AspectRatio -> 1 ]
 ]
@@ -724,76 +731,139 @@ talign = {{0, 0}, {-1, 0}, {-1, 0}, {0, -1}};
 ] (* endif $Notebooks *)
 
 
-FindFlip[ h_, top_, rulz_ ] :=
-Block[ {ntop = top /. rulz, ord, shapedata},
-  ord = TopologyOrdering[ntop];
-  FlipShape[h, ntop, ord,
-    GetShape[TopologyCode[ ord[[1]] ]] /. Reverse/@ rulz]
+vcode = "\
+abcdefghijklmnopqrstuvwxyz\
+ABCDEFGHIJKLMNOPQRSTUVWXYZ\
+0987654321"
+
+pcode[ _[Incoming | External][c__] ] := {{c}, {}, {}}
+
+pcode[ _[Outgoing][c__] ] := {{}, {c}, {}}
+
+pcode[ _[c__] ] := {{}, {}, {c}}
+
+TopologyCode[ top:P$Topology ] :=
+  ToFileName[Drop[#, -1], Last[#] <> ".m"]&[
+    StringJoin/@ Transpose[pcode/@
+      Apply[StringTake[vcode, {#}]&, List@@ top, {2}]] /. "" -> "0" ]
+
+TopologyFile[ topcode_ ] := ToFileName[$ShapeDataDir, topcode]
+
+
+MkDir[ dir_String ] := dir /; FileType[dir] === Directory
+
+MkDir[ dir_String ] := Check[CreateDirectory[dir], Abort[]]
+
+PutShape[ shapedata_, topcode_ ] := (
+  MkDir[DirectoryName[#]];
+  Put[Take[shapedata, 3], #]
+)& @ TopologyFile[topcode]
+
+
+ShapeSources = { ##,
+  VFlip[##],
+  HFlip[##, VFlip[##]],
+  Automatic
+}&[ ShapeData, File ]
+
+ShapeHook[ s_, ___ ] := s
+
+ShapeInfo[ n_, info___ ][ {__, s_} ] :=
+  FAPrint[2, "> Top. ", n, " ", s, info]
+
+FindShape[ top_, sources_, msg_ ] :=
+Block[ {gtop, topcode, ret},
+  gtop = Take[#, 2]&/@ Topology@@ top /.
+    External -> Incoming /. Vertex[e_, _] :> Vertex[e];
+  topcode = TopologyCode[gtop];
+  ret[ shapedata_ ] := (
+    msg[shapedata];
+    Throw[ ShapeData[topcode] = Replace[
+      EditShape[edit[0] @ shapedata[[4]], gtop, topcode,
+        ShapeHook[shapedata, gtop, topcode]] /. r_Real :> Round[r, .001],
+      xy:{_?NumberQ, _?NumberQ} :> SanitizeCoord/@ xy, {3} ] ]
+  );
+  Catch[GetShape[gtop, #[topcode]]&/@ sources]
 ]
 
 
-FlipShape[ h_, top_, _[ntop_, map_], {vert_, prop_, labels_} ] :=
+SanitizeCoord[ x_ ] := Min[Max[x, 0], 20]
+
+
+GetShape[ _, {__, _[s_]} ] := 0 /; Level[s, {-1}, edit[1]]
+
+GetShape[ _, shapedata_List ] := ret[shapedata]
+
+GetShape[ _, File[topcode_] ] :=
+  If[ FileType[#] === File, ret[Append[Get[#], topcode]] ]& @
+    TopologyFile[topcode]
+
+Global`GetFlip[ top_, f_ ] :=
+Block[ {ru, ntop, ftop, map, fshape},
+  ru = FlipRules[ f,
+    Sort[Cases[top, _[Incoming][v_, _] :> v]],
+    Sort[Cases[top, _[Outgoing][v_, _] :> v]] ];
+  ntop = top /. ru;
+  {ftop, map} = TopologyOrdering[ntop];
+  {ru, ntop, ftop, map}
+]
+
+GetShape[ top_, f_[fsources__][_] ] :=
+Block[ {ru, ntop, ftop, map, fshape},
+  ru = FlipRules[ f,
+    Sort[Cases[top, _[Incoming][v_, _] :> v]],
+    Sort[Cases[top, _[Outgoing][v_, _] :> v]] ];
+  ntop = top /. ru;
+  {ftop, map} = TopologyOrdering[ntop];
+  fshape = FindShape[ftop, {fsources}, List];
+  FlipShape[f, ntop, ftop, map, fshape /. Reverse/@ ru]
+]
+
+FlipRules[ VFlip, in_, out_ ] :=
+  Thread[Join[out, in] -> Reverse[Join[in, out]]]
+
+FlipRules[ HFlip, in_, out_ ] :=
+  Flatten[{Thread[# -> Sort[#]]& @ Join[out, in],
+    Incoming -> Outgoing, Outgoing -> Incoming}]
+
+FlipShape[ f_, ntop_, ftop_, map_, {v_, p_, l_, s_} ] :=
 Block[ {ord = Ordering[Abs[map]], vord, vmap},
   vord = Flatten[(4 Abs[#] - 1 + Sign[#] {-1, 1})/2&/@ map];
-  vmap = Thread[ Level[ntop, {2}] -> Level[top, {2}][[vord]] ];
-  Throw[
-    FAPrint[2, "  found shape through ", h, " flip"];
-    { Sort[h[1]/@ vert /. vmap],
-      Sequence@@ Transpose[MapThread[h[23],
-        {prop[[ord]], labels[[ord]], map}]] } ]
-]
+  vmap = Thread[ Level[ftop, {2}] -> Level[ntop, {2}][[vord]] ];
+  ret @ Level[{{Sort[fvert[f]/@ v /. vmap]},
+    Transpose[ MapThread[fprop[f], {p, l, map}][[ord]] ],
+    {f[s]}}, {2}]
+] /; Depth[s] < 3	(* avoid e.g. VFlip[HFlip[VFlip[.]]] *)
 
 
-TopBottom[1][ v_ -> {x_, y_} ] := v -> {x, DiagramCanvas - y}
+fvert[VFlip][ v_ -> {x_, y_} ] := v -> {x, DiagramCanvas - y}
 
-TopBottom[23][ {x_, y_}, {r_, fi_}, _ ] := {{x, DiagramCanvas - y}, {r, -fi}}
-
-TopBottom[23][ {x_, y_}, l_, _ ] := {{x, DiagramCanvas - y}, l}
-
-TopBottom[23][ h_, {r_, fi_}, s_ ] := {-Sign[s] h, {r, -Sign[s] fi}} /; h != 0
-
-TopBottom[23][ h_, l_, s_ ] := {-Sign[s] h, l} /; h != 0
-
-TopBottom[23][ _, {r_, fi_}, s_ ] := {0, {r, If[s > 0, Pi - fi, -fi]}}
-
-TopBottom[23][ _, l_, s_ ] := {0, -Sign[s] l}
+fvert[HFlip][ v_ -> {x_, y_} ] := v -> {DiagramCanvas - x, y}
 
 
-LeftRight[1][ v_ -> {x_, y_} ] := v -> {DiagramCanvas - x, y}
+fprop[VFlip][ {x_, y_}, {r_, fi_}, _ ] := {{x, DiagramCanvas - y}, {r, -fi}}
 
-LeftRight[23][ {x_, y_}, {r_, fi_}, _ ] := {{DiagramCanvas - x, y}, {r, -fi}}
+fprop[HFlip][ {x_, y_}, {r_, fi_}, _ ] := {{DiagramCanvas - x, y}, {r, -fi}}
 
-LeftRight[23][ {x_, y_}, l_, _ ] := {{DiagramCanvas - x, y}, l}
+fprop[VFlip][ {x_, y_}, l_, _ ] := {{x, DiagramCanvas - y}, l}
 
-LeftRight[23][ h_, {r_, fi_}, s_ ] := {-Sign[s] h, {r, -fi}} /; h != 0
+fprop[HFlip][ {x_, y_}, l_, _ ] := {{DiagramCanvas - x, y}, l}
 
-LeftRight[23][ h_, l_, s_ ] := {-Sign[s] h, l} /; h != 0
+fprop[VFlip][ h_, {r_, fi_}, s_ ] := {-Sign[s] h, {r, -Sign[s] fi}} /; h != 0
 
-LeftRight[23][ _, {r_, fi_}, s_ ] := {0, {r, If[s > 0, Pi - fi, -fi]}}
+fprop[HFlip][ h_, {r_, fi_}, s_ ] := {-Sign[s] h, {r, -fi}} /; h != 0
 
-LeftRight[23][ _, l_, s_ ] := {0, -Sign[s] l}
+fprop[_][ _, {r_, fi_}, s_ ] := {0, {r, If[s > 0, Pi - fi, -fi]}}
+
+fprop[_][ h_, l_, s_ ] := {-Sign[s] h, l} /; h != 0
+
+fprop[_][ _, l_, s_ ] := {0, -Sign[s] l}
 
 
-AutoShape[ top_ ] :=
-Block[ {in, out, vert, shapedata, props, ext, l, tree, mesh, mesh2,
-vars, tadbr, tad, min, ok, c, ct, pt, shrink = {}, rev = {}, loops = {}},
-
-	(* before embarking on any serious autoshaping, check if we know
-	   how to paint the vertical or horizontal mirror image of top *)
-  in = Sort[Cases[top, _[Incoming][v_, _] :> v]];
-  out = Sort[Cases[top, _[Outgoing][v_, _] :> v]];
-  vert = Join[out, in];
-
-  FAPrint[1, "shaping topology ", TopologyCode[top]];
-
-  FindFlip[ TopBottom, top, Thread[vert -> Reverse[Join[in, out]]] ];
-
-  FindFlip[ LeftRight, top, Flatten[{Thread[vert -> Sort[vert]],
-    Incoming -> Outgoing, Outgoing -> Incoming}] ];
-
-  FAPrint[2, "  autoshaping"];
-
-  props[_] = {};
+GetShape[ top_, _Automatic ] :=
+Block[ {shapedata, vert, props, ext, l, tree, mesh, mesh2, vars,
+tadbr, tad, min, ok, c, ct, pt, shrink = {}, rev = {}, loops = {}},
+  _props = {};
   top /. Propagator -> pr;
   loops = Union[loops];
 
@@ -895,16 +965,17 @@ vars, tadbr, tad, min, ok, c, ct, pt, shrink = {}, rev = {}, loops = {}},
       Inside[ (v /. shapedata) + 4 Through[{Cos, Sin}[2. NPi Random[]]] ];
   pt[ _, 0 ] = 0;
   ct[ p_ ] := If[ (c = (Count[top, p] - 1)/2) === 0, 0,
-    pt[ p, n_ ] = .8 n/c;
+    pt[ p, n_ ] := .8 n/c;
     ct[ p ] = c
   ];
 
   On[FindMinimum::fmmp, FindMinimum::fmcv, FindMinimum::precw,
     FindMinimum::fmgz, FindMinimum::sdprec, FindMinimum::lstol];
 
-  { Select[shapedata, FreeQ[#, center]&],
+  ret @ { Select[shapedata, FreeQ[#, center]&],
     pt[#, ct[#]--]&/@ List@@ top,
-    Table[1, {Length[top]}] }
+    Table[1, {Length[top]}],
+    Automatic }
 ]
 
 
@@ -942,9 +1013,9 @@ Inside[ xy_ ] := Max[Min[#, 20], 0]&/@ N[xy]
 RandInt := Plus@@ Table[Random[Integer, 9], {2}] + 1
 
 
-Distance[ p1_, p2_ ] := Block[ {d = p2 - p1}, Sqrt[d . d] ]
+Distance[ p1_, p2_ ] := Sqrt[# . #]&[ p2 - p1 ]
 
-Distance2[ p1_, ___, p2_ ] := Block[ {d = p2 - p1}, d . d ]
+Distance2[ p1_, ___, p2_ ] := (# . #)&[ p2 - p1 ]
 
 Orientation[ p1_, p2_ ] := N[ArcTan@@ (p2 - p1)] /; p1 != p2
 
@@ -1039,49 +1110,6 @@ Block[ {adj, max, new, a1, a2},
 ]
 
 
-vcode = Characters["\
-abcdefghijklmnopqrstuvwxyz\
-ABCDEFGHIJKLMNOPQRSTUVWXYZ\
-0987654321"]
-
-pcode[ _[Incoming | External][c__] ] := {{c}, {}, {}}
-
-pcode[ _[Outgoing][c__] ] := {{}, {c}, {}}
-
-pcode[ _[c__] ] := {{}, {}, {c}}
-
-TopologyCode[ top:P$Topology ] :=
-  StringJoin/@ Transpose[pcode/@ Apply[vcode[[#]]&, List@@ top, {2}]] /.
-    "" -> "0"
-
-
-MkDir[ dir_String ] := dir /; FileType[dir] === Directory
-
-MkDir[ dir_String ] := Check[CreateDirectory[dir], Abort[]]
-
-MkDir[ dirs__String ] := Fold[MkDir[ToFileName[##]]&, {}, {dirs}]
-
-
-Attributes[ GetShape ] = {HoldRest}
-
-GetShape[ {topcode__}, ___ ] :=
-Block[ {shapedata = ShapeData[topcode]},
-  shapedata /; Head[shapedata] === List
-]
-
-GetShape[ {ext__, int_}, ___ ] :=
-Block[ {file = ToFileName[{$ShapeDataDir, ext}, int <> ".m"]},
-  (ShapeData[ext, int] = Get[file]) /; FileType[file] === File
-]
-
-GetShape[ {topcode__}, alt_ ] := ShapeData[topcode] = alt
-
-
-PutShape[ shapedata_, {ext__, int_} ] :=
-  Put[ShapeData[ext, int] = shapedata,
-    ToFileName[MkDir[$ShapeDataDir, ext], int <> ".m"]]
-
-
 ToJava[ p__, n_?NumberQ ] := ToJava[p, {n DefaultRadius, 0.}]
 
 ToJava[ _[from_, from_], {xc_, yc_}, {xl_, yl_} ] :=
@@ -1103,24 +1131,34 @@ installed."
 Shape::javaerror =
 "Could not open a topology-editor window."
 
-Shape[ tops:TopologyList[___][___] | TopologyList[___] ] :=
-Block[ {remaining = Length[tops]},
-  MapIndexed[
-    (--remaining; FAPrint[ 2, "> Top. ", #2[[1]] ]; Shape[#1])&,
-    List@@ tops ]
+Options[ Shape ] = {
+  NumberFrom -> 1,
+  EditFlips -> False
+}
+
+Shape[ tops:TopologyList[___][___] | TopologyList[___], options___ ] :=
+Block[ {n, edit, editor, closeEditor, shapes,
+opt = ActualOptions[Shape, options]},
+  n = NumberFrom /. opt;
+  If[ EditFlips /. opt,
+    edit[1][_] = False,
+  (* else *)
+    edit[_][_[_]] = False ];
+  edit[_][_] = True;
+  shapes = FindShape[#, ShapeSources, ShapeInfo[n++]]&/@ List@@ tops;
+  closeEditor[];
+  shapes
 ]
 
-Shape[ top:P$Topology -> _ ] := Shape[top]
+Shape[ top:P$Topology -> _, options___ ] :=
+  Shape[TopologyList[top], options]
 
-Shape[ top:P$Topology, auto_:0 ] :=
-Block[ {edittop, topcode, shapedata, arg1, arg2, exitcode},
-  edittop = Take[#, 2]&/@ Topology@@ top /.
-    External -> Incoming /. Vertex[e_, _] :> Vertex[e];
-  topcode = TopologyCode[edittop];
-  res = auto;
-  shapedata = GetShape[topcode, --res; Catch[AutoShape[edittop]]];
-  If[ res > 0, Return[shapedata] ];
+Shape[ top:P$Topology, options___ ] :=
+  Shape[TopologyList[top], options]
 
+
+EditShape[ True, top_, topcode_, raw_ ] :=
+Block[ {v, arg1, arg2, exitcode, shapedata = raw},
   If[ editorclass === False,
     Message[Shape::wait];
     Needs["JLink`"];
@@ -1137,32 +1175,30 @@ Block[ {edittop, topcode, shapedata, arg1, arg2, exitcode},
     If[ !JLink`JavaObjectQ[editor],
       Message[Shape::javaerror];
       Return[shapedata] ];
+    closeEditor[] := (
+      editor@closeWindow[];
+      JLink`ReleaseObject[editor];
+      editor = False )
   ];
 
-  arg1 = Last/@ shapedata[[1]];
-  arg2 = MapThread[ ToJava,
-    { List@@ edittop /. MapIndexed[ First/@ Rule[##]&, shapedata[[1]] ],
-      shapedata[[2]],
-      shapedata[[3]] } ];
-  editor@putShapeData[ N[Flatten[arg1]], N[Flatten[arg2]] ];
+  ( {v, arg1} = Transpose[List@@@ #1];
+    arg2 = MapThread[ ToJava,
+      {List@@ top /. Thread[v -> Range[Length[v]]], #2, #3} ];
+    editor@putShapeData[ N[Flatten[arg1]], N[Flatten[arg2]] ]
+  )&@@ shapedata;
 
-  exitcode = JLink`DoModal[];
-  If[ exitcode === 0,
-    shapedata = MapAt[
-      MapThread[Rule, {First/@ shapedata[[1]], #}]&,
-      editor@getShapeData[], 1 ];
-    PutShape[shapedata, topcode]
+  Switch[ JLink`DoModal[],
+    0, shapedata = {Thread[v -> #1], ##2, topcode}&@@
+         editor@getShapeData[];
+       PutShape[shapedata, topcode],
+    2, closeEditor[]; Abort[]
   ];
 
-  If[ remaining === 0 || exitcode === 2,
-    editor@closeWindow[];
-    JLink`ReleaseObject[editor];
-    editor = False;
-    If[ exitcode === 2, Abort[] ];
-  ];
-
+  edit[_][topcode] = False;
   shapedata
 ]
+
+EditShape[ __, shapedata_ ] := shapedata
 
 
 editorclass = editor = False

@@ -2,7 +2,7 @@
 	SM.mod
 		Classes model file for the Standard Model
 		by Hagen Eck and Sepp Kueblbeck 1995
-		last modified 8 May 14 by Thomas Hahn
+		last modified 5 Mar 19 by Thomas Hahn
 
 
 This file contains the definition of a Classes model for FeynArts.
@@ -234,7 +234,7 @@ M$ClassesDescription = {
 	PropagatorArrow -> Forward },
 
 (*
-  V[4] == {
+  Mix[V,V][4] == {
 	SelfConjugate -> True,
 	Indices -> {},
 	Mass -> MAZ,
@@ -245,25 +245,19 @@ M$ClassesDescription = {
 *)
 
 	(* mixing Higgs gauge bosons: Q = 0 *) 
-  SV[2] == {
+  Mix[S,V][2] == {
 	SelfConjugate -> True,
 	Indices -> {},
 	Mass -> MZ,
-	MixingPartners -> {S[2], V[2]},
-	PropagatorLabel -> {ComposedChar["G", Null, "0"], "Z"},
-	PropagatorType -> {ScalarDash, Sine},
-	PropagatorArrow -> None },
+	MixingPartners -> {S[2], V[2]} },
 
 	(* mixing Higgs gauge bosons: charged *) 
-  SV[3] == {
+  Mix[S,V][3] == {
 	SelfConjugate -> False,
 	Indices -> {},
 	Mass -> MW,
 	QuantumNumbers -> -Charge,
-	MixingPartners -> {S[3], V[3]},
-	PropagatorLabel -> {"G", "W"},
-	PropagatorType -> {ScalarDash, Sine},
-	PropagatorArrow -> Forward },
+	MixingPartners -> {S[3], V[3]} },
 
 	(* physical Higgs: Q = 0 *) 
   S[1] == {

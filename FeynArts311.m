@@ -1,8 +1,8 @@
 (*
 
-This is FeynArts, Version 3.10
+This is FeynArts, Version 3.11
 Copyright by Sepp Kueblbeck, Hagen Eck, and Thomas Hahn 1991-2019
-last modified 21 Jan 19 by Thomas Hahn
+last modified 2 Sep 19 by Thomas Hahn
 
 Release notes:
 
@@ -791,15 +791,12 @@ Mix::usage =
 "Mix[g1, g2] is a generic mixing field with left partner g1 and
 right partner g2."
 
+SV = Mix[S, V]	(* for compatibility *)
+
 Rev::usage =
 "Rev[g1, g2] is a generic mixing field with left partner g2 and
 right partner g1, i.e. the reverse of Mix[g1, g2].  Rev is needed
 internally by FeynArts but should not appear in a model file."
-
-SV::usage =
-"SV is a scalar-vector mixing field."
-
-SV = Mix[S, V]	(* for compatibility *)
 
 $GenericMixing::usage =
 "$GenericMixing determines whether mixing of generic fields is
@@ -974,7 +971,8 @@ antiparticles) and must return True if the vertex violates the
 conservation of those quantum numbers."
 
 Compatibles::usage =
-"Compatibles[p] is a list of particles that are compatible with p."
+"Compatibles[g][p] is a list of particles that are compatible with p
+for insertion of generic field g."
 
 Index::usage =
 "Index is the head of an index name (i.e. Index[Generation])."
@@ -1114,6 +1112,10 @@ two arguments, f[rul, top], where rul are the insertion rules and top
 the corresponding topology of the diagram.  This function can be used
 to add graph information to the amplitude."
 
+VertexMonitor::usage =
+"VertexMonitor[debuginfo] is a function invoked when looking up a vertex. 
+It is used for debugging FeynArts."
+
 VertexDebug::usage =
 "VertexDebug[debuginfo] is a function invoked whenever a vertex cannot
 be resolved.  It is used for debugging FeynArts."
@@ -1144,9 +1146,9 @@ DiagramDelete::usage =
 or amplitude list expr.  n may be of the form 3, 42, 17...28 which
 selects diagrams 3, 42, and 17 through 28."
 
-Discard[args__] := (
+Discard := (
   Message[Discard::obsalt, Discard, DiagramDelete];
-  DiagramDelete[args] )
+  DiagramDelete )
 
 DiagramMap::usage =
 "DiagramMap[foo, diags] maps foo over all Feynman diagrams in diags."
@@ -1486,11 +1488,11 @@ P$InsertionObjects = G[_][_][__][__] | _Mass | _GaugeXi |
 P$Options = (_Rule | _RuleDelayed)...
 
 
-$FeynArts = {3, 10}
+$FeynArts = {3, 11}
 
-$FeynArtsVersionNumber = 3.10
+$FeynArtsVersionNumber = 3.11
 
-$FeynArtsVersion = "FeynArts 3.10 (21 Jan 2019)"
+$FeynArtsVersion = "FeynArts 3.11 (2 Sep 2019)"
 
 $FeynArtsDir = DirectoryName[
   $InputFileName /. HoldPattern[$InputFileName] :>

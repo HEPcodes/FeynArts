@@ -4,7 +4,7 @@
                 by Thomas Fritzsche, Thomas Hahn, Sven Heinemeyer, 
                 Heidi Rzehak and Christian Schappacher		
 		based on the Feynman rules of the MSSM by Arnd Kraft
-		last modified 15 Apr 2016 by cs
+		last modified 29 Jul 2019 by cs
 
 History:
 May 2001: MSSM.mod created by Thomas Hahn.
@@ -51,6 +51,8 @@ Mar 2016: bugfix for H-G-gamma/Z counterterm vertices and missing
           A0/G0-H/G-gamma/Z-W, H0/G0-h0/A0-W/Z-W/Z, G-H-gamma/W/Z-gamma/W/Z, 
           H-G0-W-gamma/Z and G-A0-W-gamma/Z counterterm vertices added
           by Sebastian Passehr and Christian Schappacher.
+Jul 2019: duplicate (pure permuted) couplings in conflict with HMix.mod
+          removed by Thomas Hahn and Christian Schappacher.
 
 
 This file contains the definition of the minimal supersymmetric standard
@@ -305,7 +307,7 @@ M$ClassesDescription = {
          SelfConjugate -> True, 
 	 Indices -> {}, 
 	 Mass -> Mh0, 
-      	 Mass[Loop] -> Mh0tree,
+      	 Mass[Loop] -> Mh0tree, 
 	 PropagatorLabel -> ComposedChar["h", Null, "0"], 
       	 PropagatorType -> ScalarDash, 
 	 PropagatorArrow -> None }, 
@@ -314,7 +316,7 @@ M$ClassesDescription = {
          SelfConjugate -> True, 
 	 Indices -> {}, 
 	 Mass -> MHH, 
-      	 Mass[Loop] -> MHHtree,
+      	 Mass[Loop] -> MHHtree, 
 	 PropagatorLabel -> ComposedChar["H", Null, "0"], 
       	 PropagatorType -> ScalarDash, 
 	 PropagatorArrow -> None }, 
@@ -324,7 +326,7 @@ M$ClassesDescription = {
          SelfConjugate -> True, 
 	 Indices -> {}, 
 	 Mass -> MA0, 
-      	 Mass[Loop] -> MA0tree,
+      	 Mass[Loop] -> MA0tree, 
 	 PropagatorLabel -> ComposedChar["A", Null, "0"], 
       	 PropagatorType -> ScalarDash, 
 	 PropagatorArrow -> None }, 
@@ -342,7 +344,7 @@ M$ClassesDescription = {
          SelfConjugate -> False, 
 	 Indices -> {}, 
 	 Mass -> MHp, 
-	 Mass[Loop] -> MHptree,
+	 Mass[Loop] -> MHptree, 
       	 QuantumNumbers -> {-1 Charge}, 
       	 PropagatorLabel -> "H", PropagatorType -> ScalarDash, 
       	 PropagatorArrow -> Forward }, 
@@ -8563,22 +8565,6 @@ M$CouplingMatrices = {
  C[S[4], S[3], V[2], V[2]] == {{0, ((I/2)*EL^2*dZHiggs1[3, 4])/(CW^2*SW^2)}}, 
  C[S[2], S[1], V[3], -V[3]] == {{0, ((I/2)*EL^2*dZHiggs1[1, 2])/SW^2}}, 
  C[S[4], S[3], V[3], -V[3]] == {{0, ((I/2)*EL^2*dZHiggs1[3, 4])/SW^2}}, 
- C[S[5], S[4], -V[3], V[1]] == 
-  {{0, -(EL^2*(dZHiggs1[3, 4] + dZHiggs1[6, 5]))/(4*SW)}}, 
- C[-S[5], S[4], V[3], V[1]] == 
-  {{0, (EL^2*(dZHiggs1[3, 4] + dZHiggs1[5, 6]))/(4*SW)}}, 
- C[S[5], S[4], -V[3], V[2]] == 
-  {{0, (EL^2*(dZHiggs1[3, 4] + dZHiggs1[6, 5]))/(4*CW)}}, 
- C[-S[5], S[4], V[3], V[2]] == 
-  {{0, -(EL^2*(dZHiggs1[3, 4] + dZHiggs1[5, 6]))/(4*CW)}}, 
- C[S[6], S[3], -V[3], V[1]] == 
-  {{0, -(EL^2*(dZHiggs1[3, 4] + dZHiggs1[5, 6]))/(4*SW)}}, 
- C[-S[6], S[3], V[3], V[1]] == 
-  {{0, (EL^2*(dZHiggs1[3, 4] + dZHiggs1[6, 5]))/(4*SW)}}, 
- C[S[6], S[3], -V[3], V[2]] == 
-  {{0, (EL^2*(dZHiggs1[3, 4] + dZHiggs1[5, 6]))/(4*CW)}}, 
- C[-S[6], S[3], V[3], V[2]] == 
-  {{0, -(EL^2*(dZHiggs1[3, 4] + dZHiggs1[6, 5]))/(4*CW)}}, 
  C[S[6], -S[5], V[1], V[1]] == {{0, (2*I)*EL^2*dZHiggs1[5, 6]}}, 
  C[S[5], -S[6], V[1], V[1]] == {{0, (2*I)*EL^2*dZHiggs1[6, 5]}}, 
  C[S[6], -S[5], V[2], V[1]] == 
@@ -8897,27 +8883,15 @@ M$CouplingMatrices = {
    {0, (-I/2)*(2*dMHiggs1[1, 3] + (MA0tree^2 + Mh0tree^2)*dZHiggs1[1, 3])}}, 
  C[S[1], S[4]] == {{0, (-I)*dZHiggs1[1, 4]}, 
    {0, (-I/2)*(2*dMHiggs1[1, 4] + Mh0tree^2*dZHiggs1[1, 4])}}, 
- C[S[2], S[1]] == {{0, (-I)*dZHiggs1[1, 2]}, 
-   {0, (-I/2)*(2*dMHiggs1[1, 2] + (Mh0tree^2 + MHHtree^2)*dZHiggs1[1, 2])}}, 
  C[S[2], S[2]] == {{0, (-I)*dZHiggs1[2, 2]}, 
    {0, (-I)*(dMHiggs1[2, 2] + MHHtree^2*dZHiggs1[2, 2])}}, 
  C[S[2], S[3]] == {{0, (-I)*dZHiggs1[2, 3]}, 
    {0, (-I/2)*(2*dMHiggs1[2, 3] + (MA0tree^2 + MHHtree^2)*dZHiggs1[2, 3])}}, 
  C[S[2], S[4]] == {{0, (-I)*dZHiggs1[2, 4]}, 
    {0, (-I/2)*(2*dMHiggs1[2, 4] + MHHtree^2*dZHiggs1[2, 4])}}, 
- C[S[3], S[1]] == {{0, (-I)*dZHiggs1[1, 3]}, 
-   {0, (-I/2)*(2*dMHiggs1[1, 3] + (MA0tree^2 + Mh0tree^2)*dZHiggs1[1, 3])}}, 
- C[S[3], S[2]] == {{0, (-I)*dZHiggs1[2, 3]}, 
-   {0, (-I/2)*(2*dMHiggs1[2, 3] + (MA0tree^2 + MHHtree^2)*dZHiggs1[2, 3])}}, 
  C[S[3], S[3]] == {{0, (-I)*dZHiggs1[3, 3]}, 
    {0, (-I)*(dMHiggs1[3, 3] + MA0tree^2*dZHiggs1[3, 3])}}, 
  C[S[3], S[4]] == {{0, (-I)*dZHiggs1[3, 4]}, 
-   {0, (-I/2)*(2*dMHiggs1[3, 4] + MA0tree^2*dZHiggs1[3, 4])}}, 
- C[S[4], S[1]] == {{0, (-I)*dZHiggs1[1, 4]}, 
-   {0, (-I/2)*(2*dMHiggs1[1, 4] + Mh0tree^2*dZHiggs1[1, 4])}}, 
- C[S[4], S[2]] == {{0, (-I)*dZHiggs1[2, 4]}, 
-   {0, (-I/2)*(2*dMHiggs1[2, 4] + MHHtree^2*dZHiggs1[2, 4])}}, 
- C[S[4], S[3]] == {{0, (-I)*dZHiggs1[3, 4]}, 
    {0, (-I/2)*(2*dMHiggs1[3, 4] + MA0tree^2*dZHiggs1[3, 4])}}, 
  C[S[4], S[4]] == {{0, (-I)*dZHiggs1[4, 4]}, {0, (-I)*dMHiggs1[4, 4]}}, 
  C[S[5], -S[5]] == {{0, (-I/2)*(dZbarHiggs1[5, 5] + dZHiggs1[5, 5])}, 

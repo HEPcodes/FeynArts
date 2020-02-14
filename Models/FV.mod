@@ -146,6 +146,7 @@ M$CouplingMatrices = MapIndexed[ReplaceCoupling,
     USf[t:$FVf, g_][a_, b_] :> usf[t, g][a, b],
     USf[a_, b_, t:$FVf, g_] :> usf[t, g][a, b],
    USfC[a_, b_, t:$FVf, g_] :> Conjugate[usf[t, g][a, b]] }] //.
+  IndexSum[fac_ expr_, {i_, n_}] :> fac IndexSum[expr, {i, n}] /; FreeQ[fac, i] //.
   IndexSum[IndexSum[expr_, i_], j__] :>
     IndexSum[expr, Sequence@@ Sort[{i, j}]]
 

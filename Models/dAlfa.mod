@@ -3,7 +3,7 @@
 		add-on model file which modifies the renormalization for
 		use with alpha(MZ), rather than alpha(0) as in SM.mod
 		by Thomas Hahn
-		last modified 20 Feb 15 by cs
+		last modified 06 Feb 17 by cs
 *)
 
 
@@ -14,8 +14,8 @@ RenConst[ dZAA1light ] :=
   -ReTilde[SelfEnergy[V[1] -> V[1], MZ]]/MZ^2
 
 Options[ dZAA1light ] = {
-  InsertionLevel -> {Particles},
-  ExcludeParticles -> F[3, {3}],
+  InsertionLevel -> {Generic, Classes, Particles},
+  ExcludeParticles -> F[3, {3, ___}],
   LastSelections -> F[2|3|4]
 }
 

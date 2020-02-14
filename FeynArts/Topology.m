@@ -1,7 +1,7 @@
 (*
 	Topology.m
 		Creation of topologies for Feynman graphs
-		last modified 2 Nov 16 th
+		last modified 4 Mar 19 th
 *)
 
 Begin["`Topology`"]
@@ -361,7 +361,7 @@ HexagonsOnly = ExcludeTopologies -> Loops[Except[6]]
 HexagonCTsOnly = ExcludeTopologies -> CTs[Except[6]]
 
 
-Options[ CreateTopologies ] = {
+Options[CreateTopologies] = {
   Adjacencies -> {3, 4},
   ExcludeTopologies -> {},
   StartingTopologies -> All,
@@ -385,12 +385,12 @@ CreateTopologies::delundef =
 
 (* main function supporting i -> o input: *)
 
-CreateTopologies[ l_Integer, i_Integer -> o_Integer, opt___Rule ] :=
+CreateTopologies[l_Integer, i_Integer -> o_Integer, opt___Rule] :=
   CreateTopologies[l, i + o, opt] /. 
     Propagator[External][v1:Vertex[1][j_], v2_] :>
       Propagator[ If[j > i, Outgoing, Incoming] ][v1, v2]
 
-CreateTopologies[ l_Integer, n_Integer, options___Rule ] := 
+CreateTopologies[l_Integer, n_Integer, options___Rule] := 
 Block[ {excl, start, cto, adj, emax, forb, tops, tree,
 opt = ActualOptions[CreateTopologies, options]},
 
@@ -445,18 +445,18 @@ opt = ActualOptions[CreateTopologies, options]},
 ]
 
 
-Attributes[ AndFunction ] = {HoldAll}
+Attributes[AndFunction] = {HoldAll}
 
-AndFunction[ f_ ] := f &
+AndFunction[f_] := f &
 
-AndFunction[ f__ ] := And[f] &
+AndFunction[f__] := And[f] &
 
 
 CreateCTTopologies::cterr =
 "Error in CreateTopologies for `1` loops and counter-term order `2`."
 
-CreateCTTopologies[ c_Integer,
-  n:(_Integer -> _Integer) | _Integer, opt___Rule ] :=
+CreateCTTopologies[c_Integer,
+  n:(_Integer -> _Integer) | _Integer, opt___Rule] :=
 Block[ {x},
   TopologyList@@ Array[
     ( x = CreateTopologies[#, n, CTOrder -> c - #, opt];
@@ -465,8 +465,8 @@ Block[ {x},
 ]
 
 
-CreateVFTopologies[ vf_Integer,
-  n:(_Integer -> _Integer) | _Integer, opt___Rule ] :=
+CreateVFTopologies[vf_Integer,
+  n:(_Integer -> _Integer) | _Integer, opt___Rule] :=
   CreateTopologies[0, n, CTOrder -> vf, opt] /.
     Vertex[e_, c_] -> Vertex[e, -c]
 
@@ -481,11 +481,11 @@ CreateVFTopologies[ vf_Integer,
 
 (* if the recursion failed to stop: *)
 
-ConstructTopologies[ _, _, _?Negative, _, _ ] = TopologyList[]
+ConstructTopologies[_, _, _?Negative, _, _] = TopologyList[]
 
 (* recursive generation of topologies *)
 
-ConstructTopologies[ l_, cto_, ext_, emax_, top_ ] :=
+ConstructTopologies[l_, cto_, ext_, emax_, top_] :=
   ConstructTopologies[l, cto, ext, emax, top] =
     TopologyList[ AddOne[#, ext, emax]&/@
       ConstructTopologies[l, cto, ext - 1, emax, top] ]
@@ -495,13 +495,13 @@ ConstructTopologies[ l_, cto_, ext_, emax_, top_ ] :=
    Vertices added by the program are numbered starting at
    100, 101, 102... hopefully this will avoid index conflicts. *)
 
-AddToPropagator[ Propagator[h_][from_, to_], n_ ] :=
+AddToPropagator[Propagator[h_][from_, to_], n_] :=
   Topology[h /. Loop[_] -> Loop][
     Propagator[h][from, Vertex[3][n + 99]],
     Propagator[h /. External -> Internal][Vertex[3][n + 99], to],
     Propagator[External][Vertex[1][n], Vertex[3][n + 99]] ]
 
-AddPropagator[ top_, n_ ] :=
+AddPropagator[top_, n_] :=
   TopologyCompare[
     TopologyList@@
       Array[ MapAt[AddToPropagator[#, n]&, top, #]&, Length[top] ] /.
@@ -512,14 +512,14 @@ AddPropagator[ top_, n_ ] :=
 
 (* add external line to a vertex *)
 
-AddToVertex[ Topology[s_][pr__], vert_, n_ ] :=
+AddToVertex[Topology[s_][pr__], vert_, n_] :=
 Block[ {newv = vert},
-  ++newv[[0, 1]];
+  ++newv[[0,1]];
   Topology[ s If[vert[[1]] < 0, Permutable, Vertex] ][ pr,
     Propagator[External][Vertex[1][n], newv] ] /. vert -> newv
 ]
 
-AddVertex[ top_, n_, emax_ ] :=
+AddVertex[top_, n_, emax_] :=
 Block[ {vert},
   vert = Union[Cases[ top,
     Vertex[e_, c___][_] /; e < emax && {e, c} =!= {1}, {2} ]];
@@ -530,88 +530,88 @@ Block[ {vert},
 ]
 
 
-AddOne[ top_, n_, emax_ ] :=
-  TopologyList[ AddPropagator[top, n], AddVertex[top, n, emax] ]
+AddOne[top_, n_, emax_] :=
+  TopologyList[AddPropagator[top, n], AddVertex[top, n, emax]]
 
 
 (* Order topologies canonically (sort of) *)
 
 Incoming2 = Outgoing
 
-topSort[ top_ ] :=
+topSort[top_] :=
 Block[ {vert, Loop, lc = 0, vc = 0, pc = 0, Incoming2, Outgoing},
   Outgoing = Incoming2;
   Flatten[plist@@ MapIndexed[toSort, top, 2]]
 ]
 
 
-toSort[ Vertex[1][n_], _ ] := (vc = Max[vc, n]; vert[1][n, 0])
+toSort[Vertex[1][n_], _] := (vc = Max[vc, n]; vert[1][n, 0])
 
-toSort[ Vertex[e_, c_:0][n_], _ ] := vert[e][1000 + n, c]
+toSort[Vertex[e_, c_:0][n_], _] := vert[e][1000 + n, c]
 
-toSort[ Propagator[Loop[n_]][v__], {i_} ] :=
+toSort[Propagator[Loop[n_]][v__], {i_}] :=
   prop[Loop, psort[v], {Loop[1000 + n]}][v, i]
 
-toSort[ Propagator[t_][v__], {i_} ] := prop[t, psort[v]][v, i]
+toSort[Propagator[t_][v__], {i_}] := prop[t, psort[v]][v, i]
 
 
-Attributes[ psort ] = Attributes[ plist ] = {Orderless}
+Attributes[psort] = Attributes[plist] = {Orderless}
 
-plist[ p_[i__], r___ ] := { toProp[Map[renum, p, {2}]][i], plist[r] }
+plist[p_[i__], r___] := {toProp[Map[renum, p, {2}]][i], plist[r]}
 
-plist[ ] = {}
-
-
-renum[ x:_[n_, ___] ] := x /; n < 500
-
-renum[ x_Loop ] := x = Loop[++lc]
-
-renum[ x:h_[n_, r___] ] := (x = h[++vc, r]) /; n > 1000
-
-renum[ x:h_[_, r___] ] := x = h[--pc, r]
+plist[] = {}
 
 
-toProp[ _[t_, _[v__]] ] := Propagator[t][v]
+renum[x:_[n_, ___]] := x /; n < 500
 
-toProp[ _[_, _[v__], _[t_]] ] := Propagator[t][v]
+renum[x_Loop] := x = Loop[++lc]
 
+renum[x:h_[n_, r___]] := (x = h[++vc, r]) /; n > 1000
 
-toVert[ vert[e_][n_, 0] ] := Vertex[e][n]
-
-toVert[ vert[e_][n_, c_] ] := Vertex[e, c][n]
-
-
-ord[ _[v__][v__, i_] ] := i
-
-ord[ _[__, i_] ] := -i
+renum[x:h_[_, r___]] := x = h[--pc, r]
 
 
-TopologySort[ tops_TopologyList ] := TopologySort/@ tops
+toProp[_[t_, _[v__]]] := Propagator[t][v]
 
-TopologySort[ top:P$Topology ] :=
+toProp[_[_, _[v__], _[t_]]] := Propagator[t][v]
+
+
+toVert[vert[e_][n_, 0]] := Vertex[e][n]
+
+toVert[vert[e_][n_, c_]] := Vertex[e, c][n]
+
+
+ord[_[v__][v__, i_]] := i
+
+ord[_[__, i_]] := -i
+
+
+TopologySort[tops_TopologyList] := TopologySort/@ tops
+
+TopologySort[top:P$Topology] :=
   Head[top]@@ Map[toVert, Head/@ topSort[top], {2}]
 
 
-TopologyOrdering[ tops_TopologyList ] := TopologyOrdering/@ tops
+TopologyOrdering[tops_TopologyList] := TopologyOrdering/@ tops
 
-TopologyOrdering[ top:P$Topology ] :=
+TopologyOrdering[top:P$Topology] :=
   {Head[top]@@ Map[toVert, Head/@ #, {2}], ord/@ #}& @
     topSort[top]
 
 
 (* Compare topologies *)
 
-TopologyCompare[ tops_ ] :=
+TopologyCompare[tops_] :=
 Block[ {comp},
   comp =
-    If[ Count[ tops[[1]], Propagator[Loop[_]][__] ] > 1 ||
+    If[ Count[tops[[1]], Propagator[Loop[_]][__]] > 1 ||
           !FreeQ[tops[[1]], Vertex[_, _][_]],
       Loop | Permutable | Internal,
     (* else *)
       Loop | Permutable
     ];
-  Join[ Select[tops, FreeQ[#[[0, 1]], comp]&],
-    Compare[ Select[tops, !FreeQ[#[[0, 1]], comp]&] ] ] /.
+  Join[ Select[tops, FreeQ[#[[0,1]], comp]&],
+    Compare[Select[tops, !FreeQ[#[[0,1]], comp]&]] ] /.
     Topology[s_. __Symbol][p__] :> Topology[s][p]
 ]
 
@@ -624,7 +624,7 @@ Block[ {comp},
    propagator.  The inverse of the last symfac is then the s in
    Topology[s]. *)
 
-SymmetryFactor[ top:P$Topology ] :=
+SymmetryFactor[top:P$Topology] :=
 Block[ {ext, p, t = Topology[1]@@ top},
   ext = Min[ 0, Cases[top, Vertex[1][n_] :> n, {2}] ];
   While[ Length[ p = Flatten[MapIndexed[ChooseProp, List@@ t]] ] =!= 0,
@@ -633,16 +633,16 @@ Block[ {ext, p, t = Topology[1]@@ top},
       MapAt[AddToPropagator[#, ext]&, t, #]&/@ p /.
         Topology[s_][p1___, Topology[snew_][pnew__], p2___] :> 
           Topology[s snew][p1, pnew, p2] ];
-    p = #[[0, 1]]&/@ t;
-    t = t[[ Position[p, Min[p], 1, 1][[1, 1]] ]];
+    p = #[[0,1]]&/@ t;
+    t = t[[ Position[p, Min[p], 1, 1][[1,1]] ]];
   ];
-  1/t[[0, 1]]
+  1/t[[0,1]]
 ]
 
 
-ChooseProp[ pr_, _ ] := {} /; FreeQ[pr, Loop | Vertex[_, _]]
+ChooseProp[pr_, _] := {} /; FreeQ[pr, Loop | Vertex[_, _]]
 
-ChooseProp[ pr_, {n_} ] :=
+ChooseProp[pr_, {n_}] :=
   Switch[ # < 100 &/@ Level[pr, {2}],
     {True, True},
       n,
@@ -664,82 +664,82 @@ ChooseProp[ pr_, {n_} ] :=
    with the loops shrunk to a point named Centre[adj][n] where adj is
    the adjacency of loop n. *)
 
-$ExcludeTopologies[ Loops[n_] ] := FreeQ[ToTree[#], Centre[n]] &
+$ExcludeTopologies[Loops[n_]] := FreeQ[ToTree[#], Centre[n]] &
 
-$ExcludeTopologies[ CTs[n_] ] := FreeQ[#, Vertex[n, _]] &
+$ExcludeTopologies[CTs[n_]] := FreeQ[#, Vertex[n, _]] &
 
-$ExcludeTopologies[ Tadpoles ] = $ExcludeTopologies[ Loops[1] ]
+$ExcludeTopologies[Tadpoles] = $ExcludeTopologies[Loops[1]]
 
-$ExcludeTopologies[ TadpoleCTs ] = $ExcludeTopologies[ CTs[1] ]
+$ExcludeTopologies[TadpoleCTs] = $ExcludeTopologies[CTs[1]]
 
-$ExcludeTopologies[ SelfEnergies ] = $ExcludeTopologies[ Loops[2] ]
+$ExcludeTopologies[SelfEnergies] = $ExcludeTopologies[Loops[2]]
 
-$ExcludeTopologies[ SelfEnergyCTs ] = $ExcludeTopologies[ CTs[2] ]
+$ExcludeTopologies[SelfEnergyCTs] = $ExcludeTopologies[CTs[2]]
 
-$ExcludeTopologies[ Triangles ] = $ExcludeTopologies[ Loops[3] ]
+$ExcludeTopologies[Triangles] = $ExcludeTopologies[Loops[3]]
 
-$ExcludeTopologies[ TriangleCTs ] = $ExcludeTopologies[ CTs[3] ]
+$ExcludeTopologies[TriangleCTs] = $ExcludeTopologies[CTs[3]]
 
-$ExcludeTopologies[ Boxes ] = $ExcludeTopologies[ Loops[4] ]
+$ExcludeTopologies[Boxes] = $ExcludeTopologies[Loops[4]]
 
-$ExcludeTopologies[ BoxCTs ] = $ExcludeTopologies[ CTs[4] ]
+$ExcludeTopologies[BoxCTs] = $ExcludeTopologies[CTs[4]]
 
-$ExcludeTopologies[ Pentagons ] = $ExcludeTopologies[ Loops[5] ]
+$ExcludeTopologies[Pentagons] = $ExcludeTopologies[Loops[5]]
 
-$ExcludeTopologies[ PentagonCTs ] = $ExcludeTopologies[ CTs[5] ]
+$ExcludeTopologies[PentagonCTs] = $ExcludeTopologies[CTs[5]]
 
-$ExcludeTopologies[ Hexagons ] = $ExcludeTopologies[ Loops[6] ]
+$ExcludeTopologies[Hexagons] = $ExcludeTopologies[Loops[6]]
 
-$ExcludeTopologies[ HexagonCTs ] = $ExcludeTopologies[ CTs[6] ]
+$ExcludeTopologies[HexagonCTs] = $ExcludeTopologies[CTs[6]]
 
-$ExcludeTopologies[ Boxes[n_] ] := $ExcludeTopologies[ Loops[n] ]
+$ExcludeTopologies[Boxes[n_]] := $ExcludeTopologies[Loops[n]]
 
-$ExcludeTopologies[ BoxCTs[n_] ] := $ExcludeTopologies[ CTs[n] ]
+$ExcludeTopologies[BoxCTs[n_]] := $ExcludeTopologies[CTs[n]]
 
-$ExcludeTopologies[ AllBoxes ] = $ExcludeTopologies[ Loops[n_ /; n >= 4] ]
+$ExcludeTopologies[AllBoxes] = $ExcludeTopologies[Loops[n_ /; n >= 4]]
 
-$ExcludeTopologies[ AllBoxCTs ] = $ExcludeTopologies[ CTs[n_ /; n >= 4] ]
+$ExcludeTopologies[AllBoxCTs] = $ExcludeTopologies[CTs[n_ /; n >= 4]]
 
-$ExcludeTopologies[ WFCorrections ] =
+$ExcludeTopologies[WFCorrections] =
   FreeWFQ[ToTree[#], Centre[1], Centre[2]] &
 
-$ExcludeTopologies[ WFCorrections[patt_] ] :=
-  $ExcludeTopologies[ WFCorrections ] /.
+$ExcludeTopologies[WFCorrections[patt_]] :=
+  $ExcludeTopologies[WFCorrections] /.
     t_ToTree :> Select[t, FreeQ[#, Vertex[1][Except[patt]]] &]
 
-$ExcludeTopologies[ WFCorrectionCTs ] =
+$ExcludeTopologies[WFCorrectionCTs] =
   FreeWFQ[#, Vertex[1, _], Vertex[2, _]] &
 
-$ExcludeTopologies[ WFCorrectionCTs[patt_] ] :=
-  $ExcludeTopologies[ WFCorrectionCTs ] /.
+$ExcludeTopologies[WFCorrectionCTs[patt_]] :=
+  $ExcludeTopologies[WFCorrectionCTs] /.
     # :> Select[#, FreeQ[#, Vertex[1][_?(!MatchQ[#, patt]&)]] &]
 
-$ExcludeTopologies[ Reducible | Internal ] = FreeQ[#, Internal] &
+$ExcludeTopologies[Reducible | Internal] = FreeQ[#, Internal] &
 
-$ExcludeTopologies[ Irreducible ] = !FreeQ[#, Internal] &
+$ExcludeTopologies[Irreducible] = !FreeQ[#, Internal] &
 
-$ExcludeTopologies[ undef_ ] :=
+$ExcludeTopologies[undef_] :=
   (Message[CreateTopologies::delundef, undef]; Seq[])
 
 
-ToTree[ top_ ] :=
+ToTree[top_] :=
 Block[ {l, v, props, loops = {}},
   props[_] = {};
   tree = top /. Propagator[Loop[l_]][from_, to_, ___] :>
     (loops = {loops, l}; props[l] = {props[l], from, to}; Seq[]);
   v = Sequence@@@ tree;
   tree = Fold[
-    ( l = Cases[ v, Alternatives@@ Flatten[props[#2]] ];
-      #1 /. Thread[ Union[l] -> Centre[Length[l]][#2] ] )&,
+    ( l = Cases[v, Alternatives@@ Flatten[props[#2]]];
+      #1 /. Thread[Union[l] -> Centre[Length[l]][#2]] )&,
     tree, Union[Flatten[loops]] ]
 ]
 
 
-FreeWFQ[ top:P$Topology, patt1_, patt2_ ] :=
-  Catch[ MapWF[Throw[False]&, top, patt1, patt2]; True ]
+FreeWFQ[top:P$Topology, patt1_, patt2_] :=
+  Catch[MapWF[Throw[False]&, top, patt1, patt2]; True]
 
 
-MapWF[ foo_, top_, patt1_, patt2_ ] :=
+MapWF[foo_, top_, patt1_, patt2_] :=
 Block[ {etop, res, pos, br},
   etop = top /. Incoming | Outgoing -> External;
   res = DoWF[foo, etop]/@ Union[Cases[etop, patt2[_], {2}]];
@@ -752,38 +752,38 @@ Block[ {etop, res, pos, br},
 ]
 
 
-DoWF[ foo_, top_ ][ v_ ] :=
+DoWF[foo_, top_][v_] :=
 Block[ {prop = Cases[top, _[_][___, v, ___]]},
-  If[ Sort[#[[0, 1]]&/@ prop] === {External, Internal}, foo[prop], {} ]
+  If[ Sort[#[[0,1]]&/@ prop] === {External, Internal}, foo[prop], {} ]
 ]
 
 
-Attributes[ Curtail ] = {Orderless, Flat}
+Attributes[Curtail] = {Orderless, Flat}
 
-Curtail[ br:branch[a_].., _[_][c___, a_, d___] ] :=
-  Curtail[branch[c, d]] /; a[[0, 1]] - Length[{br}] < 2
-
-
-WFCorrectionFields[ gr_:{}, top:P$Topology, ___ ] :=
-  WFFields[ ToTree[AddFieldNo[top] /. List@@ gr],
-    Centre[1], Centre[2] ]
-
-WFCorrectionCTFields[ gr_:{}, top:P$Topology, ___ ] :=
-  WFFields[ AddFieldNo[top] /. List@@ gr,
-    Vertex[1, _], Vertex[2, _] ]
-
-WFFields[ args__ ] := Flatten[ MapWF[((#3&)@@@ #)&, args] ]
+Curtail[br:branch[a_].., _[_][c___, a_, d___]] :=
+  Curtail[branch[c, d]] /; a[[0,1]] - Length[{br}] < 2
 
 
-TreeFields[ gr_:{}, top:P$Topology, ___ ] :=
+WFCorrectionFields[gr_:{}, top:P$Topology, ___] :=
+  WFFields[ToTree[AddFieldNo[top] /. List@@ gr],
+    Centre[1], Centre[2]]
+
+WFCorrectionCTFields[gr_:{}, top:P$Topology, ___] :=
+  WFFields[AddFieldNo[top] /. List@@ gr,
+    Vertex[1, _], Vertex[2, _]]
+
+WFFields[args__] := Flatten[MapWF[((#3&)@@@ #)&, args]]
+
+
+TreeFields[gr_:{}, top:P$Topology, ___] :=
   Cases[AddFieldNo[top] /. List@@ gr, _[Internal][_, _, f_, ___] :> f]
 
 
-LoopFields[ gr_:{}, top:P$Topology, ___ ] :=
+LoopFields[gr_:{}, top:P$Topology, ___] :=
   Cases[AddFieldNo[top] /. List@@ gr, _[_Loop][_, _, f_, ___] :> f]
 
 
-IRDivergentQ[ gr_:{}, top:P$Topology, ___ ] :=
+IRDivergentQ[gr_:{}, top:P$Topology, ___] :=
 Block[ {ins = List@@ gr, fps, adj},
   fps = FieldPoints[top];
   adj = Cases[top, _[_Loop][_, _, fi_] :>
@@ -794,24 +794,24 @@ Block[ {ins = List@@ gr, fps, adj},
 ]
 
 
-Fext[ _[Incoming][f_, t_, ___], _ ] := {f, t, {{1}}}
+Fext[_[Incoming][f_, t_, ___], _] := {f, t, {{1}}}
 
-Fext[ _[Outgoing][f_, t_, ___], _ ] := {f, t, {{-1}}}
+Fext[_[Outgoing][f_, t_, ___], _] := {f, t, {{-1}}}
 
-Fext[ _[f_, t_, ___], {n_} ] := {f, t, {{Fi[n]}}}
-
-
-Fsel[ ftop_ ][ v_ ] := Level[Select[ftop, MemberQ[#, v]&], {4}, Fs]
+Fext[_[f_, t_, ___], {n_}] := {f, t, {{Fi[n]}}}
 
 
-Attributes[ Fs ] = Attributes[ Ft ] = {Orderless}
-
-Fs[ i_Integer.., Fi[n_] ] := (Fi[n] = i; Seq[])
-
-Ft[ __Integer, Fi[n_] ] := (Fi[n] = 0; Seq[])
+Fsel[ftop_][v_] := Level[Select[ftop, MemberQ[#, v]&], {4}, Fs]
 
 
-STChannelFields[ top:P$Topology ] := STChannelFields[top] =
+Attributes[Fs] = Attributes[Ft] = {Orderless}
+
+Fs[i_Integer.., Fi[n_]] := (Fi[n] = i; Seq[])
+
+Ft[__Integer, Fi[n_]] := (Fi[n] = 0; Seq[])
+
+
+STChannelFields[top:P$Topology] := STChannelFields[top] =
 Block[ {Fi, ttop = ToTree[top]},
   FixedPoint[Evaluate, Ft@@@
      FixedPoint[Evaluate,
@@ -821,20 +821,20 @@ Block[ {Fi, ttop = ToTree[top]},
 ]
 
 
-SChannelQ[ fi_ ][ gr_:{}, top:P$Topology, ___ ] :=
+SChannelQ[fi_][gr_:{}, top:P$Topology, ___] :=
   FieldMemberQ[STChannelFields[top][[1]] /. List@@ gr, fi]
 
-TChannelQ[ fi_ ][ gr_:{}, top:P$Topology, ___ ] :=
+TChannelQ[fi_][gr_:{}, top:P$Topology, ___] :=
   FieldMemberQ[STChannelFields[top][[2]] /. List@@ gr, fi]
 
 
-Attributes[ mprop ] = {Orderless}
+Attributes[mprop] = {Orderless}
 
-Attributes[ merge ] = {Flat, Orderless}
+Attributes[merge] = {Flat, Orderless}
 
-merge[ mprop[i_, j_], mprop[j_, k_] ] := mprop[i, k]
+merge[mprop[i_, j_], mprop[j_, k_]] := mprop[i, k]
 
-FermionRouting[ gr_:{}, top:P$Topology, ___ ] := Level[
+FermionRouting[gr_:{}, top:P$Topology, ___] := Level[
   merge@@ (mprop[ #1[[1]], #2[[1]] ]&)@@@
     Select[AddFieldNo[top] /. List@@ gr, !FreeQ[#, P$NonCommuting]&],
   {-1} ]

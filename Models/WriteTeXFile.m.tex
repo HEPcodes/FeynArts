@@ -1,0 +1,81 @@
+\documentclass[11pt,twoside]{article}
+\usepackage[fleqn,leqno]{amsmath}
+\usepackage{a4wide,amssymb,pdflscape,longtable,multicol,array,color,mathbbol,mathpple,hyperref}
+
+\raggedbottom
+\raggedcolumns
+
+%\advance\topmargin -9cm
+%\advance\textheight 11cm
+
+\advance\oddsidemargin -2cm
+\advance\evensidemargin -2cm
+\advance\textwidth 4cm
+
+\parindent=0pt
+
+\makeatletter
+\pagestyle{plain}
+\newcommand\Foot[1]{\hfill\smash{\raise#1\hbox{%
+  \rotatebox{90}{\textcolor{magenta}{\textbf{\thepage}}}}}}
+\renewcommand{\@evenfoot}{\Foot{0cm}}
+\renewcommand{\@oddfoot}{\Foot{26.3cm}}
+
+\newcommand\Class[2]{%
+  \subsection*{\fbox{\texttt{[#1]}~~\textbf{#2}}}%
+  \addcontentsline{toc}{subsection}{\texttt{[#1]} #2}}
+
+\newenvironment{CoupVec}%
+  {\textcolor{blue}\bgroup\left[\begin{array}{>{\color{black}\displaystyle}c}}%
+  {\end{array}\right]\egroup} 
+\newcommand\Next{\\[1.5ex]\hline\\[-3ex]}
+\newcommand\Coup[1]{%
+  \underset{\rlap{\hbox{\tiny\textcolor{blue}{#1}}}}{C}%
+  \displaystyle}
+
+\newcommand\deb[1]{\llap{\rotatebox{90}{\textcolor{red}{#1}}}}
+
+\newenvironment{TimesB}%
+  {\left\{\begin{array}{>{\displaystyle}l}}%
+  {\end{array}\right\}}
+\newenvironment{PlusB}%
+  {\begin{array}{>{\displaystyle}l}}%
+  {\end{array}}
+\newenvironment{PlusN}%
+  {\begin{array}[t]{>{\displaystyle}l}}%
+  {\end{array}}
+
+\definecolor{fgAbb}{cmyk}{0,0,1,0}	% yellow
+\definecolor{bgAbb}{gray}{.95}		% light grey
+\newcommand\Abb[1]{\colorbox{fgAbb}{#1}\displaystyle}
+\newcommand\AbbDef[1]{\smallskip\colorbox{bgAbb}{#1}}
+
+\newcommand\Mfunction[1]{\displaystyle #1}
+\newcommand\Muserfunction[1]{\text{#1}}
+\newcommand\Mvariable[1]{\text{#1}}
+\newcommand\InvisibleSpace{}
+
+\begin{document}
+
+\begin{landscape}
+
+\begin{minipage}{25cm}
+
+\begin{large}
+\begin{multicols}{2}[\section*{MODEL}]
+\@starttoc{toc}
+\end{multicols}
+\end{large}
+
+\end{minipage}
+
+\clearpage
+
+\renewcommand{\arraystretch}{1.5}
+
+COUPLINGS
+
+\end{landscape}
+
+\end{document}
+

@@ -2,7 +2,7 @@
 	Insert.m
 		Insertion of fields into topologies created by 
 		CreateTopologies.
-		last modified 12 Mar 18 th
+		last modified 8 Jan 19 th
 
 The insertion is done in 3 levels: insertion of generic fields (Generic),
 of classes of a certain model (Classes) or of the members of the classes
@@ -273,6 +273,13 @@ Block[ {n = Position[fp, p, {1}, 1]},
 ]
 
 
+Attributes[ CheckFun ] = {HoldFirst}
+
+CheckFun[ vf_, p:P$Generic ] := ToGeneric[#] === p && vf &
+
+CheckFun[ vf_, _ ] := vf &
+
+
 CheckFP[ fp:FieldPoint[_?NonNegative][__] ] :=
   CheckFieldPoint[ Sort[fp] ]
 
@@ -295,7 +302,8 @@ Block[ {vx, p = ru[[i, 2]], lallowed, rallowed, allowed, prop},
   vx = Map[RightPartner, List@@ vert12 /. Delete[List@@ ru, i], {2}];
   allowed = Select[
     Intersection[ParticleLookup[vx, p], F$AllowedFields],
-    VectorQ[vx /. Field[i] -> #, CheckFP]& ];
+    CheckFun[VectorQ[vx /. Field[i] -> #, CheckFP], $GenericMixing && p]
+  ];
 
   prop = ResolveType[ vert12[[0, 1]] ];
 

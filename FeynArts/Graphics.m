@@ -1,7 +1,7 @@
 (*
 	Graphics.m
 		Graphics routines for FeynArts
-		last modified 16 Mar 18 th
+		last modified 3 Sep 18 th
 *)
 
 Begin["`Graphics`"]
@@ -731,6 +731,12 @@ talign = {{0, 0}, {-1, 0}, {-1, 0}, {0, -1}};
 ] (* endif $Notebooks *)
 
 
+Attributes[WithinBorders] = {Listable}
+
+WithinBorders[ x_, border_:0 ] :=
+  If[NumberQ[x], Min[Max[x, border], 20 - border], x]
+
+
 vcode = "\
 abcdefghijklmnopqrstuvwxyz\
 ABCDEFGHIJKLMNOPQRSTUVWXYZ\
@@ -745,7 +751,14 @@ pcode[ _[c__] ] := {{}, {}, {c}}
 TopologyCode[ top:P$Topology ] :=
   ToFileName[Drop[#, -1], Last[#] <> ".m"]&[
     StringJoin/@ Transpose[pcode/@
-      Apply[StringTake[vcode, {#}]&, List@@ top, {2}]] /. "" -> "0" ]
+      Apply[StringTake[vcode, {#}]&, Take[#, 2]&/@ List@@ top, {2}]] /.
+      "" -> "0" ]
+
+TopologyCode[ top_ -> _ ] := TopologyCode[top]
+
+TopologyCode[ tops:TopologyList[___][___] | TopologyList[___] ] :=
+  TopologyCode/@ List@@ tops
+
 
 TopologyFile[ topcode_ ] := ToFileName[$ShapeDataDir, topcode]
 
@@ -781,13 +794,10 @@ Block[ {gtop, topcode, ret},
     Throw[ ShapeData[topcode] = Replace[
       EditShape[edit[0] @ shapedata[[4]], gtop, topcode,
         ShapeHook[shapedata, gtop, topcode]] /. r_Real :> Round[r, .001],
-      xy:{_?NumberQ, _?NumberQ} :> SanitizeCoord/@ xy, {3} ] ]
+      xy:{_?NumberQ, _?NumberQ} :> WithinBorders/@ xy, {3} ] ]
   );
   Catch[GetShape[gtop, #[topcode]]&/@ sources]
 ]
-
-
-SanitizeCoord[ x_ ] := Min[Max[x, 0], 20]
 
 
 GetShape[ _, {__, _[s_]} ] := 0 /; Level[s, {-1}, edit[1]]
@@ -972,11 +982,23 @@ tadbr, tad, min, ok, c, ct, pt, shrink = {}, rev = {}, loops = {}},
   On[FindMinimum::fmmp, FindMinimum::fmcv, FindMinimum::precw,
     FindMinimum::fmgz, FindMinimum::sdprec, FindMinimum::lstol];
 
-  ret @ { Select[shapedata, FreeQ[#, center]&],
+  vert = unsame@@ Select[shapedata, FreeQ[#, center]&];
+
+  ret @ { Sort[List@@ vert],
     pt[#, ct[#]--]&/@ List@@ top,
     Table[1, {Length[top]}],
     Automatic }
 ]
+
+
+Attributes[unsame] = {Flat, Orderless}
+
+unsame[v1_ -> p1:{x1_, y1_}, v2_ -> p2:{x2_, y2_}] :=
+Block[ {shift},
+  shift = If[Abs[x1 - 10] < Abs[y1 - 10], {1, 0}, {0, 1}];
+  unsame[v1 -> WithinBorders[p1 + shift, 1],
+         v2 -> WithinBorders[p2 - shift, 1]]
+] /; (x2 - x1)^2 + (y2 - y1)^2 < .1
 
 
 pr[ Loop[l_] ][ from_, to_, ___ ] := (

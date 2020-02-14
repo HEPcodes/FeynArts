@@ -4,7 +4,7 @@
 		"upgrades" ordinary 2x2 to full 6x6 sfermion
 		(3x3 sneutrino) mixing
 		by Thomas Hahn and Jose Ignacio Illana
-		last modified 9 May 14 by th
+		last modified 9 Jan 19 by th
 *)
 
 
@@ -25,14 +25,14 @@ IndexRange[Index[AllSfermion]] = NoUnfold[Range[6]]
 M$ClassesDescription = M$ClassesDescription /.
   S[t:$FVseud] == desc_ :> S[t] == (desc /.
     {Sfermion -> AllSfermion, Index[Generation] -> Sequence[]} /.
-    ComposedChar[a_, b_, d_] -> ComposedChar[a, b, Null, d])
+    ComposedChar[a_, b_, d_] :> ComposedChar[a, b, Null, d])
 
 
 TheMass[ S[t:12 | 13 | 14, {s_, g_, ___}] ] =.
 
-Scan[(TheMass[ S[#, {as_, ___}] ] = MASf[as, # - 10])&, $FV]
+Scan[(TheMass[ S[#, {as_, ___}] ] := MASf[as, # - 10])&, $FV]
 
-Scan[(TheMass[ S[#, {s_, g_, ___}] ] = MSf[s, # - 10, g])&,
+Scan[(TheMass[ S[#, {s_, g_, ___}] ] := MSf[s, # - 10, g])&,
   Complement[{12, 13, 14}, $FV]]
 
 
@@ -58,15 +58,13 @@ xAf[IndexDelta[j1_, j2_], m_, Conjugate, t_] :=
 
 xAf[IndexDelta[j__], m__] := mAf[j, m]
 
-xAf[d_[j1_, j2_], m__, 3] :=
-  IndexSum[d[gn, j2] mAf[gn, j1, m, 3], {gn, 3}]
-
-xAf[d_[j1_, j2_], m__, t:2 | 4] :=
-  IndexSum[d[j1, gn] mAf[gn, j2, m, t], {gn, 3}]
+xAf[d_[j1_, j2_], m__, t_Integer] :=
+  IndexSum[If[ OddQ[t], d[gn, j2] mAf[gn, j1, m, t] (* top *),
+                        d[j1, gn] mAf[gn, j2, m, t] (* bot *)], {gn, 3}]
 
 
 mAf[j1_, j2_, m_, c_, t_] :=
-  c[Af[t, j1, j2]] (m /. Mass[F[t, _]] -> Mass[F[t, {j1}]])
+  c[Af[t, j1, j2]] (m /. Mass[F[t, _]] :> Mass[F[t, {j1}]])
 
 
 ReplaceAf[
@@ -76,8 +74,8 @@ Block[ {sel, new},
   Attributes[sel] = {Listable};
   sel[r_ IndexDelta[j1, j2]] := sAf[IndexDelta[j1, j2], 1][r];
   sel[r_ d:_CKM | _CKMC] := sAf[d, 1][r];
-  new = sel[rhs /. Conjugate[CKM[j__]] -> CKMC[j]] /.
-    CKMC[j__] -> Conjugate[CKM[j]];
+  new = sel[rhs /. Conjugate[CKM[j__]] :> CKMC[j]] /.
+    CKMC[j__] :> Conjugate[CKM[j]];
   If[ !FreeQ[new, af], Message[ReplaceCoupling::warning, n, Af] ];
   lhs == new
 ] /; !FreeQ[rhs, af]
@@ -103,15 +101,17 @@ ReplaceSf[ok___, C[x_. sf[t:12|13|14, {s_, j_, o___}], r___] == rhs_, n_] :=
 ReplaceSf[ok___, C[f_, r___] == rhs_, n_] :=
   ReplaceSf[ok, f, C[r] == rhs, n]
 
-ReplaceSf[ok___, C[] == rhs_, _] := C[ok] == (rhs /.
-  IndexSum[x_ UASf[1][i_, j_] Conjugate[UASf[1][k_, j_]], {j_, 3}] :>
-    x IndexDelta[i, k] /; FreeQ[x, j])
+ReplaceSf[ok___, C[] == rhs_, _] :=
+  C[ok] == (rhs /.
+    IndexSum[x_ UASf[1][i_, j_] Conjugate[UASf[1][k_, j_]], {j_, 3}] :>
+      x IndexDelta[i, k] /; FreeQ[x, j])
 
 
 Attributes[ReplaceUSf] = {Listable}
 
-ReplaceUSf[IndexSum[expr_, i___], r__] :=
-  IndexSum[ReplaceUSf[expr, r], i]
+ReplaceUSf[n_?NumberQ expr_, r__] := n ReplaceUSf[expr, r]
+
+ReplaceUSf[IndexSum[expr_, i___], r__] := IndexSum[ReplaceUSf[expr, r], i]
 
 ReplaceUSf[expr_, 1, h_, j_, aj_, n_] :=
   ISum[h[UASf[1][aj, j]] expr, {j, 3}] /. ISum -> IndexSum

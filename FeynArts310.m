@@ -1,8 +1,8 @@
 (*
 
 This is FeynArts, Version 3.10
-Copyright by Sepp Kueblbeck, Hagen Eck, and Thomas Hahn 1991-2017
-last modified 16 Mar 18 by Thomas Hahn
+Copyright by Sepp Kueblbeck, Hagen Eck, and Thomas Hahn 1991-2019
+last modified 21 Jan 19 by Thomas Hahn
 
 Release notes:
 
@@ -30,13 +30,10 @@ http://www.feynarts.de.
 If you find any bugs, or want to make suggestions, or
 just write fan mail, address it to:
 	Thomas Hahn
-	Max-Planck-Institute for Physics
+	Max Planck Institute for Physics
 	Foehringer Ring 6
 	D-80805 Munich, Germany
 	e-mail: hahn@feynarts.de
-
-There exists a low-traffic mailing list where updates will be
-announced.  Contact hahn@feynarts.de to be added to this list. 
 
 Have fun!
 
@@ -551,15 +548,24 @@ i1, i2, i3."
 
 (* definitions for Initialize.m *)
 
+ReadGenericModel::usage =
+"ReadGenericModel[genname] reads the generic model file(s) genname.gen. 
+ReadGenericModel[genname, ext] specifies an explicit extension, i.e.
+reads genname.ext."
+
 LoadGenericModel::usage =
-"LoadGenericModel[genname] loads the generic model file(s) genname.gen. 
-LoadGenericModel[genname, ext] specifies an explicit extension, i.e.
-loads genname.ext."
+"LoadGenericModel works like ReadGenericModel except that it clears
+existing generic model definitions before and aborts if the generic
+model is incomplete."
+
+ReadModel::usage =
+"ReadModel[modname] reads the classes model file(s) modname.mod. 
+ReadModel[modname, ext] specifies an explicit extension, i.e. reads
+modname.ext."
 
 LoadModel::usage =
-"LoadModel[modname] loads the classes model file(s) modname.mod. 
-LoadModel[modname, ext] specifies an explicit extension, i.e. loads
-modname.ext."
+"LoadModel works like ReadModel except that it clears existing model
+definitions before and aborts if the model is incomplete."
 
 DumpGenericModel::usage =
 "DumpGenericModel[genfile] saves the generic model file presently in
@@ -590,6 +596,18 @@ ModelEdit::usage =
 "ModelEdit is an option of InitializeModel.  It specifies code that will
 be executed directly after loading the classes model, i.e. before the
 actual initialization."
+
+CloseKinematicVector::usage =
+"CloseKinematicVector/@ M$GenericCouplings adds to the kinematic vectors
+of the couplings in M$GenericCouplings the elements to 'close' them
+under permutations.  CloseKinematicVector adds appropriate definitions
+of CloseCouplingVector which must be used on the M$CouplingMatrices
+during the initialization of the classes model."
+
+CloseCouplingVector::usage =
+"CloseCouplingVector/@ M$CouplingMatrices arranges the coupling vectors
+of the couplings in M$CouplingMatrices to be consistent with the closed
+kinematic vectors of the generic model file."
 
 RestrictCurrentModel::usage =
 "RestrictCurrentModel[args] applies a number of ExcludeFieldPoints and
@@ -1021,23 +1039,26 @@ C[fi] == coupl used as an entry in the M$CouplingMatrices list in the
 classes model file defines the coupling of the fields fi."
 
 CC::usage =
-"CC[fields] == coupl may be used in the M$CouplingMatrices list in the
-classes model file to define the coupling of the fields fi, together
+"CC[fields] == coup may be used in the M$CouplingMatrices list in the
+classes model file to define the coupling of the fields fi together
 with the conjugate coupling in one line.  The conjugation is performed
 with the function ConjugateCoupling which must be defined accordingly. 
 If no definition is made, the final amplitudes will simply contain the
 symbol ConjugateCoupling."
 
 ConjugateCoupling::usage =
-"ConjugateCoupling[coupl] defines how the charge-conjugated coupling is
-derived from coupl.  Typically, one I multiplying the coupling constant
+"ConjugateCoupling[coup] defines how the charge-conjugated coupling is
+derived from coup.  Typically, one I multiplying the coupling constant
 must not be conjugated because it derives from the exponent of the path
 integral.  If no definition is made for ConjugateCoupling, the final
 amplitudes will contain this symbol."
 
+Couplings::usage =
+"Couplings[cto, All] returns the couplings of counter-term order cto.
+Couplings[cto] removes the all-zero couplings from Couplings[cto, All]."
+
 GetCouplings::usage =
-"GetCouplings[C[fi], ...] returns all couplings of the form C[fi] == _
-in M$CouplingMatrices."
+"GetCouplings[C[fi], ...] returns all couplings of the form C[fi] == _."
 
 ReplaceCouplings::usage =
 "ReplaceCouplings[C[fi] == coup] replaces all couplings matching C[fi]
@@ -1402,7 +1423,13 @@ and has the same format as FindShapeSources."
 (* FeynArts system constants *)
 
 $FeynArts::usage =
-"$FeynArts contains the version of FeynArts."
+"$FeynArts gives the FeynArts version as integers {major, minor}."
+
+$FeynArtsVersionNumber::usage =
+"$FeynArtsVersionNumber gives the FeynArts version as a real number."
+
+$FeynArtsVersion::usage =
+"$FeynArtsVersion gives the FeynArts version as human-readable string."
 
 $FAVerbose::usage =
 "$FAVerbose is an integer that determines the extent of run-time messages
@@ -1459,9 +1486,11 @@ P$InsertionObjects = G[_][_][__][__] | _Mass | _GaugeXi |
 P$Options = (_Rule | _RuleDelayed)...
 
 
-$FeynArts = 3.10
+$FeynArts = {3, 10}
 
-$FeynArtsVersion = "FeynArts 3.10 (12 Mar 2018)"
+$FeynArtsVersionNumber = 3.10
+
+$FeynArtsVersion = "FeynArts 3.10 (21 Jan 2019)"
 
 $FeynArtsDir = DirectoryName[
   $InputFileName /. HoldPattern[$InputFileName] :>

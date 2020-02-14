@@ -162,7 +162,7 @@
 
 \vspace*{1ex}
 
-\hfill\hbox{Mar 16, 2018~~~~~Thomas Hahn}
+\hfill\hbox{Oct 22, 2018~~~~~Thomas Hahn}
 
 \clearpage
 
@@ -1879,8 +1879,6 @@ determined.  The default is to just pass on the shape data, \ie
    ShapeHook[s_, ___] := s
 \end{verbatim}
 
-%<<<
-
 
 \subsection{Things to do with the Paint Output}
 
@@ -2983,6 +2981,42 @@ M$FlippingRules =
   NonCommutative[dm:_DiracMatrix | _DiracSlash,
                    ChiralityProjector[pm_]] ->
     -NonCommutative[dm, ChiralityProjector[-pm]]
+\end{verbatim}
+
+
+\subsubsection*{Closing kinematic vectors}
+\index{kinematic vector!closing}%
+\index{closing kinematic vectors}%
+
+\FA\ contains a pair of functions for `closing' kinematic vectors, whose 
+components do not map onto each other under permutations.  They provide 
+an ad-hoc fix for models which produce errors of the form ``Cannot 
+resolve coupling \Var{C} for kinematical object \Var{K}.''
+
+In the generic model file the function \Code{CloseKinematicVector} must 
+be applied to the offending coupling (or just mapped over the entire 
+\Code{M\$GenericCouplings} list), \ie
+\begin{verbatim}
+  M$GenericCouplings = CloseKinematicVector/@ M$GenericCouplings
+\end{verbatim}
+\Code{CloseKinematicVector} forms the union of the components of the 
+kinematic vector under all permutations of a coupling.%
+\indextt{CloseKinematicVector}%
+\indextt{CloseCouplingVector}
+To make the coupling vectors of the Classes model file match the new 
+kinematic vectors, the function \Code{CloseCouplingVector} must be 
+applied to the couplings in \Code{M\$CouplingMatrices} in the classes 
+model file, \ie
+\begin{verbatim}
+  M$CouplingMatrices = CloseCouplingVector/@ M$CouplingMatrices
+\end{verbatim}
+
+Even simpler, the two statements above are encoded in the 
+\Code{Close.\{gen,mod\}} add-on model files that come with \FA\ and are 
+employed as
+\begin{verbatim}
+  InsertFields[..., Model -> {"myModel", "Close"},
+                    GenericModel -> {"myGenericModel", "Close"}]
 \end{verbatim}
 
 

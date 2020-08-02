@@ -1,8 +1,8 @@
 (*
 
 This is FeynArts, Version 3.11
-Copyright by Sepp Kueblbeck, Hagen Eck, and Thomas Hahn 1991-2019
-last modified 2 Sep 19 by Thomas Hahn
+Copyright by Sepp Kueblbeck, Hagen Eck, and Thomas Hahn 1991-2020
+last modified 18 May 20 by Thomas Hahn
 
 Release notes:
 
@@ -758,12 +758,12 @@ KI1::usage = KI2::usage = KI3::usage = KI4::usage = KI5::usage = KI6::usage =
 "KIi[n] is the ith kinematic index of the nth field in the kinematic
 vector."
 
-KIs = {KI1, KI2, KI3, KI4, KI5, KI6}
+KIs = {KI1, KI2, KI3, KI4, KI5, KI6, KI7, KI8, KI9, KI10, KI11, KI12}
 
 SI::usage = "SI[n] is the nth summation index in a component of the
 kinematic vector."
 
-SIs = {SI1_, SI2_, SI3_, SI4_, SI5_, SI6_}
+SIs = {SI1_, SI2_, SI3_, SI4_, SI5_, SI6_, SI7_, SI8_, SI9_, SI10_, SI11_, SI12_}
 
 CI::usage = "CI[n] is the classes index of the nth field in the
 kinematic vector."
@@ -1263,6 +1263,10 @@ d1, d2, ... that belong to a loop."
 GaugeXi::usage =
 "GaugeXi[s] is a gauge parameter with index s."
 
+GaugeVector::usage =
+"GaugeVector[V, p, (mu)] is a gauge vector for gauge boson V with
+momentum p and Lorentz Index mu, used e.g. in axial gauge."
+
 FourMomentum::usage =
 "FourMomentum[s, n] is the nth momentum of type s.  Allowed types are
 Incoming, Outgoing, External, and Internal."
@@ -1482,8 +1486,8 @@ P$NonCommuting = F | U
 
 P$ChainBuildOrder = {F, U}
 
-P$InsertionObjects = G[_][_][__][__] | _Mass | _GaugeXi |
-  VertexFunction[_][__]
+P$InsertionObjects = G[_][_][__][__] | _Mass |
+  _GaugeXi | _GaugeVector | VertexFunction[_][__]
 
 P$Options = (_Rule | _RuleDelayed)...
 
@@ -1492,7 +1496,7 @@ $FeynArts = {3, 11}
 
 $FeynArtsVersionNumber = 3.11
 
-$FeynArtsVersion = "FeynArts 3.11 (2 Sep 2019)"
+$FeynArtsVersion = "FeynArts 3.11 (18 May 2020)"
 
 $FeynArtsDir = DirectoryName[
   $InputFileName /. HoldPattern[$InputFileName] :>

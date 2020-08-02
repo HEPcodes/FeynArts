@@ -1,8 +1,8 @@
 (*
 	WriteTeXFile.m
-		writes out the couplings of a FeynArts
-		model file in TeX form
-		last modified 29 Nov 19 th
+		writes out the couplings of a
+		FeynArts model file in TeX form
+		last modified 18 Mar 20 th
 
 	Usage:	WriteTeXFile["model"]
 *)
@@ -361,7 +361,10 @@ TimesO[x_, r_. z_ZTimesB] := TimesO[x z, r]
 
 TimesO[x_, r_. t_sum] := TimesO[x t, r]
 
-TimesO[x_, r_] := If[Denominator[r] =!= 1, x HoldForm[r], x r] /. ZPlusA -> Plus
+TimesO[x_, r_] := If[Denominator[r] =!= 1,
+  x HoldForm[r] //. HoldForm[t_. z:(_ZPlusB | _ZTimesB)^_.] :> z HoldForm[t],
+  x r
+] /. ZPlusA -> Plus
 
 
 HoldTimes[t_Times] := HoldTimes@@ t
@@ -548,6 +551,7 @@ FermionMassSym = TeX["m"];
 USym = TeX["U"];
 VSym = TeX["V"];
 WSym = TeX["W"];
+XSym = TeX["X"];
 ZSym = TeX["Z"];
 
 SymRules = {
@@ -602,7 +606,8 @@ SymRules = {
   dZbarfR1[t_, j1_, j2_] :> Sym[delta[OverBar[ZSym]], {j1, j2}, {F[t], "R"}],
   dCKM1[j1_, j2_] :> Sym[delta["CKM"], {j1, j2}],
   dTH1 :> Sym[delta["T"], "H"],
-  Abb[x_] :> Sym[{TeX["\\Abb{"], x, TeX["}"]}]
+  Abb[x_] :> Sym[{TeX["\\Abb{"], x, TeX["}"]}],
+  TAG[s_String] :> Sym[{TeX["\\TAG{" <> s <> "}"]}]
 }
 
 ModelSymRules = {}

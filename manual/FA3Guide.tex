@@ -138,7 +138,7 @@
 \def\Vs{\Var{s}}
 \def\Vsp{\Var{s'}}
 \def\Vt{\Var{t}}
-\def\Vv{\Var{v}}
+\def\VV{\Var{V}}
 \def\Vmu{\ensuremath{\mu}}
 \def\Vnu{\ensuremath{\nu}}
 \def\VmuI{\ensuremath{\mu_1}}
@@ -158,11 +158,11 @@
 
 \hfill\hbox{\underline{%
 \vrule width 0pt height 0pt depth 2ex%
-\Huge \FA\ 3.10~~~~~User's Guide}}
+\Huge \FA\ 3.11~~~~~User's Guide}}
 
 \vspace*{1ex}
 
-\hfill\hbox{Oct 22, 2018~~~~~Thomas Hahn}
+\hfill\hbox{18 May 2020~~~~~Thomas Hahn}
 
 \clearpage
 
@@ -2114,8 +2114,10 @@ all symbols defined by the model can of course appear in the amplitude.
 \biitab
 \Code{Mass[\Vf]} &
 	mass of field \Vf \\
-\Code{GaugeXi[\Vf]} &
-	gauge parameter of field \Vf \\
+\Code{GaugeXi[\VV]} &
+	gauge parameter of field \VV \\
+\Code{GaugeVector[\VV,\,\Vp,\,\Vmu]} &
+	gauge vector of field \VV\ and momentum $\Vp_\Vmu$ \\
 \Code{G[\plusminus 1][\Var{cto}][\Vf][\Var{kin}]} &
 	symmetric ($+1$) or antisymmetric ($-1$) generic coupling of
 	counter-term order \Var{cto} involving the fields \Vf\ and
@@ -2155,6 +2157,7 @@ squaring the diagram and then summing over the external indices.  On the
 other hand, an internal index summation (say, for a quark loop) must be 
 done for each diagram before squaring.}%
 \indextt{GaugeXi}%
+\indextt{GaugeVector}%
 \indextt{G}%
 \indextt{FourMomentum}%
 \indextt{PropagatorDenominator}%
@@ -3858,8 +3861,8 @@ Poincar\'e group in Minkowski space.  It introduces the following symbols.
 \Code{MajoranaSpinor[\Vp,\,\Vm,\,\Vi]} &
 	the spinor of a Majorana fermion with momentum \Vp, mass \Vm, 
 	and particles indices \Vi \\
-\Code{PolarizationVector[\Vv,\,\Vp,\,\Vmu]} &
-	the polarization vector of the vector boson \Vv\ with Lorentz
+\Code{PolarizationVector[\VV,\,\Vp,\,\Vmu]} &
+	the polarization vector of the vector boson \VV\ with Lorentz
 	index \Vmu\ associated with momentum \Vp \\
 \Code{DiracMatrix[\Vmu]} &
 	the Dirac matrix $\gamma_{\Vmu}$ \\
@@ -3904,7 +3907,7 @@ Majorana spinors are used for fermions with attribute
 \index{fermion!Majorana}
 
 Polarization vectors associated with outgoing momenta are brought into the
-form \Code{Conjugate[PolarizationVector][\Vv,\,\Vp,\,\Vmu]} by the
+form \Code{Conjugate[PolarizationVector][\VV,\,\Vp,\,\Vmu]} by the
 \Code{M\$LastGenericRules}.%
 \indextt{M\$LastGenericRules}
 

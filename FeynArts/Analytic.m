@@ -2,7 +2,7 @@
 	Analytic.m
 		Translation of InsertFields output into
 		analytic expressions
-		last modified 24 Sep 19 th
+		last modified 18 May 20 th
 *)
 
 Begin["`Analytic`"]
@@ -197,7 +197,7 @@ MomConservation[top_, vert_] := Throw[top] /; FreeQ[top, ZZZ]
 
 MomConservation[top_, vert_] :=
 Block[ {eq},
-  eq = Plus@@ IncomingMomentum[vert]@@@ top;
+  eq = Plus@@ IncomingMomentum[vert]@@@ top /. _zero -> 0;
   If[ eq === 0 || (Head[eq] === Plus && FreeQ[eq, ZZZ]), top,
     top /. If[ Head[eq] =!= Plus, eq -> zero[eq],
       First[Solve[ eq == 0,

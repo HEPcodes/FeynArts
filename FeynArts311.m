@@ -2,7 +2,7 @@
 
 This is FeynArts, Version 3.11
 Copyright by Sepp Kueblbeck, Hagen Eck, and Thomas Hahn 1991-2020
-last modified 18 May 20 by Thomas Hahn
+last modified 3 Aug 20 by Thomas Hahn
 
 Release notes:
 
@@ -1496,7 +1496,7 @@ $FeynArts = {3, 11}
 
 $FeynArtsVersionNumber = 3.11
 
-$FeynArtsVersion = "FeynArts 3.11 (18 May 2020)"
+$FeynArtsVersion = "FeynArts 3.11 (3 Aug 2020)"
 
 $FeynArtsDir = DirectoryName[
   $InputFileName /. HoldPattern[$InputFileName] :>

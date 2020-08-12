@@ -4,7 +4,7 @@
 		"upgrades" ordinary 2x2 to full 6x6 sfermion
 		(3x3 sneutrino) mixing
 		by Thomas Hahn and Jose Ignacio Illana
-		last modified 9 Jan 19 by th
+		last modified 18 May 20 by th
 *)
 
 
@@ -28,7 +28,7 @@ M$ClassesDescription = M$ClassesDescription /.
     ComposedChar[a_, b_, d_] :> ComposedChar[a, b, Null, d])
 
 
-TheMass[ S[t:12 | 13 | 14, {s_, g_, ___}] ] =.
+DownValues[TheMass] = DownValues[TheMass] /. Thread[$FV -> -$FV]
 
 Scan[(TheMass[ S[#, {as_, ___}] ] := MASf[as, # - 10])&, $FV]
 
@@ -76,7 +76,7 @@ Block[ {sel, new},
   sel[r_ d:_CKM | _CKMC] := sAf[d, 1][r];
   new = sel[rhs /. Conjugate[CKM[j__]] :> CKMC[j]] /.
     CKMC[j__] :> Conjugate[CKM[j]];
-  If[ !FreeQ[new, af], Message[ReplaceCoupling::warning, n, Af] ];
+  If[ !FreeQ[new, af], Message[ModifyCoupling::warning, n, Af] ];
   lhs == new
 ] /; !FreeQ[rhs, af]
 
@@ -125,7 +125,7 @@ Block[ {sel, new},
   sel[IndexDelta[s, s2_]] := IndexDelta[as, s2] IndexDelta[j, 1];
   sel[usf[t, _][s, s2_]] := UASf[t][as, j + 3 (s2 - 1)];
   new = ISum[sel[expr], {j, 3}];
-  If[ !FreeQ[new, s], Message[ReplaceCoupling::warning, n, s] ];
+  If[ !FreeQ[new, s], Message[ModifyCoupling::warning, n, s] ];
   new /. ISum -> IndexSum
 ]
 
@@ -133,12 +133,14 @@ Block[ {sel, new},
 ISum[IndexDelta[a_, b_] r_, {a_, _}] := r /. a -> b 
 
 
-ReplaceCoupling::warning = "Coupling #`` still contains ``."
+ModifyCoupling::warning = "Coupling #`` still contains ``."
 
-ReplaceCoupling[c_, {n_}] := ReplaceSf[ReplaceAf[c, n], n]
+Off[ModifyCoupling::warning]
+
+ModifyCoupling[c_, {n_}] := ReplaceSf[ReplaceAf[c, n], n]
 
 
-M$CouplingMatrices = MapIndexed[ReplaceCoupling,
+M$CouplingMatrices = MapIndexed[ModifyCoupling,
   M$CouplingMatrices /. {
     S[t:$FVsf, s___] :> sf[t, s],
     Af[t:$FVf, __] :> af[t],

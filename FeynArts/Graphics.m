@@ -1,7 +1,7 @@
 (*
 	Graphics.m
 		Graphics routines for FeynArts
-		last modified 31 Oct 19 th
+		last modified 3 Aug 20 th
 *)
 
 Begin["`Graphics`"]
@@ -283,9 +283,7 @@ prologue := prologue =
 epsf = ""
 
 Render[(g_FeynArtsGraphics)[l__List, o___Rule], format___String, opt___Rule] :=
-Block[ {None = 0, Forward = 1, Backward = -1},
-  DoRender[format][o, opt][g/@ {l}]
-]
+  DoRender[format][o, opt][g/@ {l} /. {None -> 0, Forward -> 1, Backward -> -1}]
 
 DoRender["EPS"][opt___][g_] :=
 Block[ {PaperSize = imgsize, epsf = " EPSF-3.0"},

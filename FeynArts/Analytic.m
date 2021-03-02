@@ -2,7 +2,7 @@
 	Analytic.m
 		Translation of InsertFields output into
 		analytic expressions
-		last modified 18 May 20 th
+		last modified 9 Dec 20 th
 *)
 
 Begin["`Analytic`"]
@@ -125,7 +125,7 @@ Block[ {vert, momtop, imom, oldmom, amp, c, toppref, mtf, mc = 0, gennr = 0},
     momtop = Catch[Fold[MomConservation, momtop, Reverse[vert]]]
   ];
 	(* renumber the internal momenta *)
-  oldmom = Union[Cases[momtop, FourMomentum[_ZZZ, _], Infinity]];
+  oldmom = Union[Cases[momtop /. _zero -> 0, FourMomentum[_ZZZ, _], Infinity]];
   imom = RenumberMom@@@ oldmom;
   momtop = momtop /. Thread[oldmom -> imom];
 

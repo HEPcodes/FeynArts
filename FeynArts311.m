@@ -1,8 +1,8 @@
 (*
 
 This is FeynArts, Version 3.11
-Copyright by Sepp Kueblbeck, Hagen Eck, and Thomas Hahn 1991-2020
-last modified 3 Aug 20 by Thomas Hahn
+Copyright by Sepp Kueblbeck, Hagen Eck, and Thomas Hahn 1991-2022
+last modified 25 Mar 22 by Thomas Hahn
 
 Release notes:
 
@@ -1105,6 +1105,12 @@ MomentumConservation::usage =
 whether momentum conservation at each vertex is enforced.  If set to
 False, every propagator will carry its own momentum."
 
+FermionSign::usage =
+"FermionSign is a function that aids tracing of signs added due to
+fermion configurations in CreateFeynAmp."
+
+FermionSign = Identity
+
 GraphInfoFunction::usage =
 "GraphInfoFunction is an option of CreateFeynAmp.  It specifies a
 function with which every diagram is multiplied.  The function receives
@@ -1496,7 +1502,7 @@ $FeynArts = {3, 11}
 
 $FeynArtsVersionNumber = 3.11
 
-$FeynArtsVersion = "FeynArts 3.11 (3 Aug 2020)"
+$FeynArtsVersion = "FeynArts 3.11 (25 Mar 2022)"
 
 $FeynArtsDir = DirectoryName[
   $InputFileName /. HoldPattern[$InputFileName] :>

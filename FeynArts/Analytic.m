@@ -2,7 +2,7 @@
 	Analytic.m
 		Translation of InsertFields output into
 		analytic expressions
-		last modified 9 Dec 20 th
+		last modified 25 Mar 22 th
 *)
 
 Begin["`Analytic`"]
@@ -196,12 +196,12 @@ RenumberMom[_, id_] := FourMomentum[Internal, id]
 MomConservation[top_, vert_] := Throw[top] /; FreeQ[top, ZZZ]
 
 MomConservation[top_, vert_] :=
-Block[ {eq},
+Block[ {eq, mom},
   eq = Plus@@ IncomingMomentum[vert]@@@ top /. _zero -> 0;
   If[ eq === 0 || (Head[eq] === Plus && FreeQ[eq, ZZZ]), top,
-    top /. If[ Head[eq] =!= Plus, eq -> zero[eq],
-      First[Solve[ eq == 0,
-        Last[Sort[Cases[{eq}, _FourMomentum, Infinity]]] ]] ]
+    mom = Last[Sort[Cases[{eq}, _FourMomentum, Infinity]]];
+    top /. If[ Head[eq] =!= Plus, mom -> zero[mom],
+      First[Solve[eq == 0, mom]] ]
   ]
 ]
 
@@ -364,7 +364,7 @@ Block[ {ch = {}, res, ext},
 	   gives the same result.) *)
   ext = Flatten[Cases[res, d_dot :> Extract[d, {{1, 1}, {-1, 2}}, Leg]]];
   AppendTo[ scalars,
-    Signature[ext] (-1)^(Count[res, _tr] + Length[ext]/2) ];
+    FermionSign[Signature[ext] (-1)^(Count[res, _tr] + Length[ext]/2)] ];
 
   mtf = Times@@ Cases[res, t_tr :> MTF[ Union[Cases[t, Field[_], {-2}]] ]];
 

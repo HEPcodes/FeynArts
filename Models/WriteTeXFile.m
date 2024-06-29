@@ -2,7 +2,7 @@
 	WriteTeXFile.m
 		writes out the couplings of a
 		FeynArts model file in TeX form
-		last modified 18 Mar 20 th
+		last modified 25 Mar 22 th
 
 	Usage:	WriteTeXFile["model"]
 *)
@@ -373,7 +373,7 @@ HoldTimes[t_Times] := HoldTimes@@ t
 texZPlusB[z_, r___] := TeXEnv["PlusB", "\\\\\n"
   (*, "\\deb{", ToString[LC[ZPlusB[z, r]]], "}\n"*)
 ]@@ Partition[Flatten @ {z,
-  If[MinusInFrontQ[#], {TeX["\,-"], -#}, {TeX["\,+"], #}]&/@ {r},
+  If[MinusInFrontQ[#], {TeX["\\,-"], -#}, {TeX["\\,+"], #}]&/@ {r},
   ""}, 2]
 
 texZTimesB[t___] := TeXEnv["TimesB", "\\\\\n"

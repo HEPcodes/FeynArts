@@ -1,8 +1,8 @@
 (*
 
-This is FeynArts, Version 3.11
+This is FeynArts, Version 3.12
 Copyright by Sepp Kueblbeck, Hagen Eck, and Thomas Hahn 1991-2022
-last modified 25 Mar 22 by Thomas Hahn
+last modified 24 May 24 by Thomas Hahn
 
 Release notes:
 
@@ -1498,11 +1498,11 @@ P$InsertionObjects = G[_][_][__][__] | _Mass |
 P$Options = (_Rule | _RuleDelayed)...
 
 
-$FeynArts = {3, 11}
+$FeynArts = {3, 12}
 
-$FeynArtsVersionNumber = 3.11
+$FeynArtsVersionNumber = 3.12
 
-$FeynArtsVersion = "FeynArts 3.11 (25 Mar 2022)"
+$FeynArtsVersion = "FeynArts 3.12 (24 May 2024)"
 
 $FeynArtsDir = DirectoryName[
   $InputFileName /. HoldPattern[$InputFileName] :>

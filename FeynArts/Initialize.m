@@ -1,7 +1,7 @@
 (*
 	Initialize.m
 		Functions for the initialization of models
-		last modified 2 Sep 19 th
+		last modified 24 May 24 th
 *)
 
 Begin["`Initialize`"]
@@ -343,6 +343,7 @@ Block[ {savecp = $ContextPath},
   MixingPartners[fi_] := {fi};
 
   _Compatibles[fi_] := {fi};
+  Compatibles[Mix[fi_,fi_]] := Compatibles[fi];
 
   F$Generic = Union[ToGeneric[#[[1,1]]&/@ M$GenericPropagators]];
 
@@ -583,7 +584,7 @@ AllFields[fi_] := SignMap[List, fi]
 
 Attributes[ClearDefs] = {HoldAll}
 
-ClearDefs[defs_] := defs = Select[defs, FreeQ[#, P$Generic[__]]&]
+ClearDefs[defs_] := defs = Select[defs, FreeQ[#, P$Generic[_Integer, ___]]&]
 
 
 (* Assigning the mixing propagators.  There are in general 4 cases:
@@ -676,7 +677,7 @@ Block[ {SVTheC, sv, unsortedFP, unsortedCT, savecp = $ContextPath},
 	(* initialize particles:
 	   set properties of classes from their description list: *)
   ReleaseHold[Assign@@@ M$ClassesDescription];
-  SetCoeff[#][Mixture[#]]&@@@ M$ClassesDescription;
+  SetCoeff[M$ClassesDescription];
 
   F$Classes = First/@ M$ClassesDescription;
 	(* set all possible index combinations for a class: *)
@@ -808,26 +809,45 @@ ConjugateCoupling[__][n:(_Integer | _Rational | _IndexDelta)] := n
 
 (* form linear combinations of couplings *)
 
-SetCoeff[fi_][fi_] := AppendTo[TheCoeff[fi], fi]
+SetCoeff[desc_] :=
+Block[ {coeff},
+  _coeff = {};
+  coeffCollect[IndexExtend[#, Indices[#]]][Mixture[#]]&@@@ desc;
+  _coeff =.;
+  coeffDef@@@ DownValues[coeff];
+]
 
-SetCoeff[fi_][p_Plus] := Scan[SetCoeff[fi], p]
+coeffDef[_[_[fj_]], fi_] :=
+Block[ {ij = Indices[fj]},
+  (TheCoeff[#1] = #2)&[fj /. Index[i_] :> i_, Flatten[fi] /. Thread[ij -> Level[ij, {2}]]]
+]
 
-SetCoeff[fi_][c_. Field[s_. (f:P$Generic)[i_, j___]]] :=
-  AppendTo[TheCoeff[s f[i]], fi -> {c, j}]
+coeffCollect[fi_][fi_] := coeff[fi] = {coeff[fi], fi}
 
-SetCoeff[fi_][c_. (f:P$Generic)[i_, j___]] :=
-  AppendTo[TheCoeff[f[i]], fi -> {c, j}]
+c_coeffCollect[p_Plus] := Scan[c, p]
 
-SetCoeff[fi_][other_] := Message[InitializeModel::nonlin, other, fi]
+coeffCollect[fi_][c_. (Field[fj_] | fj:P$Generic[__])] :=
+  (coeff[#] = {coeff[#], fi -> c})& @ IndexExtend[fj, Indices[fj]]
+
+coeffCollect[fi_][other_] :=
+  Message[InitializeModel::nonlin, other, HoldForm[Mixture[fi]]]
 
 
-SetCoupling[c:vert_ == _] :=
-  Catch[SetCoupling[c, Distribute[TheCoeff/@ vert, List]]]
+IndexExtend[fi_, {}] := fi
 
-SetCoupling[vert_ == coup_, comb_] :=
-  (Coup[vert] += coup) /; FreeQ[comb, Rule]
+IndexExtend[s_. fi_[i_], k_List] := s fi[i, k]
 
-SetCoupling[vert_ == coup_, comb_] :=
+IndexExtend[s_. fi_[i_, j_List], k_List] := s fi[i, Join[j, Drop[k, Length[j]]]]
+
+
+SetCoupling[vert_ == coup_] :=
+  Catch[ SetCoupling[vert, coup, Distribute[TheCoeff/@ vert, List]] ]
+
+SetCoupling[vert_, coup_, comb_] :=
+  (Coup[Replace[vert, s_Symbol :> s_, {-1}]] =
+    Coup[vert] + coup) /; FreeQ[comb, Rule]
+
+SetCoupling[vert_, coup_, comb_] :=
 Block[ {sign, vorig, vref, ord, o, new},
   sign = If[ PermutationSymmetry@@ ToGeneric[vert] === -1,
     Signature, 1 & ];
@@ -841,37 +861,24 @@ Block[ {sign, vorig, vref, ord, o, new},
 
 
 SplitCoeff[coup_, comb_] :=
-Block[ {coeff, v, c, fn = 0},
+Block[ {vert, coeff},
   o[[ord]] = Ordering[Thread[{vref, comb /. (f_ -> _) :> f}, C]];
-  c = coup sign[o];
-  _coeff = {};
-  v = C@@ DeleteCases[
-    StripCoeff@@@ Thread[{vorig, comb}, C][[o]],
-    {}, {-2} ];
-  _coeff =.;
-  Coup[v] += c Times@@
-    (Plus@@ Times@@@ PermuteFields@@ Transpose[#2]&)@@@
-    DownValues[coeff];
+  {vert, coeff} = Thread[MapIndexed[StripCoeff, comb]];
+  Coup[Replace[vert, s_Symbol :> s_, {-1}]] = Coup[vert] + coup sign[o] Times@@ coeff;
 ]
 
 
-StripCoeff[f0_, -(fi_ -> {coeff_, ind___})] :=
-  StripCoeff[f0, -fi -> {Conjugate[coeff], ind}]
+ChargeConjugate[p_Plus] := ChargeConjugate/@ p
 
-StripCoeff[s0_. (f0:P$Generic)[i0_, patt___],
-    s_. (f:P$Generic)[i_, ___] -> {lc_, ind___}] := (
-  c = Subst[c, patt, ind];
-  AppendTo[coeff[f[i]], {s0 f0[i0] -> lc, Thread[Indices[f[i]] -> #]}];
-  s f[i, #]
-)&[ IndexBase[Indices[f[i]], ++fn] ]
-
-StripCoeff[_, s_. (fi:P$Generic)[i_, ___]] :=
-  s fi[i, IndexBase[Indices[fi], ++fn]]
+ChargeConjugate[x_] := Conjugate[x]
 
 
-PermuteFields[fi_, ind_] :=
-  Transpose[MapThread[ ReplaceAll,
-    {Transpose[Map[Last, Permutations[fi], {2}]], ind} ]]
+StripCoeff[-(fi_ -> c_), n_] := StripCoeff[-fi -> ChargeConjugate[c], n]
+
+StripCoeff[fi_ -> c_, {n_}] :=
+  {fi, c} /. (Thread[# -> IndexBase[#, n]]&) @ Cases[fi, _Index, Infinity];
+
+StripCoeff[fi_, _] := {fi, 1}
 
 
 Attributes[IndexBase] = {Listable}
@@ -924,14 +931,11 @@ genref = ToGeneric[List@@ vert]},
         True ]&)/@ vert,
     Abort[] ];
 
-	(* change symbols in model file to patterns: *)
-  lhs = Replace[vert, j_Symbol :> j_, {-1}];
-
 	(* this assigns TheC for all components of the coupling vector *)
-  sv = MapThread[SVTheC@@ FieldPattern/@ lhs,
+  sv = MapThread[SVTheC@@ FieldPattern/@ vert,
     {cv /. SI[n_] :> SIs[[n]], coup}];
 
-  lhs = VSort[lhs];
+  lhs = VSort[vert];
   cv = ToClasses[vert];
   fps = {};
   MapIndexed[
@@ -1039,9 +1043,7 @@ QuantumNumbers[-fi_] := -QuantumNumbers[fi]
 _QuantumNumbers = {}
 
 
-Mixture[fi_[i_, j_, ___]] := Subst[Mixture[fi[i]], i, j]
-
-Mixture[fi_, ___] := fi
+Mixture[fi_, ___] := IndexExtend[fi, Indices[fi]]
 
 
 TheCoeff[s_Integer f_] := s TheCoeff[f]
@@ -1088,13 +1090,13 @@ TheLabel[Mix[fi__], ___] := {fi}
 
 TheLabel[Rev[fi__], ___] := Reverse[{fi}]
 
+TheLabel[fi:Mix[__][_], t___] := TheLabel[#, t]&/@ MixingPartners[fi]
+
+TheLabel[fi:Rev[__][_], t___] := TheLabel[#, t]&/@ Reverse[MixingPartners[fi]]
+
 TheLabel[fi:P$Generic, ___] := fi
 
 TheLabel[-fi_, t___] := TheLabel[fi, t]
-
-TheLabel[fi:Mix[__][_]] := TheLabel/@ MixingPartners[fi]
-
-TheLabel[fi:Rev[__][_]] := TheLabel/@ Reverse[MixingPartners[fi]]
 
 TheLabel[fi___] := DefaultLabel[fi]
 

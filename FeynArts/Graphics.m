@@ -1,7 +1,7 @@
 (*
 	Graphics.m
 		Graphics routines for FeynArts
-		last modified 3 Aug 20 th
+		last modified 15 Oct 24 th
 *)
 
 Begin["`Graphics`"]
@@ -1177,7 +1177,7 @@ Block[ {v, arg1, arg2, exitcode, shapedata = raw},
     JLink`InstallJava[];
     AppendTo[JLink`$ExtraClassPath,
       ToFileName[$FeynArtsProgramDir, "TopologyEditor.jar"]];
-    editorclass = JLink`LoadClass["de.FeynArts.TopologyEditor"];
+    editorclass = JLink`LoadJavaClass["de.FeynArts.TopologyEditor"];
     If[ Head[editorclass] =!= JLink`JavaClass, Message[Shape::notopedit] ]
   ];
   If[ Head[editorclass] =!= JLink`JavaClass, Return[shapedata] ];

@@ -1,8 +1,8 @@
 (*
 
 This is FeynArts, Version 3.12
-Copyright by Sepp Kueblbeck, Hagen Eck, and Thomas Hahn 1991-2022
-last modified 24 May 24 by Thomas Hahn
+Copyright by Sepp Kueblbeck, Hagen Eck, and Thomas Hahn 1991-2025
+last modified 27 Mar 25 by Thomas Hahn
 
 Release notes:
 
@@ -1152,10 +1152,6 @@ DiagramDelete::usage =
 or amplitude list expr.  n may be of the form 3, 42, 17...28 which
 selects diagrams 3, 42, and 17 through 28."
 
-Discard := (
-  Message[Discard::obsalt, Discard, DiagramDelete];
-  DiagramDelete )
-
 DiagramMap::usage =
 "DiagramMap[foo, diags] maps foo over all Feynman diagrams in diags."
 
@@ -1502,7 +1498,7 @@ $FeynArts = {3, 12}
 
 $FeynArtsVersionNumber = 3.12
 
-$FeynArtsVersion = "FeynArts 3.12 (24 May 2024)"
+$FeynArtsVersion = "FeynArts 3.12 (27 Mar 2025)"
 
 $FeynArtsDir = DirectoryName[
   $InputFileName /. HoldPattern[$InputFileName] :>
